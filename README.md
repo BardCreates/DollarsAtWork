@@ -11,7 +11,6 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Sign up, sign in, sign out, forgot/reset password, confirm email (emails print to the API console for now)
 - Every new account gets a plan, the three built-in categories and a 30-day free trial (no card)
 - The app shell in the original look: dark theme, mascot, top navigation, trial banner
-- A placeholder page for Tools
 
 ## What's in Phase 2
 
@@ -65,6 +64,11 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Status kept in step with Stripe by signed webhooks, and refreshed whenever you come back from Stripe
 - Past due keeps full access for 7 days; canceled keeps it until the period ends; expired is read-only
 - Trial emails at 7 days left, 2 days left and when the trial ends (printed to the API console for now)
+
+## What's in Phase 9
+
+- Tools page with four calculators: compound interest, early loan payoff, loan comparison and DRIP (dividend reinvestment)
+- They use the same maths as the rest of the app, and nothing typed into them is saved
 
 ## Folder layout
 

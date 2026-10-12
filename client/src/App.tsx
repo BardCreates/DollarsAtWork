@@ -7,7 +7,7 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { ConfirmEmailPage } from './pages/auth/ConfirmEmailPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
-import { ToolsPage } from './pages/ModulePages';
+import { ToolsPage } from './features/tools/ToolsPage';
 import { PlanPage } from './features/plan/PlanPage';
 import { DebtPage } from './features/debt/DebtPage';
 import { SavingsPage } from './features/savings/SavingsPage';

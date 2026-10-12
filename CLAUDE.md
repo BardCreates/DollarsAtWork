@@ -23,7 +23,9 @@ and decisions already made. Don't re-ask decided questions.
 - Phase 8 (Trial and billing) is built and verified in Stripe test mode: Checkout, customer portal, sync on return,
   signed webhooks with duplicate protection, trial emails (day 23, day 28, ended), billing card on Profile.
   Still open: a real email provider, a registered webhook endpoint (production), delete account / export data.
-- Next: Phase 9 (Tools). Work one phase at a time, in the order in `docs/PLAN.md`.
+- Phase 9 (Tools) is built and verified: compound interest, early payoff, loan comparison and DRIP calculators.
+- Next: Phase 10 (Launch): pricing page, terms/privacy, mobile pass, error tracking, production deploy.
+  Needs owner decisions (see the end of the last session's summary): hosting account, email provider, legal text.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -67,17 +69,19 @@ client/src/
   api/client.ts           the ONLY fetch wrapper (api.get/post/put/patch/delete, ApiError, errorMessage)
   auth/                   useMe + auth mutations, route guards, passwordRule
   layout/                 TopBar, TrialBanner, AppShell
-  components/             shared UI (PageHeader, Figure, PlanAmountBanner, Wordmark, ComingSoon, MoneyField, formHelpers.muiField)
+  components/             shared UI (PageHeader, Figure, PlanAmountBanner, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
+  lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page
   features/dashboard/     Dashboard: networth.ts, useDashboard.ts (all data -> one projection), cards, dialogs, check-in
   features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule
+  features/tools/         Tools page: ToolsPage (tabs), calculators.tsx (the four calculators), NumberField
   features/savings/       Savings page: savings.ts (query, mutations, useSavingsProjection), goal list, dialog, timeline
   features/invest/        Invest page: investments.ts (query, mutations, useInvestmentProjection), account and split dialogs, chart
   features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
-  pages/                  screens; new modules go in client/src/features/<feature>/
+  pages/                  auth screens, Profile, NotFound; everything else lives in client/src/features/<feature>/
 docs/PLAN.md              product spec
 ```
 
