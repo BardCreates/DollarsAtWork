@@ -32,11 +32,11 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** Sign-in and sign-up pages. Already signed-in users go straight to the app. */
+/** Sign-in and sign-up pages. Already signed-in users go straight to the app; a new sign-up goes to the setup walkthrough. */
 export function PublicOnly() {
   const { data: me, isPending } = useMe();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
+  const from = (location.state as { from?: string } | null)?.from ?? (location.pathname === '/sign-up' ? '/welcome' : '/');
 
   if (isPending) return <FullPageSpinner />;
   if (me) return <Navigate to={from} replace />;

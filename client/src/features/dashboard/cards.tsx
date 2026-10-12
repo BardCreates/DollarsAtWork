@@ -42,7 +42,7 @@ const Empty = ({ children }: { children: ReactNode }) => (
 export function MilestonesCard({ milestones }: { milestones: Milestone[] }) {
   return (
     <DashCard title="Milestones">
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1.25 }}>
+      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 1.25 }}>
         {milestones.map((milestone) => (
           <Box component="li" key={milestone.key} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
             <Typography variant="body2" noWrap sx={{ minWidth: 0 }}>
@@ -124,7 +124,7 @@ export function GoalsCard({ data, result }: { data: DashboardData; result: Proje
       {goals.length === 0 ? (
         <Empty>No goals yet. Start with an emergency fund on the Savings page.</Empty>
       ) : (
-        <Box sx={{ display: 'grid', gap: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 2 }}>
           {goals.map((goal, index) => {
             const percent = goal.targetAmount > 0 ? Math.min(100, (goal.currentBalance / goal.targetAmount) * 100) : 100;
             const month = result.goalFullMonths[index];
@@ -220,7 +220,7 @@ export function AssetsLiabilitiesCard({ data, readOnly, onManage }: { data: Dash
       {bars.length === 0 ? (
         <Empty>{none}</Empty>
       ) : (
-        <Box sx={{ display: 'grid', gap: 1 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 1 }}>
           {bars.map((bar) => (
             <Box key={bar.label}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>

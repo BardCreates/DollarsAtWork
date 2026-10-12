@@ -70,6 +70,15 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Tools page with four calculators: compound interest, early loan payoff, loan comparison and DRIP (dividend reinvestment)
 - They use the same maths as the rest of the app, and nothing typed into them is saved
 
+## What's in Phase 10 so far
+
+- Profile: change your email (confirmed by a link sent to the new address) or password, download all your data
+  as spreadsheets or JSON, or delete your account and everything in it (which also cancels any subscription)
+- A three-step setup walkthrough for new accounts
+- A public pricing page, plus draft Terms and Privacy pages (not yet reviewed by a lawyer)
+- One free trial per email address, even after an account is deleted
+- Every page checked at phone width
+
 ## Folder layout
 
 ```
@@ -79,7 +88,7 @@ server/DollarsAtWork.Api   .NET 10 API (Identity cookie sign-in, EF Core, SQL Se
   Common/                  Account setup, email, current-user helper
   Features/Auth/           Sign-up / sign-in endpoints
   Features/Plan/           Income and category endpoints
-  Features/Debts/, Savings/, Investments/, NetWorth/, Billing/
+  Features/Debts/, Savings/, Investments/, NetWorth/, Billing/, Account/
 client/                    React 19 + TypeScript + Vite + Material UI
   src/theme.ts             The Dollars at Work look (colors, fonts, cards)
   src/api/                 One fetch wrapper for the API

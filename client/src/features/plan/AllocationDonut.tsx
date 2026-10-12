@@ -64,7 +64,7 @@ export function AllocationDonut({ plan }: { plan: Plan }) {
           Enter your income and give your categories amounts to see the split.
         </Typography>
       ) : (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 2, p: 0, display: 'grid', gap: 0.75 }}>
+        <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 2, p: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 0.75 }}>
           {slices.map((slice) => (
             <Box component="li" key={slice.key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: slice.fill, flexShrink: 0 }} />

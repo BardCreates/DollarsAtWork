@@ -63,7 +63,7 @@ export function SavingsTimeline({ goals, projection }: { goals: Goal[]; projecti
         </ResponsiveContainer>
       </Box>
 
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 3, p: 0, display: 'grid', gap: 1.25 }}>
+      <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 3, p: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 1.25 }}>
         {milestones.map(({ goal, month, color }) => (
           <Box component="li" key={goal.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />

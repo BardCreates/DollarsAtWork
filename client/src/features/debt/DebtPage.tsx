@@ -137,7 +137,7 @@ function DebtModule({ data }: { data: DebtsData }) {
           </Tabs>
 
           {tab === 'overview' ? (
-            <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.2fr) minmax(0, 1fr)' } }}>
+            <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.2fr) minmax(0, 1fr)' } }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1.5 }}>

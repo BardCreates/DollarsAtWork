@@ -88,7 +88,7 @@ function Dashboard({ data }: { data: DashboardData }) {
                 Your net worth, the years slider and the charts appear here once your plan is set up. Start by entering your monthly income and splitting
                 it into categories.
               </Typography>
-              <Button component={RouterLink} to="/plan" variant="contained" size="large">
+              <Button component={RouterLink} to="/welcome" variant="contained" size="large">
                 Set up your plan
               </Button>
             </Box>
@@ -144,7 +144,7 @@ function Dashboard({ data }: { data: DashboardData }) {
       )}
 
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.7fr) minmax(0, 1fr)' } }}>
-        <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
+        <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={todaysDollars} />
           <DashCard title="Projection">
             <ProjectionChart result={result} year={year} />
@@ -158,7 +158,7 @@ function Dashboard({ data }: { data: DashboardData }) {
           <HistoryCard snapshots={data.netWorth.snapshots} />
         </Box>
 
-        <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
+        <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <CheckInCard snapshots={data.netWorth.snapshots} readOnly={readOnly} onStart={() => setDialog('check-in')} />
           <MilestonesCard milestones={milestones} />
           <PlanCard data={data} />

@@ -24,8 +24,12 @@ and decisions already made. Don't re-ask decided questions.
   signed webhooks with duplicate protection, trial emails (day 23, day 28, ended), billing card on Profile.
   Still open: a real email provider, a registered webhook endpoint (production), delete account / export data.
 - Phase 9 (Tools) is built and verified: compound interest, early payoff, loan comparison and DRIP calculators.
-- Next: Phase 10 (Launch): pricing page, terms/privacy, mobile pass, error tracking, production deploy.
-  Needs owner decisions (see the end of the last session's summary): hosting account, email provider, legal text.
+- Phase 10 (Launch), the parts that needed no owner input, are built and verified: change password, change email
+  (confirmed by a link to the new address), export data (JSON or a zip of CSVs), delete account (cancels Stripe),
+  one trial per email, first-run walkthrough (/welcome), pricing page, draft terms and privacy pages, 360px pass.
+- Still open for launch, all waiting on the owner: hosting + domain, a real email provider, error tracking,
+  legal review of `client/src/pages/public/LegalPages.tsx` (fill the [bracketed] placeholders, set DRAFT to false),
+  final prices, Managed Payments on or off, registering the production webhook endpoint.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -74,6 +78,8 @@ client/src/
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
+  features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
+  features/setup/         WelcomePage: the first-run walkthrough at /welcome
   features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page
   features/dashboard/     Dashboard: networth.ts, useDashboard.ts (all data -> one projection), cards, dialogs, check-in
   features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule
@@ -81,7 +87,8 @@ client/src/
   features/savings/       Savings page: savings.ts (query, mutations, useSavingsProjection), goal list, dialog, timeline
   features/invest/        Invest page: investments.ts (query, mutations, useInvestmentProjection), account and split dialogs, chart
   features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
-  pages/                  auth screens, Profile, NotFound; everything else lives in client/src/features/<feature>/
+  pages/                  auth screens, Profile, NotFound, public/ (pricing, terms, privacy, PublicLayout + FooterLinks);
+                          everything else lives in client/src/features/<feature>/
 docs/PLAN.md              product spec
 ```
 
@@ -127,7 +134,8 @@ docs/PLAN.md              product spec
 - Forms: React Hook Form + Zod; use `muiField(register, 'name')` for TextFields, `Controller` for others.
 - Charts: Recharts, colors from `chartPalette`.
 - Keep the established look: dark cards with gradient, green primary, page = `PageHeader` + cards + tabs.
-- Mobile works at 360px wide.
+- Mobile works at 360px wide. A `display: grid` list needs `gridTemplateColumns: 'minmax(0, 1fr)'`, or one long
+  name widens every row past its card.
 
 **Copy**
 - Plain, friendly sentences. Sentence-case buttons. Money shown as `$1,234` (cents only where it matters).

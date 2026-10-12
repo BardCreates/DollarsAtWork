@@ -6,6 +6,10 @@ import { SignUpPage } from './pages/auth/SignUpPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { ConfirmEmailPage } from './pages/auth/ConfirmEmailPage';
+import { ConfirmEmailChangePage } from './pages/auth/ConfirmEmailChangePage';
+import { PricingPage } from './pages/public/PricingPage';
+import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
+import { WelcomePage } from './features/setup/WelcomePage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { ToolsPage } from './features/tools/ToolsPage';
 import { PlanPage } from './features/plan/PlanPage';
@@ -28,11 +32,18 @@ export default function App() {
       {/* Links from emails work whether or not you're signed in */}
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/confirm-email" element={<ConfirmEmailPage />} />
+      <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
+
+      {/* Open to everyone */}
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
 
       {/* The app */}
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
+          <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/plan" element={<PlanPage />} />
           <Route path="/savings" element={<SavingsPage />} />
           <Route path="/debt" element={<DebtPage />} />

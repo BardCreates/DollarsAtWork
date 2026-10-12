@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
 import { Wordmark } from '../../components/Wordmark';
+import { FooterLinks } from '../public/PublicLayout';
 
 /** Centered card with the mascot, used by every signed-out page. */
 export function AuthLayout({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: ReactNode; footer?: ReactNode }) {
@@ -34,6 +35,7 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: strin
         </CardContent>
       </Card>
       {footer && <Box sx={{ mt: 3, textAlign: 'center' }}>{footer}</Box>}
+      <FooterLinks />
     </Box>
   );
 }

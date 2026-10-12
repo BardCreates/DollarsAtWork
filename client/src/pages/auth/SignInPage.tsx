@@ -45,6 +45,7 @@ export function SignInPage() {
     >
       <Box component="form" onSubmit={onSubmit} noValidate>
         <Stack spacing={2}>
+          {(location.state as { deleted?: boolean } | null)?.deleted && <Alert severity="success">Your account and all its data have been deleted.</Alert>}
           {signIn.isError && <Alert severity="error">{errorMessage(signIn.error)}</Alert>}
           <TextField
             label="Email"

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Box, Container } from '@mui/material';
 import { TopBar, TOP_BAR_HEIGHT } from './TopBar';
 import { TrialBanner } from './TrialBanner';
+import { FooterLinks } from '../pages/public/PublicLayout';
 
 /** Frame for every signed-in page: fixed top bar, trial banner, page content. */
 export function AppShell() {
@@ -13,6 +14,7 @@ export function AppShell() {
           <TrialBanner />
           <Outlet />
         </Container>
+        <FooterLinks />
       </Box>
     </Box>
   );

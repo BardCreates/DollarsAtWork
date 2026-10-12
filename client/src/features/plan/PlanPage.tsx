@@ -154,7 +154,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
         </Alert>
       )}
 
-      <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.7fr) minmax(280px, 1fr)' } }}>
+      <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.7fr) minmax(280px, 1fr)' } }}>
         <Card>
           <CardContent>
             <Typography variant="h6">Categories</Typography>

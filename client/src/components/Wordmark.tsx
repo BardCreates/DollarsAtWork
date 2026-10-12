@@ -11,7 +11,7 @@ export function Wordmark({ size = 'medium' }: { size?: 'medium' | 'large' }) {
         component="img"
         src={mascot}
         alt=""
-        sx={{ height: large ? 72 : { xs: 40, sm: 48 }, width: 'auto' }}
+        sx={{ height: large ? { xs: 52, sm: 72 } : { xs: 40, sm: 48 }, width: 'auto' }}
       />
       <Typography
         component="span"
@@ -21,7 +21,7 @@ export function Wordmark({ size = 'medium' }: { size?: 'medium' | 'large' }) {
           letterSpacing: 1.5,
           lineHeight: 1.1,
           pt: '4px',
-          fontSize: large ? '2.1rem' : { xs: '1.25rem', sm: '1.6rem', md: '1.8rem' },
+          fontSize: large ? { xs: '1.5rem', sm: '2.1rem' } : { xs: '1.25rem', sm: '1.6rem', md: '1.8rem' },
           textShadow: '0 2px 8px rgba(25,195,125,0.12)',
           whiteSpace: 'nowrap',
         }}

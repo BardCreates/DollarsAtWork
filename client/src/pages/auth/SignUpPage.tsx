@@ -36,7 +36,7 @@ export function SignUpPage() {
   const generalError = signUp.isError && !emailError && !passwordError ? errorMessage(signUp.error) : undefined;
 
   const onSubmit = handleSubmit(({ email, password }) =>
-    signUp.mutate({ email, password }, { onSuccess: () => navigate('/plan', { replace: true }) }),
+    signUp.mutate({ email, password }, { onSuccess: () => navigate('/welcome', { replace: true }) }),
   );
 
   return (
@@ -83,6 +83,17 @@ export function SignUpPage() {
           <Button type="submit" variant="contained" size="large" disabled={signUp.isPending}>
             {signUp.isPending ? 'Creating your account…' : 'Create account'}
           </Button>
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+            By creating an account you agree to our{' '}
+            <Link component={RouterLink} to="/terms">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link component={RouterLink} to="/privacy">
+              Privacy Policy
+            </Link>
+            .
+          </Typography>
         </Stack>
       </Box>
     </AuthLayout>
