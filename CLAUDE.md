@@ -18,7 +18,9 @@ and decisions already made. Don't re-ask decided questions.
 - Phase 4 (Debt module) is built and verified: debts, strategy, payoff figures, chart, schedule.
 - Phase 5 (Savings module) is built and verified: goals, priority/percent split, on-track check, emergency fund starter, timeline.
 - Phase 6 (Investments module) is built and verified: accounts, employer match, split that must total 100%, growth chart.
-- Next: Phase 7 (Dashboard). Work one phase at a time, in the order in `docs/PLAN.md`.
+- Phase 7 (Dashboard) is built: net worth + slider, projection chart, milestones, cards, other items, assumptions,
+  monthly check-in. Not yet browser-checked: today's dollars toggle, Assumptions and Other items dialogs, phone width.
+- Next: finish verifying Phase 7, then Phase 8 (Trial and billing; needs Stripe test keys from the owner).
 
 ## Commands (Windows / PowerShell, run from repo root)
 

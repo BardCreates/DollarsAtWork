@@ -29,6 +29,14 @@ public class Plan
     public string Currency { get; set; } = "USD";
     public DebtStrategy DebtStrategy { get; set; } = DebtStrategy.Snowball;
     public SavingsSplitMode SavingsSplitMode { get; set; } = SavingsSplitMode.Priority;
+    /// <summary>Where the debt budget goes once every debt is paid.</summary>
+    public FreedMoneyDestination DebtDoneDestination { get; set; } = FreedMoneyDestination.Investments;
+    /// <summary>Where the savings amount goes once every goal is full.</summary>
+    public FreedMoneyDestination SavingsDoneDestination { get; set; } = FreedMoneyDestination.Investments;
+    /// <summary>Yearly inflation as a percent, used for "today's dollars".</summary>
+    public decimal InflationRate { get; set; } = 3m;
+    /// <summary>Expected yearly raise as a percent.</summary>
+    public decimal IncomeGrowthRate { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
@@ -141,6 +149,60 @@ public class InvestmentAccount
     /// <summary>The match applies to contributions up to this percent of income. Null means no cap.</summary>
     public decimal? MatchLimitPercent { get; set; }
     public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
+/// <summary>Where a monthly amount goes once its own job is finished.</summary>
+public enum FreedMoneyDestination
+{
+    Investments = 0,
+    Savings = 1,
+    Debt = 2,
+    /// <summary>Back to unplanned money; no longer projected.</summary>
+    Remaining = 3,
+}
+
+public enum OtherItemKind
+{
+    Asset = 0,
+    Liability = 1,
+}
+
+public enum OtherItemType
+{
+    Home = 0,
+    Vehicle = 1,
+    Cash = 2,
+    Valuables = 3,
+    Business = 4,
+    Loan = 5,
+    Other = 6,
+}
+
+/// <summary>Something owned or owed that isn't tracked month by month, such as a home or a car.</summary>
+public class OtherItem
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    public OtherItemKind Kind { get; set; }
+    public OtherItemType Type { get; set; }
+    public decimal Value { get; set; }
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
+/// <summary>Net worth as confirmed at a monthly check-in. One per calendar month.</summary>
+public class NetWorthSnapshot
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public DateOnly Date { get; set; }
+    public decimal Assets { get; set; }
+    public decimal Liabilities { get; set; }
+    public decimal NetWorth { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }

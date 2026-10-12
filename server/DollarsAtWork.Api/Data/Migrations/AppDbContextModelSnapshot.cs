@@ -241,6 +241,88 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("InvestmentAccounts");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.NetWorthSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Assets")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Liabilities")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal>("NetWorth")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("NetWorthSnapshots");
+                });
+
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.OtherItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "SortOrder");
+
+                    b.ToTable("OtherItems");
+                });
+
             modelBuilder.Entity("DollarsAtWork.Api.Domain.Plan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -255,6 +337,13 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
 
+                    b.Property<string>("DebtDoneDestination")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Investments");
+
                     b.Property<string>("DebtStrategy")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -262,9 +351,26 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Snowball");
 
+                    b.Property<decimal>("IncomeGrowthRate")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal>("InflationRate")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)")
+                        .HasDefaultValue(3m);
+
                     b.Property<decimal>("MonthlyIncome")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
+
+                    b.Property<string>("SavingsDoneDestination")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Investments");
 
                     b.Property<string>("SavingsSplitMode")
                         .IsRequired()
@@ -537,6 +643,24 @@ namespace DollarsAtWork.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("DollarsAtWork.Api.Domain.InvestmentAccount", b =>
+                {
+                    b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.NetWorthSnapshot", b =>
+                {
+                    b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.OtherItem", b =>
                 {
                     b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
                         .WithMany()

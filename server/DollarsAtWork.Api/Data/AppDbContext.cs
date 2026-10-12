@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Debt> Debts => Set<Debt>();
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
     public DbSet<InvestmentAccount> InvestmentAccounts => Set<InvestmentAccount>();
+    public DbSet<OtherItem> OtherItems => Set<OtherItem>();
+    public DbSet<NetWorthSnapshot> NetWorthSnapshots => Set<NetWorthSnapshot>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -29,6 +31,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.HasIndex(p => p.UserId).IsUnique();
             e.Property(p => p.Currency).HasMaxLength(3);
+            e.Property(p => p.DebtDoneDestination).HasConversion<string>().HasMaxLength(20).HasDefaultValue(FreedMoneyDestination.Investments);
+            e.Property(p => p.SavingsDoneDestination).HasConversion<string>().HasMaxLength(20).HasDefaultValue(FreedMoneyDestination.Investments);
+            e.Property(p => p.InflationRate).HasDefaultValue(3m);
             e.Property(p => p.SavingsSplitMode).HasConversion<string>().HasMaxLength(20).HasDefaultValue(SavingsSplitMode.Priority);
             e.Property(p => p.DebtStrategy).HasConversion<string>().HasMaxLength(20).HasDefaultValue(DebtStrategy.Snowball);
             e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
@@ -71,6 +76,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(a => a.Type).HasConversion<string>().HasMaxLength(20);
             e.HasIndex(a => new { a.UserId, a.SortOrder });
             e.HasOne<AppUser>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<OtherItem>(e =>
+        {
+            e.Property(i => i.Name).HasMaxLength(60);
+            e.Property(i => i.Kind).HasConversion<string>().HasMaxLength(20);
+            e.Property(i => i.Type).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(i => new { i.UserId, i.SortOrder });
+            e.HasOne<AppUser>().WithMany().HasForeignKey(i => i.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<NetWorthSnapshot>(e =>
+        {
+            e.HasIndex(s => new { s.UserId, s.Date }).IsUnique();
+            e.HasOne<AppUser>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Subscription>(e =>

@@ -4,6 +4,8 @@ import { formatMoney, formatMoneyCompact } from '../../lib/money';
 import { brand } from '../../theme';
 import type { YearPoint } from './investments';
 
+const legendOrder = ['contributed', 'matched', 'growth'];
+
 /** What you put in, what your employer adds and what growth adds, year by year. */
 export function GrowthChart({ years }: { years: YearPoint[] }) {
   const theme = useTheme();
@@ -36,7 +38,7 @@ export function GrowthChart({ years }: { years: YearPoint[] }) {
             contentStyle={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10 }}
             labelStyle={{ color: theme.palette.text.secondary }}
           />
-          <Legend wrapperStyle={{ fontSize: 13, color: theme.palette.text.secondary }} />
+          <Legend wrapperStyle={{ fontSize: 13, color: theme.palette.text.secondary }} itemSorter={(item) => legendOrder.indexOf(String(item.dataKey))} />
           <Area type="monotone" dataKey="contributed" name="You put in" stackId="value" stroke={brand.blue} fill={brand.blue} fillOpacity={0.4} />
           {hasMatch && <Area type="monotone" dataKey="matched" name="Employer match" stackId="value" stroke={brand.yellow} fill={brand.yellow} fillOpacity={0.4} />}
           <Area type="monotone" dataKey="growth" name="Growth" stackId="value" stroke={brand.green} fill={brand.green} fillOpacity={0.4} />

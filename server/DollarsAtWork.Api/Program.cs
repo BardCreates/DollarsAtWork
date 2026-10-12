@@ -5,6 +5,7 @@ using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Auth;
 using DollarsAtWork.Api.Features.Debts;
 using DollarsAtWork.Api.Features.Investments;
+using DollarsAtWork.Api.Features.NetWorth;
 using DollarsAtWork.Api.Features.Plan;
 using DollarsAtWork.Api.Features.Savings;
 using Microsoft.AspNetCore.Identity;
@@ -107,6 +108,7 @@ api.MapPlanEndpoints();
 api.MapDebtsEndpoints();
 api.MapSavingsEndpoints();
 api.MapInvestmentsEndpoints();
+api.MapNetWorthEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
 app.MapFallbackToFile("index.html");
