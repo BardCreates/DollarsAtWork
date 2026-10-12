@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Debt> Debts => Set<Debt>();
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
+    public DbSet<InvestmentAccount> InvestmentAccounts => Set<InvestmentAccount>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -62,6 +63,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(g => g.Name).HasMaxLength(60);
             e.HasIndex(g => new { g.UserId, g.Priority });
             e.HasOne<AppUser>().WithMany().HasForeignKey(g => g.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<InvestmentAccount>(e =>
+        {
+            e.Property(a => a.Name).HasMaxLength(60);
+            e.Property(a => a.Type).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(a => new { a.UserId, a.SortOrder });
+            e.HasOne<AppUser>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Subscription>(e =>

@@ -7,10 +7,11 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { ConfirmEmailPage } from './pages/auth/ConfirmEmailPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { InvestPage, ToolsPage } from './pages/ModulePages';
+import { ToolsPage } from './pages/ModulePages';
 import { PlanPage } from './features/plan/PlanPage';
 import { DebtPage } from './features/debt/DebtPage';
 import { SavingsPage } from './features/savings/SavingsPage';
+import { InvestPage } from './features/invest/InvestPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 

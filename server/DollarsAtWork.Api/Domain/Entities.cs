@@ -114,6 +114,37 @@ public class SavingsGoal
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
+public enum InvestmentAccountType
+{
+    Retirement401k = 0,
+    Ira = 1,
+    RothIra = 2,
+    Brokerage = 3,
+    Hsa = 4,
+    Other = 5,
+}
+
+/// <summary>An investment account. The balance changes only when the user updates it.</summary>
+public class InvestmentAccount
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    public InvestmentAccountType Type { get; set; }
+    public decimal Balance { get; set; }
+    /// <summary>Expected yearly return as a percent: 7 means 7%.</summary>
+    public decimal ExpectedReturn { get; set; }
+    /// <summary>Share of the monthly investment amount. All accounts together total 100.</summary>
+    public decimal SharePercent { get; set; }
+    /// <summary>Employer adds this percent of each contribution. Null means no match.</summary>
+    public decimal? MatchPercent { get; set; }
+    /// <summary>The match applies to contributions up to this percent of income. Null means no cap.</summary>
+    public decimal? MatchLimitPercent { get; set; }
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 public enum SubscriptionStatus
 {
     Trialing = 0,

@@ -11,7 +11,7 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Sign up, sign in, sign out, forgot/reset password, confirm email (emails print to the API console for now)
 - Every new account gets a plan, the three built-in categories and a 30-day free trial (no card)
 - The app shell in the original look: dark theme, mascot, top navigation, trial banner
-- Placeholder pages for Invest and Tools
+- A placeholder page for Tools
 
 ## What's in Phase 2
 
@@ -44,6 +44,13 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Progress bars, the month each goal is reached, and "on track" or "needs about $X/month more" for dated goals
 - An emergency fund starter sized at 3 or 6 months of the plan's expenses
 - A timeline chart of every goal's balance
+
+## What's in Phase 6
+
+- Invest page: accounts with a type, balance, expected yearly return and optional employer match
+- A split editor for how the monthly amount is shared; the shares must total 100%
+- What it could be worth in 5, 10, 20 and 30 years, split into what you put in, employer match and growth
+- A contributions-vs-growth chart
 
 ## Folder layout
 
