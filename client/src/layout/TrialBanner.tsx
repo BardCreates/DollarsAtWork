@@ -1,0 +1,53 @@
+import { Link as RouterLink } from 'react-router-dom';
+import { Alert, Box, Button } from '@mui/material';
+import { useMe } from '../auth/auth';
+
+/** Shown under the top bar on every page while the account is not fully paid up. */
+export function TrialBanner() {
+  const banner = useBannerContent();
+  return banner ? <Box sx={{ mb: 3 }}>{banner}</Box> : null;
+}
+
+function useBannerContent() {
+  const { data: me } = useMe();
+  if (!me) return null;
+  const { access } = me;
+
+  const subscribe = (
+    <Button component={RouterLink} to="/profile" color="inherit" size="small" variant="outlined">
+      Subscribe
+    </Button>
+  );
+
+  switch (access.status) {
+    case 'Trialing': {
+      const days = access.trialDaysLeft;
+      const severity = days <= 7 ? 'warning' : 'info';
+      return (
+        <Alert severity={severity} action={subscribe}>
+          {days === 1 ? '1 day' : `${days} days`} left in your free trial.
+        </Alert>
+      );
+    }
+    case 'PastDue':
+      return (
+        <Alert severity="warning" action={subscribe}>
+          Your last payment didn't go through. Update your card to keep full access.
+        </Alert>
+      );
+    case 'Canceled':
+      return (
+        <Alert severity="info" action={subscribe}>
+          Your subscription ends on {access.currentPeriodEnd ? new Date(access.currentPeriodEnd).toLocaleDateString() : 'the end of this period'}.
+        </Alert>
+      );
+    case 'Expired':
+      return (
+        <Alert severity="error" action={subscribe}>
+          Your access has ended. Your data is safe and visible, but editing is turned off until you subscribe.
+        </Alert>
+      );
+    default:
+      return null;
+  }
+}

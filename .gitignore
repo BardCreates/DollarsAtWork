@@ -1,0 +1,22 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+server/DollarsAtWork.Api/wwwroot/
+
+# Node
+node_modules/
+client/dist/
+*.tsbuildinfo
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.env
+.env.*
