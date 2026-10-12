@@ -13,7 +13,9 @@ and decisions already made. Don't re-ask decided questions.
   migration applied, auth flow tested end to end against the API.
 - Phase 2 (Planning) is built and verified: income, categories (add/rename/delete with undo/drag), Remaining,
   donut, read-only for expired accounts. Not built yet: the dashboard's over-allocated warning (Phase 7).
-- Next: Phase 3 (Projection engine). Work one phase at a time, in the order in `docs/PLAN.md`.
+- Phase 3 (Projection engine) is built: `client/src/lib/projection/`, 35 Vitest tests with hand-checked numbers.
+  Nothing calls it yet; the Debt, Savings and Invest modules and the dashboard will.
+- Next: Phase 4 (Debt module). Work one phase at a time, in the order in `docs/PLAN.md`.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -27,6 +29,7 @@ cd client
 npm install
 npm run dev          # http://localhost:5173, proxies /api to the API
 npm run typecheck
+npm test             # Vitest, runs once
 npm run build        # outputs into server/DollarsAtWork.Api/wwwroot
 ```
 
@@ -49,6 +52,7 @@ client/src/
   layout/                 TopBar, TrialBanner, AppShell
   components/             shared UI (PageHeader, Wordmark, ComingSoon, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
+  lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
   pages/                  screens; new modules go in client/src/features/<feature>/
 docs/PLAN.md              product spec
@@ -73,9 +77,10 @@ docs/PLAN.md              product spec
 - Schema changes go through EF migrations. Never edit an applied migration.
 - Enums are stored as strings.
 
-**Projection engine** (Phase 3+)
+**Projection engine**
 - One pure TypeScript module in `client/src/lib/projection/`, no I/O, used by every module and the dashboard.
-- Every rule in PLAN.md "Projection engine" gets a Vitest test with hand-checked numbers.
+- Every rule in PLAN.md "Projection engine" gets a Vitest test with hand-checked numbers. Work the expected
+  numbers out by hand in a comment; never paste them from the engine's output.
 
 ## Conventions
 

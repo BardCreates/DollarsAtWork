@@ -21,6 +21,14 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - "Scale all to new income" after an income change, and a donut of where the money goes
 - Every change saves by itself; expired accounts can look but not edit
 
+## What's in Phase 3
+
+- The projection engine (`client/src/lib/projection`): one month-by-month simulation of savings goals, debt payoff
+  and investment growth, with money rolling forward when a debt is paid off or a goal is full
+- Options for today's dollars (inflation) and a yearly income raise
+- 35 tests with hand-checked numbers: `npm test` in `client/`
+- No screens use it yet; the Debt, Savings and Invest modules and the dashboard are next
+
 ## Folder layout
 
 ```
@@ -37,6 +45,7 @@ client/                    React 19 + TypeScript + Vite + Material UI
   src/layout/              Top bar, trial banner, page frame
   src/features/plan/       The Plan page
   src/lib/money.ts         Money formatting and amount parsing
+  src/lib/projection/      The projection engine and its tests
   src/pages/               Screens
 ```
 

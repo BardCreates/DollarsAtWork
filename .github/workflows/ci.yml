@@ -17,7 +17,7 @@ jobs:
       - run: dotnet build server/DollarsAtWork.Api --no-restore --configuration Release -warnaserror
 
   client:
-    name: Client build
+    name: Client test and build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,4 +30,5 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build
