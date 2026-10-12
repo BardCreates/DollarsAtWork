@@ -11,7 +11,9 @@ and decisions already made. Don't re-ask decided questions.
 
 - Phase 1 (Foundation) is built and verified locally: API and client build clean, `InitialCreate`
   migration applied, auth flow tested end to end against the API.
-- Next: Phase 2 (Planning). Work one phase at a time, in the order in `docs/PLAN.md`.
+- Phase 2 (Planning) is built and verified: income, categories (add/rename/delete with undo/drag), Remaining,
+  donut, read-only for expired accounts. Not built yet: the dashboard's over-allocated warning (Phase 7).
+- Next: Phase 3 (Projection engine). Work one phase at a time, in the order in `docs/PLAN.md`.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -38,14 +40,16 @@ server/DollarsAtWork.Api/
   Program.cs              DI, Identity cookie auth, rate limiting, endpoint mapping
   Domain/Entities.cs      AppUser, Plan, Category (+CategoryKind), Subscription (+status logic)
   Data/AppDbContext.cs    single EF Core context; Data/Migrations/
-  Common/                 AccountSetup (new-account defaults), Email, CurrentUser
+  Common/                 AccountSetup (new-account defaults), Email, CurrentUser, FullAccess (.RequireFullAccess())
   Features/<Feature>/     <Feature>Endpoints.cs + <Feature>Contracts.cs (request/response records)
 client/src/
   theme.ts                the brand: colors, fonts, card style, chartPalette
   api/client.ts           the ONLY fetch wrapper (api.get/post/put/patch/delete, ApiError, errorMessage)
   auth/                   useMe + auth mutations, route guards, passwordRule
   layout/                 TopBar, TrialBanner, AppShell
-  components/             shared UI (PageHeader, Wordmark, ComingSoon, formHelpers.muiField)
+  components/             shared UI (PageHeader, Wordmark, ComingSoon, MoneyField, formHelpers.muiField)
+  lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
+  features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
   pages/                  screens; new modules go in client/src/features/<feature>/
 docs/PLAN.md              product spec
 ```

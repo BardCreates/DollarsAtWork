@@ -11,7 +11,15 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Sign up, sign in, sign out, forgot/reset password, confirm email (emails print to the API console for now)
 - Every new account gets a plan, the three built-in categories and a 30-day free trial (no card)
 - The app shell in the original look: dark theme, mascot, top navigation, trial banner
-- Placeholder pages for Plan, Savings, Debt, Invest and Tools
+- Placeholder pages for Savings, Debt, Invest and Tools
+
+## What's in Phase 2
+
+- Plan page: monthly income, Allocated and Remaining (red with "Over-allocated by" when you plan more than you earn)
+- Categories: add, rename, recolor, drag to reorder, delete with undo; amounts typed in dollars or as a percent of income
+- Savings, Debt and Investments are locked: they can be reordered and re-amounted, not renamed or deleted
+- "Scale all to new income" after an income change, and a donut of where the money goes
+- Every change saves by itself; expired accounts can look but not edit
 
 ## Folder layout
 
@@ -21,11 +29,14 @@ server/DollarsAtWork.Api   .NET 10 API (Identity cookie sign-in, EF Core, SQL Se
   Data/                    AppDbContext
   Common/                  Account setup, email, current-user helper
   Features/Auth/           Sign-up / sign-in endpoints
+  Features/Plan/           Income and category endpoints
 client/                    React 19 + TypeScript + Vite + Material UI
   src/theme.ts             The Dollars at Work look (colors, fonts, cards)
   src/api/                 One fetch wrapper for the API
   src/auth/                Signed-in user, sign-in hooks, route guards
   src/layout/              Top bar, trial banner, page frame
+  src/features/plan/       The Plan page
+  src/lib/money.ts         Money formatting and amount parsing
   src/pages/               Screens
 ```
 

@@ -10,6 +10,7 @@ export const brand = {
   red: '#ff5c5c', // debt, over budget
   blue: '#4aa8ff', // investments
   yellow: '#f5c518', // mascot hard hat: highlights, milestones
+  neutral: '#5b6470', // unallocated money (Remaining) in charts
   background: '#181a20',
   surface: '#23272f',
   cardGradient: 'linear-gradient(135deg, #2a2e35 0%, #1f232a 100%)',
@@ -19,6 +20,9 @@ export const brand = {
 
 /** Colors for chart series, in order. */
 export const chartPalette = [brand.green, brand.blue, brand.yellow, brand.pink, '#a78bfa', '#2dd4bf', '#fb923c', '#94a3b8'];
+
+/** Colors a user can pick for a plan category. */
+export const categoryColors = [...chartPalette, brand.red];
 
 export const theme = createTheme({
   palette: {

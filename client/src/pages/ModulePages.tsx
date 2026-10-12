@@ -1,21 +1,5 @@
 import { ComingSoon } from '../components/ComingSoon';
 
-export function PlanPage() {
-  return (
-    <ComingSoon
-      title="Plan"
-      subtitle="Give every dollar of your monthly income a job."
-      phase="Phase 2"
-      points={[
-        'Enter your monthly take-home income.',
-        'Add, rename, reorder and delete your own categories.',
-        'Savings, Debt and Investments are built in and feed their modules.',
-        'See what is allocated and what is left, live.',
-      ]}
-    />
-  );
-}
-
 export function SavingsPage() {
   return (
     <ComingSoon
