@@ -6,6 +6,31 @@ One monthly plan splits income into categories. Three protected categories (Savi
 feed their modules, and the dashboard projects net worth from that plan. The old code
 (`C:\Users\hwhor\budget-web`, `C:\Users\hwhor\budget-api`, `C:\Toolbox\DollarsAtWork`) is reference only.
 
+## What makes it stand out
+
+Budgeting apps track the past and planners model retirement; Dollars at Work shows what this month's plan
+turns into. The pitch: **plan your money, see your future, check in monthly.**
+
+| Signature feature | What the user sees | Next step |
+| --- | --- | --- |
+| Move a dollar, see your future | Live panel beside the Plan list: "Debt-free 7 months sooner · +$18,400 net worth in 10 years" | 1 |
+| Cost of a habit | Tap a category: "$250/month on Dining Out ≈ $43,000 in 10 years if invested" | 1 |
+| Freed money rolls forward | "When your Visa is paid off in June, its $150 moves to your car loan" | 2 |
+| Money timeline | Dashboard roadmap of milestones with dates; mascot cheers each one | 3 |
+| What-if scenarios | Up to 3 saved plan versions compared on one chart (debt-free date, net worth at 10/20/30 yrs, interest) | 4 |
+| Monthly report card | 60-second check-in: confirm balances → one-screen recap + email copy | 5 |
+| A personality | Hard-hat mascot + one plain, encouraging voice everywhere | 7 |
+
+Protect first if time runs short: Move a dollar, What-if scenarios, Monthly report card. All sit on the
+projection engine that's already built and tested.
+
+**Getting people in and keeping them**
+- Free public calculators (early payoff, debt snowball, DRIP, cost of a habit), no account; each ends with a trial call to action.
+- Under 3 minutes to a first projection: guided setup (income, three amounts, one debt) → dashboard with their 10-year number. Sample-data demo for visitors.
+- Private by design: no bank login; security page; data export.
+- Phone-first: installable PWA; Plan and Debt designed for phones first.
+- Price to test: $6–8/month or $49–69/year, 30-day no-card trial.
+
 ## How money flows
 
 ```
@@ -163,21 +188,29 @@ Money is `decimal(19,4)`. Every row except Identity's belongs to one user; delet
 | NetWorthSnapshots | Date, Assets, Liabilities, NetWorth | Written at check-in |
 | Subscriptions | Status, TrialEndsAt, CurrentPeriodEnd, PastDueSince, BillingInterval, StripeCustomerId, StripeSubscriptionId | Changed only by sign-up and Stripe webhooks |
 | ProcessedStripeEvents | EventId, ReceivedAt | Webhook idempotency |
+| Scenarios | Name, SortOrder, Overrides (JSON: income, category amounts, projection settings) | Up to 3 per user; never changes the real plan |
 
-## Build phases
+## Build status and next work
 
-1. **Foundation** — repo, server + client, database + first migration, sign-up/sign-in/reset, theme and app shell, CI. *(code written; first local build pending)*
-2. **Planning** — income, categories (add/rename/delete/drag), Remaining header, donut.
-3. **Projection engine** — TypeScript simulation + unit tests (debt payoff, savings, investment growth).
-4. **Debt module**
-5. **Savings module**
-6. **Investments module**
-7. **Dashboard** — net worth, slider, projection chart, milestones, other cards; other assets/liabilities; monthly check-in.
-8. **Trial and billing** — trial emails, Stripe Checkout, webhooks, portal, read-only mode.
-9. **Tools** — early payoff, DRIP, compound interest, loan comparison.
-10. **Launch** — pricing page, terms/privacy, mobile pass, error tracking, production deploy.
+**Built (Phases 1–10, verified):** foundation and sign-in, Plan, projection engine (35 tests), Debt, Savings,
+Investments, Dashboard (slider, milestones, monthly check-in), trial + Stripe billing (test mode), Tools
+(compound interest, early payoff, loan comparison, DRIP), launch basics (change email/password, export,
+delete account, /welcome walkthrough, pricing page, draft terms/privacy, 360px pass).
 
-## Decisions (all made Oct 11, 2026)
+**Waiting on the owner for launch:** hosting + domain, real email provider, error tracking, legal review of
+terms/privacy, final prices, production Stripe webhook.
+
+**Next: stand-out work, in this order**
+
+1. **Move a dollar** — live impact panel on the Plan page (debt-free date and 10-year net worth vs the saved plan) and cost-of-a-habit per category.
+2. **Rollover messages** — on Debt and Savings, say where each paid-off debt's or finished goal's money goes next, and when.
+3. **Money timeline** — dashboard milestones become a dated roadmap with mascot celebrations (confetti) as each nears.
+4. **What-if scenarios** — up to 3 saved plan versions (new Scenarios table) compared on one chart: debt-free date, net worth at 10/20/30 years, interest paid.
+5. **Monthly report card** — extend the check-in with a one-screen recap of the month and an email copy.
+6. **Public calculators and demo** — Tools calculators open to signed-out visitors, add cost-of-a-habit, each ends with a trial call to action; sample-data demo; tighten /welcome so a new user sees their own 10-year number in under 3 minutes.
+7. **Launch polish** — installable PWA, security page ("no bank login"), voice pass so all copy sounds like the mascot.
+
+## Decisions (Oct 11–12, 2026)
 
 - Price: placeholder monthly + annual prices in Stripe test mode for now.
 - Trial: 30 days, no card.
@@ -187,3 +220,6 @@ Money is `decimal(19,4)`. Every row except Identity's belongs to one user; delet
 - No Google sign-in in version 1.
 - Home, car and other assets count toward net worth (manual list).
 - Stay on .NET + SQL Server.
+- Focus (Oct 12): compete on the plan-to-future connection, not on tracking.
+- No bank linking in version 1; "no bank login" is part of the pitch. Revisit only as a paid add-on if paying users ask.
+- Spending tracker after launch: planned vs actual per category, manual entry or bank CSV import.

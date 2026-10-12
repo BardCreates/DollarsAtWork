@@ -31,6 +31,16 @@ and decisions already made. Don't re-ask decided questions.
   legal review of `client/src/pages/public/LegalPages.tsx` (fill the [bracketed] placeholders, set DRAFT to false),
   final prices, Managed Payments on or off, registering the production webhook endpoint.
 
+- Next: the stand-out work in PLAN.md "Build status and next work", steps 1–7, in order, one step at a time.
+
+## What we compete on
+
+The edge is connecting this month's plan to future net worth: the live "move a dollar" panel, what-if
+scenarios, the money timeline and the monthly report card (PLAN.md "What makes it stand out").
+When a design choice comes up, favor whatever makes that connection clearer and faster.
+Not in version 1: bank linking (no Plaid) and transaction tracking. Don't add them.
+The pitch is "private by design: no bank login".
+
 ## Commands (Windows / PowerShell, run from repo root)
 
 ```powershell
