@@ -116,6 +116,8 @@ export interface MonthPoint {
   /** Money invested while there were no accounts to put it in. Grows at the default return. */
   unassignedInvestments: number;
 
+  /** What each goal received this month, in input order. Always actual dollars. */
+  goalDeposits: number[];
   /** What happened to each debt this month. Always actual dollars, never inflation-adjusted. */
   debtPayments: number[];
   debtInterest: number[];

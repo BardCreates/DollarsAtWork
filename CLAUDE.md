@@ -16,7 +16,8 @@ and decisions already made. Don't re-ask decided questions.
 - Phase 3 (Projection engine) is built: `client/src/lib/projection/`, 35 Vitest tests with hand-checked numbers.
   Nothing calls it yet; the Debt, Savings and Invest modules and the dashboard will.
 - Phase 4 (Debt module) is built and verified: debts, strategy, payoff figures, chart, schedule.
-- Next: Phase 5 (Savings module). Work one phase at a time, in the order in `docs/PLAN.md`.
+- Phase 5 (Savings module) is built and verified: goals, priority/percent split, on-track check, emergency fund starter, timeline.
+- Next: Phase 6 (Investments module). Work one phase at a time, in the order in `docs/PLAN.md`.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -61,6 +62,7 @@ client/src/
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule
+  features/savings/       Savings page: savings.ts (query, mutations, useSavingsProjection), goal list, dialog, timeline
   features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
   pages/                  screens; new modules go in client/src/features/<feature>/
 docs/PLAN.md              product spec

@@ -11,7 +11,7 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Sign up, sign in, sign out, forgot/reset password, confirm email (emails print to the API console for now)
 - Every new account gets a plan, the three built-in categories and a 30-day free trial (no card)
 - The app shell in the original look: dark theme, mascot, top navigation, trial banner
-- Placeholder pages for Savings, Invest and Tools
+- Placeholder pages for Invest and Tools
 
 ## What's in Phase 2
 
@@ -36,6 +36,14 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Debt-free date, interest you'll pay, and what you save compared with paying minimums only
 - Balance-over-time chart and a month-by-month payment schedule
 - A warning when the plan's Debt amount doesn't cover the minimum payments
+
+## What's in Phase 5
+
+- Savings page: goals with a target, a balance, and an optional target date and APY
+- Fill goals in priority order (drag to reorder) or split by percent; a finished goal passes its money on
+- Progress bars, the month each goal is reached, and "on track" or "needs about $X/month more" for dated goals
+- An emergency fund starter sized at 3 or 6 months of the plan's expenses
+- A timeline chart of every goal's balance
 
 ## Folder layout
 

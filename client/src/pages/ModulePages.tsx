@@ -1,16 +1,5 @@
 import { ComingSoon } from '../components/ComingSoon';
 
-export function SavingsPage() {
-  return (
-    <ComingSoon
-      title="Savings"
-      subtitle="Turn your Savings allocation into finished goals."
-      phase="Phase 5"
-      points={['Goals with targets and dates.', 'Fill by priority or split by percent.', 'Projected completion dates and an emergency fund template.']}
-    />
-  );
-}
-
 export function InvestPage() {
   return (
     <ComingSoon

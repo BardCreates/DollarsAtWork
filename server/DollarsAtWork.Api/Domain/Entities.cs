@@ -28,6 +28,7 @@ public class Plan
     public decimal MonthlyIncome { get; set; }
     public string Currency { get; set; } = "USD";
     public DebtStrategy DebtStrategy { get; set; } = DebtStrategy.Snowball;
+    public SavingsSplitMode SavingsSplitMode { get; set; } = SavingsSplitMode.Priority;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
@@ -81,6 +82,34 @@ public class Debt
     public decimal Apr { get; set; }
     public decimal MinPayment { get; set; }
     public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
+/// <summary>How the monthly savings amount is shared between goals.</summary>
+public enum SavingsSplitMode
+{
+    /// <summary>Fill goals top to bottom.</summary>
+    Priority = 0,
+    /// <summary>Each goal gets its SharePercent.</summary>
+    Percent = 1,
+}
+
+/// <summary>Something being saved for. The balance changes only when the user updates it.</summary>
+public class SavingsGoal
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    public decimal TargetAmount { get; set; }
+    public decimal CurrentBalance { get; set; }
+    public DateOnly? TargetDate { get; set; }
+    /// <summary>Annual percentage yield as a percent: 4.5 means 4.5%.</summary>
+    public decimal Apy { get; set; }
+    /// <summary>Position in the list; lower fills first in Priority mode.</summary>
+    public int Priority { get; set; }
+    /// <summary>Share of the monthly savings amount in Percent mode.</summary>
+    public decimal SharePercent { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }

@@ -58,6 +58,13 @@ export function project(input: ProjectionInput): ProjectionResult {
   let investmentGrowthToDate = 0;
   const warnings = { debtBudgetBelowMinimums: false, investingWithoutAccounts: false };
 
+  /** What each goal has received so far this month. */
+  let deposits = goals.map(() => 0);
+  const deposit = (i: number, amount: number) => {
+    goals[i] += amount;
+    deposits[i] += amount;
+  };
+
   /** Shares a savings amount among the goals and returns what no goal could take. */
   const fillGoals = (amount: number): number => {
     let left = amount;
@@ -65,7 +72,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     if (savingsMode === 'priority') {
       for (let i = 0; i < goals.length && left > 0; i++) {
         const given = Math.min(goalNeed(i), left);
-        goals[i] += given;
+        deposit(i, given);
         left -= given;
       }
       return left;
@@ -81,7 +88,7 @@ export function project(input: ProjectionInput): ProjectionResult {
       const budget = left;
       open.forEach((i, position) => {
         const given = Math.min(goalNeed(i), budget * weights[position]);
-        goals[i] += given;
+        deposit(i, given);
         left -= given;
       });
     }
@@ -153,6 +160,7 @@ export function project(input: ProjectionInput): ProjectionResult {
       debtBalances: [...debts],
       accountBalances: [...accounts],
       unassignedInvestments,
+      goalDeposits: deposits,
       debtPayments: payments,
       debtInterest: interest,
       interestPaidToDate,
@@ -169,6 +177,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     const income = input.monthlyIncome * Math.pow(1 + raise, Math.floor(month / 12));
 
     // 1. Savings
+    deposits = goals.map(() => 0);
     goals.forEach((balance, i) => {
       goals[i] = balance * (1 + goalRates[i]);
     });
@@ -247,6 +256,20 @@ export function project(input: ProjectionInput): ProjectionResult {
 export function firstMonthNetWorthReaches(result: ProjectionResult, amount: number): number | null {
   const point = result.points.find((p) => p.netWorth >= amount);
   return point ? point.month : null;
+}
+
+/**
+ * The level monthly deposit that takes a goal from its balance to its target in a number of months,
+ * allowing for interest. 0 when it gets there without deposits; Infinity when there is no time left.
+ */
+export function monthlyNeededForGoal(goal: { target: number; balance: number; apy?: number }, months: number): number {
+  if (goal.balance >= goal.target) return 0;
+  if (months <= 0) return Infinity;
+  const rate = monthlyRate(goal.apy ?? 0);
+  const growth = Math.pow(1 + rate, months);
+  const shortfall = goal.target - goal.balance * growth;
+  if (shortfall <= 0) return 0;
+  return rate === 0 ? shortfall / months : (shortfall * rate) / (growth - 1);
 }
 
 /** Turns percent shares into fractions that add up to 1. With no usable shares, everyone gets an equal part. */

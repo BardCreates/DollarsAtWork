@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { firstMonthNetWorthReaches, project } from './engine';
+import { firstMonthNetWorthReaches, monthlyNeededForGoal, project } from './engine';
 import type { ProjectionInput } from './types';
 
 /**
@@ -413,6 +413,40 @@ describe('rule 5: yearly income raise', () => {
     });
     // 11 months × 150, then one month × 156.
     expect(points[12].matchedToDate).toBeCloseTo(11 * 150 + 156, 6);
+  });
+});
+
+describe('what a goal gets and needs each month', () => {
+  it('reports what each goal received each month', () => {
+    const { points } = project(
+      plan({
+        months: 2,
+        savingsMonthly: 500,
+        goals: [
+          { id: 'emergency', target: 1_000, balance: 400 },
+          { id: 'car', target: 5_000, balance: 0 },
+        ],
+      }),
+    );
+    expect(points[0].goalDeposits).toEqual([0, 0]);
+    expect(points[1].goalDeposits).toEqual([500, 0]);
+    expect(points[2].goalDeposits).toEqual([100, 400]);
+  });
+
+  it('with no interest, the gap is split evenly over the months', () => {
+    expect(monthlyNeededForGoal({ target: 1_200, balance: 0 }, 12)).toBeCloseTo(100, 6);
+    expect(monthlyNeededForGoal({ target: 1_200, balance: 600 }, 4)).toBeCloseTo(150, 6);
+  });
+
+  it('interest lowers what is needed', () => {
+    // From the savings test above: 1,000 at 1% a month plus 100 a month is 1,221.10 after 2 months.
+    expect(monthlyNeededForGoal({ target: 1_221.1, balance: 1_000, apy: ONE_PERCENT_A_MONTH }, 2)).toBeCloseTo(100, 6);
+  });
+
+  it('needs nothing when the goal is full or interest alone gets there, and cannot be done with no time left', () => {
+    expect(monthlyNeededForGoal({ target: 500, balance: 500 }, 6)).toBe(0);
+    expect(monthlyNeededForGoal({ target: 1_010, balance: 1_000, apy: ONE_PERCENT_A_MONTH }, 1)).toBe(0);
+    expect(monthlyNeededForGoal({ target: 500, balance: 100 }, 0)).toBe(Infinity);
   });
 });
 
