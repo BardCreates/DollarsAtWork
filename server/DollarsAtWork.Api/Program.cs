@@ -3,6 +3,7 @@ using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Auth;
+using DollarsAtWork.Api.Features.Plan;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -99,6 +100,7 @@ app.UseAuthorization();
 var api = app.MapGroup("/api");
 api.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 api.MapAuthEndpoints();
+api.MapPlanEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
 app.MapFallbackToFile("index.html");
