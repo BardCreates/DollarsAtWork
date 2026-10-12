@@ -148,6 +148,43 @@ public class BillingService(
         }
     }
 
+    /// <summary>
+    /// Ends billing for an account that is being deleted: removing the Stripe customer cancels its subscriptions at once.
+    /// Throws if Stripe can't be reached, so the caller can refuse to delete.
+    /// </summary>
+    public async Task CancelForDeletedAccountAsync(Guid userId, CancellationToken ct)
+    {
+        var customerId = await db.Subscriptions.Where(s => s.UserId == userId).Select(s => s.StripeCustomerId).SingleOrDefaultAsync(ct);
+        if (customerId is null || !IsConfigured)
+            return;
+
+        try
+        {
+            await new CustomerService(Client).DeleteAsync(customerId, cancellationToken: ct);
+        }
+        catch (StripeException ex) when (ex.StripeError?.Code == "resource_missing")
+        {
+            // Already gone on Stripe's side; nothing left to cancel.
+        }
+    }
+
+    /// <summary>Keeps Stripe's receipts going to the right address after an email change. Best effort.</summary>
+    public async Task UpdateCustomerEmailAsync(AppUser user, CancellationToken ct)
+    {
+        var customerId = await db.Subscriptions.Where(s => s.UserId == user.Id).Select(s => s.StripeCustomerId).SingleOrDefaultAsync(ct);
+        if (customerId is null || !IsConfigured)
+            return;
+
+        try
+        {
+            await new CustomerService(Client).UpdateAsync(customerId, new CustomerUpdateOptions { Email = user.Email }, cancellationToken: ct);
+        }
+        catch (StripeException ex)
+        {
+            logger.LogWarning(ex, "Couldn't update the Stripe email for customer {CustomerId}", customerId);
+        }
+    }
+
     private async Task OnCheckoutCompletedAsync(Stripe.Checkout.Session session, CancellationToken ct)
     {
         if (!Guid.TryParse(session.ClientReferenceId, out var userId) || session.SubscriptionId is null)

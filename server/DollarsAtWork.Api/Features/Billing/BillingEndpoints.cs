@@ -16,7 +16,7 @@ public static class BillingEndpoints
         var billing = api.MapGroup("/billing").WithTags("Billing");
 
         // These are open to expired accounts on purpose: subscribing is how they get access back.
-        billing.MapGet("/prices", GetPrices).RequireAuthorization();
+        billing.MapGet("/prices", GetPrices).AllowAnonymous();
         billing.MapPost("/checkout", StartCheckout).RequireAuthorization();
         billing.MapPost("/portal", OpenPortal).RequireAuthorization();
         billing.MapPost("/sync", Sync).RequireAuthorization();

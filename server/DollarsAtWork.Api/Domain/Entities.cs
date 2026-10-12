@@ -225,6 +225,16 @@ public enum TrialEmailStage
     Ended = 3,
 }
 
+/// <summary>
+/// Remembers that an email address has had its free trial, so deleting an account and signing up again
+/// doesn't give another one. Only a one-way hash of the address is kept, and it outlives the account.
+/// </summary>
+public class UsedTrial
+{
+    public string EmailHash { get; set; } = "";
+    public DateTimeOffset UsedAt { get; set; }
+}
+
 /// <summary>A Stripe webhook event that has been handled, so a repeat delivery is ignored.</summary>
 public class ProcessedStripeEvent
 {

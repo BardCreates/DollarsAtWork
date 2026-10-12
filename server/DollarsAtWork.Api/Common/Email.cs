@@ -53,6 +53,15 @@ public class AccountEmails(
             $"Someone asked to reset your password. If it was you, use this link within 24 hours:\n{link}\n\nIf it wasn't you, ignore this email.", ct);
     }
 
+    /// <summary>Sent to the NEW address: the change only happens when its owner follows the link.</summary>
+    public async Task SendEmailChangeAsync(AppUser user, string newEmail, CancellationToken ct = default)
+    {
+        var token = Encode(await users.GenerateChangeEmailTokenAsync(user, newEmail));
+        var link = $"{BaseUrl}/confirm-email-change?userId={user.Id}&email={Uri.EscapeDataString(newEmail)}&token={token}";
+        await sender.SendAsync(newEmail, "Confirm your new Dollars at Work email",
+            $"Someone asked to use this address to sign in to Dollars at Work. If it was you, confirm it within 24 hours:\n{link}\n\nIf it wasn't you, ignore this email and nothing will change.", ct);
+    }
+
     public static string Encode(string token) => WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
     public static string? Decode(string? encoded)

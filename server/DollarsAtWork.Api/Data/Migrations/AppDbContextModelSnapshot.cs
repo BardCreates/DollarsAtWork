@@ -514,6 +514,20 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("Subscriptions");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.UsedTrial", b =>
+                {
+                    b.Property<string>("EmailHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("UsedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("EmailHash");
+
+                    b.ToTable("UsedTrials");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")

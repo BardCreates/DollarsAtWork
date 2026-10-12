@@ -55,7 +55,7 @@ public static class AuthEndpoints
             if (!created.Succeeded)
                 return Results.ValidationProblem(ToErrors(created));
 
-            setup.AddDefaults(user.Id);
+            await setup.AddDefaultsAsync(user.Id, email, ct);
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }

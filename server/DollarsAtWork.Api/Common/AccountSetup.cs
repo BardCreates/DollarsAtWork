@@ -1,5 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace DollarsAtWork.Api.Common;
 
@@ -13,10 +16,21 @@ public class AccountSetup(AppDbContext db, TimeProvider clock)
         (CategoryKind.Investment, "Investments", "#4aa8ff"),
     ];
 
-    /// <summary>Adds the defaults to the context. The caller saves, so it can share a transaction with user creation.</summary>
-    public void AddDefaults(Guid userId)
+    /// <summary>A one-way fingerprint of an email address, the same for "A@x.com" and "a@x.com ".</summary>
+    public static string HashEmail(string email) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(email.Trim().ToUpperInvariant())));
+
+    /// <summary>
+    /// Adds the defaults to the context. The caller saves, so it can share a transaction with user creation.
+    /// An email that has already had a trial starts with it used up: read-only until they subscribe.
+    /// </summary>
+    public async Task AddDefaultsAsync(Guid userId, string email, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
+        var emailHash = HashEmail(email);
+        var trialUsed = await db.UsedTrials.AnyAsync(t => t.EmailHash == emailHash, ct);
+        if (!trialUsed)
+            db.UsedTrials.Add(new UsedTrial { EmailHash = emailHash, UsedAt = now });
 
         db.Plans.Add(new Plan
         {
@@ -49,7 +63,9 @@ public class AccountSetup(AppDbContext db, TimeProvider clock)
             Id = Guid.NewGuid(),
             UserId = userId,
             Status = SubscriptionStatus.Trialing,
-            TrialEndsAt = now.AddDays(Subscription.TrialDays),
+            TrialEndsAt = trialUsed ? now : now.AddDays(Subscription.TrialDays),
+            // No "your trial has ended" email for a trial that never started.
+            TrialEmailStage = trialUsed ? TrialEmailStage.Ended : TrialEmailStage.None,
             CreatedAt = now,
             UpdatedAt = now,
         });
