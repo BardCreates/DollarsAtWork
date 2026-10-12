@@ -11,17 +11,6 @@ export function SavingsPage() {
   );
 }
 
-export function DebtPage() {
-  return (
-    <ComingSoon
-      title="Debt"
-      subtitle="Use your Debt allocation to pay everything off faster."
-      phase="Phase 4"
-      points={['Snowball, avalanche or your own order.', 'Debt-free date and full payment schedule.', 'Interest saved compared with paying minimums only.']}
-    />
-  );
-}
-
 export function InvestPage() {
   return (
     <ComingSoon

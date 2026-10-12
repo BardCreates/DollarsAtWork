@@ -139,6 +139,53 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.Debt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Apr")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("MinPayment")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "SortOrder");
+
+                    b.ToTable("Debts");
+                });
+
             modelBuilder.Entity("DollarsAtWork.Api.Domain.Plan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -152,6 +199,13 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("DebtStrategy")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Snowball");
 
                     b.Property<decimal>("MonthlyIncome")
                         .HasPrecision(19, 4)
@@ -354,6 +408,15 @@ namespace DollarsAtWork.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("DollarsAtWork.Api.Domain.Category", b =>
+                {
+                    b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.Debt", b =>
                 {
                     b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
                         .WithMany()

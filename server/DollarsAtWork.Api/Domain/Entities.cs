@@ -27,6 +27,7 @@ public class Plan
     public Guid UserId { get; set; }
     public decimal MonthlyIncome { get; set; }
     public string Currency { get; set; } = "USD";
+    public DebtStrategy DebtStrategy { get; set; } = DebtStrategy.Snowball;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
@@ -45,6 +46,43 @@ public class Category
     public DateTimeOffset UpdatedAt { get; set; }
 
     public bool IsBuiltIn => Kind != CategoryKind.Custom;
+}
+
+/// <summary>Which debt gets the money left after every minimum is paid.</summary>
+public enum DebtStrategy
+{
+    /// <summary>Smallest balance first.</summary>
+    Snowball = 0,
+    /// <summary>Highest APR first.</summary>
+    Avalanche = 1,
+    /// <summary>The user's own order (SortOrder).</summary>
+    Custom = 2,
+}
+
+public enum DebtType
+{
+    CreditCard = 0,
+    Auto = 1,
+    Student = 2,
+    Mortgage = 3,
+    Medical = 4,
+    Other = 5,
+}
+
+/// <summary>Something owed. The balance changes only when the user updates it.</summary>
+public class Debt
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    public DebtType Type { get; set; }
+    public decimal Balance { get; set; }
+    /// <summary>Annual percentage rate as a percent: 19.99 means 19.99%.</summary>
+    public decimal Apr { get; set; }
+    public decimal MinPayment { get; set; }
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }
 
 public enum SubscriptionStatus

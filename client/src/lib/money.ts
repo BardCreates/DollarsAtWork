@@ -41,3 +41,18 @@ export function parseMoneyInput(text: string, percentOf?: number): number | null
   const dollars = roundCents(isPercent ? ((percentOf ?? 0) * Number(digits)) / 100 : Number(digits));
   return dollars <= MAX_AMOUNT ? dollars : null;
 }
+
+const compact = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 });
+
+/** Short form for chart axes: $1.2K, $350K, $1.5M. */
+export function formatMoneyCompact(value: number): string {
+  return compact.format(value);
+}
+
+/** Reads a typed percent such as "19.99" or "19.99%". Returns null if it isn't one, or is above max. */
+export function parsePercentInput(text: string, max = 100): number | null {
+  const cleaned = text.replace(/[\s%]/g, '');
+  if (!/^(\d+\.?\d*|\.\d+)$/.test(cleaned)) return null;
+  const percent = Number(cleaned);
+  return percent <= max ? percent : null;
+}

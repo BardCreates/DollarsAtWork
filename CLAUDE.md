@@ -15,7 +15,8 @@ and decisions already made. Don't re-ask decided questions.
   donut, read-only for expired accounts. Not built yet: the dashboard's over-allocated warning (Phase 7).
 - Phase 3 (Projection engine) is built: `client/src/lib/projection/`, 35 Vitest tests with hand-checked numbers.
   Nothing calls it yet; the Debt, Savings and Invest modules and the dashboard will.
-- Next: Phase 4 (Debt module). Work one phase at a time, in the order in `docs/PLAN.md`.
+- Phase 4 (Debt module) is built and verified: debts, strategy, payoff figures, chart, schedule.
+- Next: Phase 5 (Savings module). Work one phase at a time, in the order in `docs/PLAN.md`.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -31,6 +32,10 @@ npm run dev          # http://localhost:5173, proxies /api to the API
 npm run typecheck
 npm test             # Vitest, runs once
 npm run build        # outputs into server/DollarsAtWork.Api/wwwroot
+
+# A second copy for testing, without touching the dev database or ports:
+#   API:    ConnectionStrings__Default=<other db>  dotnet <Release dll> --urls https://localhost:7190
+#   client: DAW_PORT=5174 DAW_API_URL=https://localhost:7190 npx vite
 ```
 
 Dev emails (confirm, reset) are logged to the API console, not sent.
@@ -43,16 +48,19 @@ server/DollarsAtWork.Api/
   Program.cs              DI, Identity cookie auth, rate limiting, endpoint mapping
   Domain/Entities.cs      AppUser, Plan, Category (+CategoryKind), Subscription (+status logic)
   Data/AppDbContext.cs    single EF Core context; Data/Migrations/
-  Common/                 AccountSetup (new-account defaults), Email, CurrentUser, FullAccess (.RequireFullAccess())
+  Common/                 AccountSetup (new-account defaults), Email, CurrentUser, FullAccess (.RequireFullAccess()),
+                          Validation (field checks -> ValidationProblem; use it in every new endpoint)
   Features/<Feature>/     <Feature>Endpoints.cs + <Feature>Contracts.cs (request/response records)
 client/src/
   theme.ts                the brand: colors, fonts, card style, chartPalette
   api/client.ts           the ONLY fetch wrapper (api.get/post/put/patch/delete, ApiError, errorMessage)
   auth/                   useMe + auth mutations, route guards, passwordRule
   layout/                 TopBar, TrialBanner, AppShell
-  components/             shared UI (PageHeader, Wordmark, ComingSoon, MoneyField, formHelpers.muiField)
+  components/             shared UI (PageHeader, Figure, PlanAmountBanner, Wordmark, ComingSoon, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
+  lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
+  features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule
   features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
   pages/                  screens; new modules go in client/src/features/<feature>/
 docs/PLAN.md              product spec

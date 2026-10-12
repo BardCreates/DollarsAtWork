@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<Debt> Debts => Set<Debt>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -26,6 +27,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.HasIndex(p => p.UserId).IsUnique();
             e.Property(p => p.Currency).HasMaxLength(3);
+            e.Property(p => p.DebtStrategy).HasConversion<string>().HasMaxLength(20).HasDefaultValue(DebtStrategy.Snowball);
             e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -43,6 +45,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasFilter("[Kind] <> 'Custom'");
 
             e.HasOne<AppUser>().WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Debt>(e =>
+        {
+            e.Property(d => d.Name).HasMaxLength(60);
+            e.Property(d => d.Type).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(d => new { d.UserId, d.SortOrder });
+            e.HasOne<AppUser>().WithMany().HasForeignKey(d => d.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Subscription>(e =>

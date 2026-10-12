@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useIsMutating } from '@tanstack/react-query';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Snackbar, Typography } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { Figure } from '../../components/Figure';
 import { PageHeader } from '../../components/PageHeader';
 import { MoneyField } from '../../components/MoneyField';
 import { errorMessage } from '../../api/client';
@@ -217,24 +218,6 @@ function PlanEditor({ plan }: { plan: Plan }) {
         </Alert>
       </Snackbar>
     </>
-  );
-}
-
-function Figure({ label, value, note, color = 'text.primary' }: { label: string; value: string; note?: ReactNode; color?: string }) {
-  return (
-    <Box sx={{ minWidth: 0 }}>
-      <Typography variant="body2" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="h5" color={color} sx={{ fontVariantNumeric: 'tabular-nums' }} noWrap>
-        {value}
-      </Typography>
-      {note && (
-        <Typography variant="caption" color="text.secondary">
-          {note}
-        </Typography>
-      )}
-    </Box>
   );
 }
 

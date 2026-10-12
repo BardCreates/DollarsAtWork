@@ -1,0 +1,143 @@
+import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../api/client';
+import { project, type DebtStrategy as EngineStrategy, type ProjectionResult } from '../../lib/projection';
+
+export type DebtType = 'CreditCard' | 'Auto' | 'Student' | 'Mortgage' | 'Medical' | 'Other';
+export type DebtStrategy = 'Snowball' | 'Avalanche' | 'Custom';
+
+export const debtTypeLabels: Record<DebtType, string> = {
+  CreditCard: 'Credit card',
+  Auto: 'Auto loan',
+  Student: 'Student loan',
+  Mortgage: 'Mortgage',
+  Medical: 'Medical',
+  Other: 'Other',
+};
+
+export const strategyInfo: Record<DebtStrategy, { label: string; description: string }> = {
+  Snowball: { label: 'Snowball', description: 'Extra money goes to the smallest balance first, for quick wins.' },
+  Avalanche: { label: 'Avalanche', description: 'Extra money goes to the highest APR first, which costs the least interest.' },
+  Custom: { label: 'Custom', description: 'Extra money follows your own order. Drag the debts to set it.' },
+};
+
+export interface Debt {
+  id: string;
+  name: string;
+  type: DebtType;
+  balance: number;
+  apr: number;
+  minPayment: number;
+  sortOrder: number;
+}
+
+export interface DebtsData {
+  strategy: DebtStrategy;
+  /** The plan's Debt category amount. Edited in Plan, never here. */
+  monthlyBudget: number;
+  debts: Debt[];
+}
+
+export type DebtFields = Omit<Debt, 'id' | 'sortOrder'>;
+
+export const debtsQueryKey = ['debts'] as const;
+
+export function useDebts() {
+  return useQuery({ queryKey: debtsQueryKey, queryFn: () => api.get<DebtsData>('/debts') });
+}
+
+function useDebtsCache() {
+  const queryClient = useQueryClient();
+  return {
+    change: (update: (data: DebtsData) => DebtsData) =>
+      queryClient.setQueryData<DebtsData>(debtsQueryKey, (data) => (data ? update(data) : data)),
+    changeNow: async (update: (data: DebtsData) => DebtsData) => {
+      await queryClient.cancelQueries({ queryKey: debtsQueryKey });
+      queryClient.setQueryData<DebtsData>(debtsQueryKey, (data) => (data ? update(data) : data));
+    },
+    reload: () => queryClient.invalidateQueries({ queryKey: debtsQueryKey }),
+  };
+}
+
+export function useAddDebt() {
+  const cache = useDebtsCache();
+  return useMutation({
+    mutationFn: (debt: DebtFields) => api.post<Debt>('/debts', debt),
+    onSuccess: (debt) => cache.change((data) => ({ ...data, debts: [...data.debts, debt] })),
+  });
+}
+
+export function useUpdateDebt() {
+  const cache = useDebtsCache();
+  return useMutation({
+    mutationFn: ({ id, changes }: { id: string; changes: Partial<DebtFields> }) => api.patch<Debt>(`/debts/${id}`, changes),
+    onSuccess: (debt) => cache.change((data) => ({ ...data, debts: data.debts.map((d) => (d.id === debt.id ? debt : d)) })),
+  });
+}
+
+export function useDeleteDebt() {
+  const cache = useDebtsCache();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/debts/${id}`),
+    onSuccess: (_, id) => cache.change((data) => ({ ...data, debts: data.debts.filter((d) => d.id !== id) })),
+  });
+}
+
+export function useReorderDebts() {
+  const cache = useDebtsCache();
+  return useMutation({
+    mutationFn: (ids: string[]) => api.put('/debts/order', { ids }),
+    onMutate: (ids) =>
+      cache.changeNow((data) => {
+        const byId = new Map(data.debts.map((d) => [d.id, d]));
+        return { ...data, debts: ids.flatMap((id, index) => (byId.has(id) ? [{ ...byId.get(id)!, sortOrder: index }] : [])) };
+      }),
+    onError: cache.reload,
+  });
+}
+
+export function useSetDebtStrategy() {
+  const cache = useDebtsCache();
+  return useMutation({
+    mutationFn: (strategy: DebtStrategy) => api.put('/debts/strategy', { strategy }),
+    onMutate: (strategy) => cache.changeNow((data) => ({ ...data, strategy })),
+    onError: cache.reload,
+  });
+}
+
+/** The furthest the projection looks ahead: 40 years. */
+export const DEBT_HORIZON_MONTHS = 480;
+
+export interface DebtProjection {
+  /** Following the plan: the monthly budget and the chosen strategy. */
+  planned: ProjectionResult;
+  /** Paying only each debt's minimum, for comparison. */
+  minimumsOnly: ProjectionResult;
+  totalDebt: number;
+  minimumsDue: number;
+}
+
+/** Runs the shared projection engine for the debts alone. */
+export function useDebtProjection(data: DebtsData): DebtProjection {
+  return useMemo(() => {
+    const input = {
+      months: DEBT_HORIZON_MONTHS,
+      monthlyIncome: 0,
+      savingsMonthly: 0,
+      investmentsMonthly: 0,
+      debtMonthly: data.monthlyBudget,
+      goals: [],
+      accounts: [],
+      debts: data.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment })),
+      debtStrategy: data.strategy.toLowerCase() as EngineStrategy,
+      // Only the debts matter on this page; what happens to the money afterwards is the dashboard's job.
+      debtDoneDestination: 'remaining' as const,
+    };
+    return {
+      planned: project(input),
+      minimumsOnly: project({ ...input, minimumsOnly: true }),
+      totalDebt: data.debts.reduce((sum, d) => sum + d.balance, 0),
+      minimumsDue: data.debts.reduce((sum, d) => sum + Math.min(d.minPayment, d.balance), 0),
+    };
+  }, [data]);
+}
