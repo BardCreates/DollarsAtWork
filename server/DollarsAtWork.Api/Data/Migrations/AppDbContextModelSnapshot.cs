@@ -393,6 +393,20 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("Plans");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.ProcessedStripeEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("ProcessedStripeEvents");
+                });
+
             modelBuilder.Entity("DollarsAtWork.Api.Domain.SavingsGoal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -473,6 +487,13 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<string>("StripeSubscriptionId")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("TrialEmailStage")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("None");
 
                     b.Property<DateTimeOffset>("TrialEndsAt")
                         .HasColumnType("datetimeoffset");

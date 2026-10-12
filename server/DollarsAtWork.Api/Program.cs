@@ -3,6 +3,7 @@ using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Auth;
+using DollarsAtWork.Api.Features.Billing;
 using DollarsAtWork.Api.Features.Debts;
 using DollarsAtWork.Api.Features.Investments;
 using DollarsAtWork.Api.Features.NetWorth;
@@ -72,6 +73,11 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IAppEmailSender, LoggingEmailSender>();
 builder.Services.AddScoped<AccountEmails>();
 builder.Services.AddScoped<AccountSetup>();
+builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
+builder.Services.AddScoped<BillingService>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<TrialEmailService>();
+builder.Services.AddHostedService<TrialEmailWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
@@ -109,6 +115,7 @@ api.MapDebtsEndpoints();
 api.MapSavingsEndpoints();
 api.MapInvestmentsEndpoints();
 api.MapNetWorthEndpoints();
+api.MapBillingEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
 app.MapFallbackToFile("index.html");

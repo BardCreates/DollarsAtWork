@@ -216,6 +216,22 @@ public enum SubscriptionStatus
     Expired = 4,
 }
 
+/// <summary>The trial emails, in the order they go out.</summary>
+public enum TrialEmailStage
+{
+    None = 0,
+    SevenDaysLeft = 1,
+    TwoDaysLeft = 2,
+    Ended = 3,
+}
+
+/// <summary>A Stripe webhook event that has been handled, so a repeat delivery is ignored.</summary>
+public class ProcessedStripeEvent
+{
+    public string EventId { get; set; } = "";
+    public DateTimeOffset ReceivedAt { get; set; }
+}
+
 /// <summary>
 /// Billing state for a user. Created as a 30-day trial at sign-up; after that only Stripe webhooks change it.
 /// </summary>
@@ -233,6 +249,8 @@ public class Subscription
     public string? BillingInterval { get; set; }
     public string? StripeCustomerId { get; set; }
     public string? StripeSubscriptionId { get; set; }
+    /// <summary>The latest trial email this account has been sent.</summary>
+    public TrialEmailStage TrialEmailStage { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 

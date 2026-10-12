@@ -2,16 +2,9 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material';
 import { PageHeader } from '../components/PageHeader';
-import { useMe, useResendConfirmation, useSignOut, type SubscriptionStatus } from '../auth/auth';
+import { useMe, useResendConfirmation, useSignOut } from '../auth/auth';
+import { BillingCard } from '../features/billing/BillingCard';
 import { errorMessage } from '../api/client';
-
-const statusLabel: Record<SubscriptionStatus, { label: string; color: 'success' | 'info' | 'warning' | 'error' | 'default' }> = {
-  Trialing: { label: 'Free trial', color: 'info' },
-  Active: { label: 'Active', color: 'success' },
-  PastDue: { label: 'Payment due', color: 'warning' },
-  Canceled: { label: 'Canceled', color: 'default' },
-  Expired: { label: 'Expired', color: 'error' },
-};
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -31,7 +24,6 @@ export function ProfilePage() {
   const navigate = useNavigate();
 
   if (!me) return null;
-  const status = statusLabel[me.access.status];
 
   return (
     <>
@@ -63,27 +55,7 @@ export function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Subscription
-            </Typography>
-            <Row label="Status">
-              <Chip color={status.color} label={status.label} />
-            </Row>
-            {me.access.status === 'Trialing' && (
-              <Row label="Trial ends">
-                <Typography>
-                  {new Date(me.access.trialEndsAt).toLocaleDateString()} ({me.access.trialDaysLeft} days left)
-                </Typography>
-              </Row>
-            )}
-            <Divider sx={{ my: 1 }} />
-            <Alert severity="info" sx={{ mt: 1 }}>
-              Subscribing opens in a later build phase. Your trial gives you full access until then.
-            </Alert>
-          </CardContent>
-        </Card>
+        <BillingCard access={me.access} />
 
         <Box>
           <Button

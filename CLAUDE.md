@@ -18,9 +18,12 @@ and decisions already made. Don't re-ask decided questions.
 - Phase 4 (Debt module) is built and verified: debts, strategy, payoff figures, chart, schedule.
 - Phase 5 (Savings module) is built and verified: goals, priority/percent split, on-track check, emergency fund starter, timeline.
 - Phase 6 (Investments module) is built and verified: accounts, employer match, split that must total 100%, growth chart.
-- Phase 7 (Dashboard) is built: net worth + slider, projection chart, milestones, cards, other items, assumptions,
-  monthly check-in. Not yet browser-checked: today's dollars toggle, Assumptions and Other items dialogs, phone width.
-- Next: finish verifying Phase 7, then Phase 8 (Trial and billing; needs Stripe test keys from the owner).
+- Phase 7 (Dashboard) is built and verified: net worth + slider, projection chart, milestones, cards, other items,
+  assumptions, monthly check-in.
+- Phase 8 (Trial and billing) is built and verified in Stripe test mode: Checkout, customer portal, sync on return,
+  signed webhooks with duplicate protection, trial emails (day 23, day 28, ended), billing card on Profile.
+  Still open: a real email provider, a registered webhook endpoint (production), delete account / export data.
+- Next: Phase 9 (Tools). Work one phase at a time, in the order in `docs/PLAN.md`.
 
 ## Commands (Windows / PowerShell, run from repo root)
 
@@ -42,7 +45,10 @@ npm run build        # outputs into server/DollarsAtWork.Api/wwwroot
 #   client: DAW_PORT=5174 DAW_API_URL=https://localhost:7190 npx vite
 ```
 
-Dev emails (confirm, reset) are logged to the API console, not sent.
+Dev emails (confirm, reset, trial reminders) are logged to the API console, not sent.
+Stripe (test mode): the secret key lives in user secrets, never in the repo:
+`dotnet user-secrets set "Stripe:SecretKey" "sk_test_..." --project server/DollarsAtWork.Api` (and `Stripe:WebhookSecret`
+when using `stripe listen`). Price ids are in `appsettings.Development.json`. Without a key, billing reports "not set up".
 The API applies migrations automatically on startup in Development.
 
 ## Layout
@@ -53,7 +59,8 @@ server/DollarsAtWork.Api/
   Domain/Entities.cs      AppUser, Plan, Category (+CategoryKind), Subscription (+status logic)
   Data/AppDbContext.cs    single EF Core context; Data/Migrations/
   Common/                 AccountSetup (new-account defaults), Email, CurrentUser, FullAccess (.RequireFullAccess()),
-                          Validation (field checks -> ValidationProblem; use it in every new endpoint)
+                          Validation (field checks -> ValidationProblem; use it in every new endpoint),
+                          TrialEmails (TrialEmailService + hourly TrialEmailWorker)
   Features/<Feature>/     <Feature>Endpoints.cs + <Feature>Contracts.cs (request/response records)
 client/src/
   theme.ts                the brand: colors, fonts, card style, chartPalette
@@ -64,6 +71,8 @@ client/src/
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
+  features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page
+  features/dashboard/     Dashboard: networth.ts, useDashboard.ts (all data -> one projection), cards, dialogs, check-in
   features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule
   features/savings/       Savings page: savings.ts (query, mutations, useSavingsProjection), goal list, dialog, timeline
   features/invest/        Invest page: investments.ts (query, mutations, useInvestmentProjection), account and split dialogs, chart
@@ -80,6 +89,8 @@ docs/PLAN.md              product spec
 - Every user-data endpoint calls `.RequireAuthorization()`. Writes also require full access
   (`Subscription.HasFullAccess(now)`); expired users are read-only, not locked out.
 - No secrets in code or committed config. Use `dotnet user-secrets` in dev.
+- Subscription status changes only by copying Stripe's state (`BillingService.Apply`), from a verified webhook or a
+  sync that asks Stripe. Never set it from anything the browser sends. Billing endpoints stay open to expired accounts.
 - No tokens or user data in localStorage/sessionStorage. The cookie is HttpOnly + SameSite=Strict.
 
 **Money and data**

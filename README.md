@@ -52,6 +52,20 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - What it could be worth in 5, 10, 20 and 30 years, split into what you put in, employer match and growth
 - A contributions-vs-growth chart
 
+## What's in Phase 7
+
+- Dashboard: net worth today, a 0–40 year slider, and what the plan projects at that year
+- Projection chart, milestones (debt-free, each goal, $100k, $1M), this month's plan, debt payoff, savings goals
+- Other assets and debts (home, car…), assets vs liabilities, and a net-worth history built from monthly check-ins
+- Assumptions: today's dollars, inflation, yearly raise, and where money goes once debt is paid or goals are full
+
+## What's in Phase 8
+
+- Subscribe monthly or annually through Stripe Checkout; manage or cancel in Stripe's customer portal
+- Status kept in step with Stripe by signed webhooks, and refreshed whenever you come back from Stripe
+- Past due keeps full access for 7 days; canceled keeps it until the period ends; expired is read-only
+- Trial emails at 7 days left, 2 days left and when the trial ends (printed to the API console for now)
+
 ## Folder layout
 
 ```
@@ -61,6 +75,7 @@ server/DollarsAtWork.Api   .NET 10 API (Identity cookie sign-in, EF Core, SQL Se
   Common/                  Account setup, email, current-user helper
   Features/Auth/           Sign-up / sign-in endpoints
   Features/Plan/           Income and category endpoints
+  Features/Debts/, Savings/, Investments/, NetWorth/, Billing/
 client/                    React 19 + TypeScript + Vite + Material UI
   src/theme.ts             The Dollars at Work look (colors, fonts, cards)
   src/api/                 One fetch wrapper for the API
@@ -89,11 +104,16 @@ cd ..
 # 2. Trust the local HTTPS certificate (once per machine)
 dotnet dev-certs https --trust
 
-# 3. Create the first database migration (once)
-dotnet ef migrations add InitialCreate --project server/DollarsAtWork.Api --output-dir Data/Migrations
+# 3. Billing (optional): store your Stripe TEST secret key outside the code
+dotnet user-secrets set "Stripe:SecretKey" "sk_test_..." --project server/DollarsAtWork.Api
 ```
 
-The database itself is created automatically the first time the API starts in Development.
+The database is created, and every migration applied, automatically when the API starts in Development.
+Without a Stripe key the app still runs; the Profile page just says subscribing isn't available.
+
+To receive Stripe webhooks locally, install the Stripe CLI, run
+`stripe listen --forward-to https://localhost:7180/api/billing/webhook --skip-verify`, and store the signing
+secret it prints with `dotnet user-secrets set "Stripe:WebhookSecret" "whsec_..." --project server/DollarsAtWork.Api`.
 
 ## Running it
 
@@ -138,6 +158,8 @@ One server then hosts both the API and the web app at the same address. Set thes
 | --- | --- |
 | `ConnectionStrings__Default` | Azure SQL connection string |
 | `App__PublicUrl` | `https://app.dollarsatwork.com` (used in email links) |
+| `Stripe__SecretKey`, `Stripe__WebhookSecret` | From the Stripe dashboard (live mode in production) |
+| `Stripe__MonthlyPriceId`, `Stripe__AnnualPriceId` | The two price ids |
 
 ## Security rules this codebase follows
 
@@ -145,3 +167,4 @@ One server then hosts both the API and the web app at the same address. Set thes
 - The cookie is HTTP-only, Secure and SameSite=Strict; nothing sensitive goes in browser storage.
 - Sign-in locks for 15 minutes after 5 wrong passwords; auth endpoints are rate-limited per IP.
 - Secrets live in configuration (user secrets in dev, app settings in production), never in code.
+- Card details are entered on Stripe's pages and never reach this app. Webhooks are accepted only with a valid signature.

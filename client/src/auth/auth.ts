@@ -9,6 +9,10 @@ export interface Access {
   trialEndsAt: string;
   trialDaysLeft: number;
   currentPeriodEnd: string | null;
+  /** 'month' or 'year' once subscribed. */
+  billingInterval: string | null;
+  /** True once the account has been to Stripe Checkout, so there is billing to manage. */
+  hasBillingAccount: boolean;
 }
 
 export interface Me {

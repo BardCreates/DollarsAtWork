@@ -13,11 +13,12 @@ function useBannerContent() {
   if (!me) return null;
   const { access } = me;
 
-  const subscribe = (
+  const action = (label: string) => (
     <Button component={RouterLink} to="/profile" color="inherit" size="small" variant="outlined">
-      Subscribe
+      {label}
     </Button>
   );
+  const subscribe = action('Subscribe');
 
   switch (access.status) {
     case 'Trialing': {
@@ -31,13 +32,13 @@ function useBannerContent() {
     }
     case 'PastDue':
       return (
-        <Alert severity="warning" action={subscribe}>
+        <Alert severity="warning" action={action('Update card')}>
           Your last payment didn't go through. Update your card to keep full access.
         </Alert>
       );
     case 'Canceled':
       return (
-        <Alert severity="info" action={subscribe}>
+        <Alert severity="info" action={action('Resubscribe')}>
           Your subscription ends on {access.currentPeriodEnd ? new Date(access.currentPeriodEnd).toLocaleDateString() : 'the end of this period'}.
         </Alert>
       );

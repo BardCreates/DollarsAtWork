@@ -17,7 +17,9 @@ public record AccessResponse(
     bool HasFullAccess,
     DateTimeOffset TrialEndsAt,
     int TrialDaysLeft,
-    DateTimeOffset? CurrentPeriodEnd)
+    DateTimeOffset? CurrentPeriodEnd,
+    string? BillingInterval,
+    bool HasBillingAccount)
 {
     public static AccessResponse From(Subscription s, DateTimeOffset now)
     {
@@ -27,7 +29,9 @@ public record AccessResponse(
             s.HasFullAccess(now),
             s.TrialEndsAt,
             Math.Max(0, daysLeft),
-            s.CurrentPeriodEnd);
+            s.CurrentPeriodEnd,
+            s.BillingInterval,
+            s.StripeCustomerId is not null);
     }
 }
 

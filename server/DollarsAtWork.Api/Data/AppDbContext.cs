@@ -16,6 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<InvestmentAccount> InvestmentAccounts => Set<InvestmentAccount>();
     public DbSet<OtherItem> OtherItems => Set<OtherItem>();
     public DbSet<NetWorthSnapshot> NetWorthSnapshots => Set<NetWorthSnapshot>();
+    public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -93,11 +94,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasOne<AppUser>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
+        builder.Entity<ProcessedStripeEvent>(e =>
+        {
+            e.HasKey(p => p.EventId);
+            e.Property(p => p.EventId).HasMaxLength(255);
+        });
+
         builder.Entity<Subscription>(e =>
         {
             e.HasIndex(s => s.UserId).IsUnique();
             e.HasIndex(s => s.StripeCustomerId);
             e.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
+            e.Property(s => s.TrialEmailStage).HasConversion<string>().HasMaxLength(20).HasDefaultValue(TrialEmailStage.None);
             e.Property(s => s.BillingInterval).HasMaxLength(10);
             e.Property(s => s.StripeCustomerId).HasMaxLength(64);
             e.Property(s => s.StripeSubscriptionId).HasMaxLength(64);
