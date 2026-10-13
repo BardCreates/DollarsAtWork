@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -27,6 +27,10 @@ import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
+import type { FreedMoneyDestination } from '../../lib/projection';
+import { debtRollovers } from '../../lib/rollover';
+import { RolloverList } from '../../components/RolloverList';
+import { useNetWorth } from '../dashboard/networth';
 import { DebtBalanceChart } from './DebtBalanceChart';
 import { DebtDialog } from './DebtDialog';
 import { DebtList } from './DebtList';
@@ -78,6 +82,14 @@ function DebtModule({ data }: { data: DebtsData }) {
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
   const projection = useDebtProjection(data);
+
+  // Where the money goes once every debt is gone is the user's own setting (Dashboard > Assumptions).
+  const { data: netWorth } = useNetWorth();
+  const doneDestination = (netWorth?.settings.debtDoneDestination ?? 'Investments').toLowerCase() as FreedMoneyDestination;
+  const rollovers = useMemo(
+    () => debtRollovers(projection.planned, data.debts.map((d) => d.minPayment), doneDestination),
+    [projection.planned, data.debts, doneDestination],
+  );
 
   const setStrategy = useSetDebtStrategy();
   const reorder = useReorderDebts();
@@ -171,6 +183,8 @@ function DebtModule({ data }: { data: DebtsData }) {
                     onEdit={setEditing}
                     onDelete={setDeleting}
                   />
+
+                  <RolloverList title="When a debt is paid off" rollovers={rollovers} names={data.debts.map((d) => d.name)} doneWord="paid off" groupNoun="debts" />
                 </CardContent>
               </Card>
 

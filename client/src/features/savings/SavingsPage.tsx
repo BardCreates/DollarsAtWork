@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Alert,
@@ -29,6 +29,10 @@ import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney, formatPercent } from '../../lib/money';
+import type { FreedMoneyDestination } from '../../lib/projection';
+import { goalRollovers } from '../../lib/rollover';
+import { RolloverList } from '../../components/RolloverList';
+import { useNetWorth } from '../dashboard/networth';
 import { GoalDialog } from './GoalDialog';
 import { GoalList } from './GoalList';
 import { SavingsTimeline } from './SavingsTimeline';
@@ -81,6 +85,14 @@ function SavingsModule({ data }: { data: SavingsData }) {
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
   const projection = useSavingsProjection(data);
+
+  // Where the money goes once every goal is full is the user's own setting (Dashboard > Assumptions).
+  const { data: netWorth } = useNetWorth();
+  const doneDestination = (netWorth?.settings.savingsDoneDestination ?? 'Investments').toLowerCase() as FreedMoneyDestination;
+  const rollovers = useMemo(
+    () => goalRollovers(projection.result, data.splitMode === 'Percent' ? 'percent' : 'priority', doneDestination),
+    [projection.result, data.splitMode, doneDestination],
+  );
 
   const setSplitMode = useSetSplitMode();
   const reorder = useReorderGoals();
@@ -176,6 +188,8 @@ function SavingsModule({ data }: { data: SavingsData }) {
                     onEdit={(goal) => setEditing({ goal })}
                     onDelete={setDeleting}
                   />
+
+                  <RolloverList title="When a goal is full" rollovers={rollovers} names={data.goals.map((g) => g.name)} doneWord="full" groupNoun="goals" />
                 </>
               ) : (
                 <>

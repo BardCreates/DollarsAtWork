@@ -34,7 +34,10 @@ and decisions already made. Don't re-ask decided questions.
 - Stand-out step 1 (Move a dollar) is built and verified: live impact panel on the Plan page (debt-free date and
   10-year net worth vs the plan you started the visit with, updating as you type) and "if invested" cost of a habit
   on every custom category.
-- Next: stand-out step 2 (Rollover messages), then 3–7 in PLAN.md "Build status and next work", one step at a time.
+- Stand-out step 2 (Rollover messages) is built and verified: the Debt and Savings pages say, in plain sentences,
+  where each paid-off debt's or full goal's money goes next and when ("When Visa is paid off in Nov 2027, its $370
+  a month moves to Car loan."). Read from the projection itself, so it can't disagree with the numbers.
+- Next: stand-out step 3 (Money timeline), then 4–7 in PLAN.md "Build status and next work", one step at a time.
 
 ## What we compete on
 
@@ -86,9 +89,10 @@ client/src/
   api/client.ts           the ONLY fetch wrapper (api.get/post/put/patch/delete, ApiError, errorMessage)
   auth/                   useMe + auth mutations, route guards, passwordRule
   layout/                 TopBar, TrialBanner, AppShell
-  components/             shared UI (PageHeader, Figure, PlanAmountBanner, Wordmark, MoneyField, formHelpers.muiField)
+  components/             shared UI (PageHeader, Figure, PlanAmountBanner, RolloverList, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/rollover.ts         debtRollovers / goalRollovers: who receives a finished debt's or goal's money, read from a projection
   lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)

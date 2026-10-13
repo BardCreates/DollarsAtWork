@@ -86,6 +86,13 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Every spending category shows what that monthly amount could grow to in 10 years if invested instead
 - On phones the panel stays pinned at the top while you edit
 
+## Rollover messages (stand-out step 2)
+
+- The Debt page lists, in order, when each debt is paid off and where its monthly payment goes next
+  (another debt, or your investments, savings or Remaining once all debt is gone)
+- The Savings page does the same for goals: the next goal down the list in priority mode, or every goal still open in percent mode
+- Where finished money goes at the end is the setting under Assumptions on the Dashboard
+
 ## Folder layout
 
 ```
