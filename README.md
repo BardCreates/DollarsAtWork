@@ -101,6 +101,14 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
   (once per visit, and not at all if your device asks for reduced motion). Tap the mascot to celebrate any time
 - Milestones already reached are listed in one line at the bottom
 
+## What-if scenarios (stand-out step 4)
+
+- A "What if" page: save up to three versions of your plan (cut a category, a raise, a different payoff order, where
+  money goes once debt is gone) and compare them with your real plan on one chart
+- Side by side: debt-free date, net worth in 10, 20 and 30 years, and the interest you'd pay, each shown against the real plan
+- A what-if never changes your real plan, and anything it doesn't change keeps following your plan as it changes
+- Included in your data export. Because the nav gained an item, the top menu now collapses to the hamburger below 1200px
+
 ## Folder layout
 
 ```
@@ -110,7 +118,7 @@ server/DollarsAtWork.Api   .NET 10 API (Identity cookie sign-in, EF Core, SQL Se
   Common/                  Account setup, email, current-user helper
   Features/Auth/           Sign-up / sign-in endpoints
   Features/Plan/           Income and category endpoints
-  Features/Debts/, Savings/, Investments/, NetWorth/, Billing/, Account/
+  Features/Debts/, Savings/, Investments/, NetWorth/, Billing/, Account/, Scenarios/
 client/                    React 19 + TypeScript + Vite + Material UI
   src/theme.ts             The Dollars at Work look (colors, fonts, cards)
   src/api/                 One fetch wrapper for the API

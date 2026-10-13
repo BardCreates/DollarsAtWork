@@ -456,6 +456,40 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("SavingsGoals");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.Scenario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("OverridesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "SortOrder");
+
+                    b.ToTable("Scenarios");
+                });
+
             modelBuilder.Entity("DollarsAtWork.Api.Domain.Subscription", b =>
                 {
                     b.Property<Guid>("Id")
@@ -714,6 +748,15 @@ namespace DollarsAtWork.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("DollarsAtWork.Api.Domain.SavingsGoal", b =>
+                {
+                    b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.Scenario", b =>
                 {
                     b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
                         .WithMany()

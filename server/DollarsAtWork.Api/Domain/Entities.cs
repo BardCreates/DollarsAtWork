@@ -235,6 +235,21 @@ public class UsedTrial
     public DateTimeOffset UsedAt { get; set; }
 }
 
+/// <summary>
+/// A saved "what if" version of the plan: the real plan plus a handful of changes. Never changes the real plan.
+/// </summary>
+public class Scenario
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    public int SortOrder { get; set; }
+    /// <summary>The changes, as JSON (see ScenarioOverrides). Anything not listed follows the real plan.</summary>
+    public string OverridesJson { get; set; } = "{}";
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 /// <summary>A Stripe webhook event that has been handled, so a repeat delivery is ignored.</summary>
 public class ProcessedStripeEvent
 {

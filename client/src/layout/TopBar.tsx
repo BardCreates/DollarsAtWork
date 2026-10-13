@@ -27,6 +27,7 @@ export const navItems = [
   { label: 'Savings', to: '/savings' },
   { label: 'Debt', to: '/debt' },
   { label: 'Invest', to: '/invest' },
+  { label: 'What if', to: '/what-if' },
   { label: 'Tools', to: '/tools' },
 ] as const;
 
@@ -57,7 +58,7 @@ export function TopBar() {
           edge="start"
           aria-label="Open menu"
           onClick={() => setDrawerOpen(true)}
-          sx={{ display: { md: 'none' } }}
+          sx={{ display: { lg: 'none' } }}
         >
           <MenuIcon />
         </IconButton>
@@ -66,7 +67,7 @@ export function TopBar() {
           <Wordmark />
         </Box>
 
-        <Box component="nav" sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5 }}>
+        <Box component="nav" sx={{ display: { xs: 'none', lg: 'flex' }, gap: 0.5 }}>
           {navItems.map((item) => (
             <Button
               key={item.to}
@@ -75,6 +76,7 @@ export function TopBar() {
               end={item.to === '/'}
               color="primary"
               variant={isActive(pathname, item.to) ? 'outlined' : 'text'}
+              sx={{ whiteSpace: 'nowrap' }}
             >
               {item.label}
             </Button>

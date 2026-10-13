@@ -40,8 +40,11 @@ and decisions already made. Don't re-ask decided questions.
 - Stand-out step 3 (Money timeline) is built and verified: the dashboard's milestones are now a dated roadmap
   (each debt payoff, debt-free, each goal, the next three net-worth steps), and the mascot cheers with confetti when
   one is within a month (once per visit, never with reduced motion) or when tapped.
-- Next: stand-out step 4 (What-if scenarios; new Scenarios table), then 5–7 in PLAN.md "Build status and next work",
-  one step at a time.
+- Stand-out step 4 (What-if scenarios) is built and verified: up to 3 saved versions of the plan (new Scenarios table),
+  compared with the real plan on one chart and a side-by-side table (debt-free date, net worth at 10/20/30 years,
+  interest paid). A scenario stores only its changes (income, category amounts, raise, payoff order, where finished
+  money goes), so anything it doesn't change keeps following the real plan. It never changes the real plan.
+- Next: stand-out step 5 (Monthly report card), then 6–7 in PLAN.md "Build status and next work", one step at a time.
 
 ## What we compete on
 
@@ -88,6 +91,7 @@ server/DollarsAtWork.Api/
                           Validation (field checks -> ValidationProblem; use it in every new endpoint),
                           TrialEmails (TrialEmailService + hourly TrialEmailWorker)
   Features/<Feature>/     <Feature>Endpoints.cs + <Feature>Contracts.cs (request/response records)
+                          (Scenarios keeps its changes as one JSON column: ScenarioOverrides, read via ScenarioJson)
 client/src/
   theme.ts                the brand: colors, fonts, card style, chartPalette
   api/client.ts           the ONLY fetch wrapper (api.get/post/put/patch/delete, ApiError, errorMessage)
@@ -96,6 +100,7 @@ client/src/
   components/             shared UI (PageHeader, Figure, PlanAmountBanner, RolloverList, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/scenarios.ts        resolveScenario / changesBetween (a scenario is the plan + its changes), summarizeProjection
   lib/timeline.ts         buildTimeline: the dated roadmap read from a projection; isNear / isDone / nextUp
   lib/rollover.ts         debtRollovers / goalRollovers: who receives a finished debt's or goal's money, read from a projection
   lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
@@ -104,6 +109,7 @@ client/src/
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
   features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration
+  features/scenarios/     What if page: scenarios.ts (query, mutations, useComparison), ScenarioDialog, CompareView
   features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page
   features/dashboard/     Dashboard: networth.ts, useDashboard.ts (all data -> one projection), cards, dialogs, check-in
   features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule

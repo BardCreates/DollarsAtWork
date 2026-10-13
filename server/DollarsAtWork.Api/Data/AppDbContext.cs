@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<NetWorthSnapshot> NetWorthSnapshots => Set<NetWorthSnapshot>();
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
     public DbSet<UsedTrial> UsedTrials => Set<UsedTrial>();
+    public DbSet<Scenario> Scenarios => Set<Scenario>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -92,6 +93,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<NetWorthSnapshot>(e =>
         {
             e.HasIndex(s => new { s.UserId, s.Date }).IsUnique();
+            e.HasOne<AppUser>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Scenario>(e =>
+        {
+            e.Property(s => s.Name).HasMaxLength(60);
+            e.HasIndex(s => new { s.UserId, s.SortOrder });
             e.HasOne<AppUser>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
