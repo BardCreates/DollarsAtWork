@@ -31,7 +31,10 @@ and decisions already made. Don't re-ask decided questions.
   legal review of `client/src/pages/public/LegalPages.tsx` (fill the [bracketed] placeholders, set DRAFT to false),
   final prices, Managed Payments on or off, registering the production webhook endpoint.
 
-- Next: the stand-out work in PLAN.md "Build status and next work", steps 1–7, in order, one step at a time.
+- Stand-out step 1 (Move a dollar) is built and verified: live impact panel on the Plan page (debt-free date and
+  10-year net worth vs the plan you started the visit with, updating as you type) and "if invested" cost of a habit
+  on every custom category.
+- Next: stand-out step 2 (Rollover messages), then 3–7 in PLAN.md "Build status and next work", one step at a time.
 
 ## What we compete on
 
@@ -86,6 +89,7 @@ client/src/
   components/             shared UI (PageHeader, Figure, PlanAmountBanner, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
@@ -96,7 +100,9 @@ client/src/
   features/tools/         Tools page: ToolsPage (tabs), calculators.tsx (the four calculators), NumberField
   features/savings/       Savings page: savings.ts (query, mutations, useSavingsProjection), goal list, dialog, timeline
   features/invest/        Invest page: investments.ts (query, mutations, useInvestmentProjection), account and split dialogs, chart
-  features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut
+  features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut,
+                          ImpactPanel + usePlanImpact (Move a dollar). MoneyField.onDraft reports amounts while typing;
+                          PlanPage lays those drafts over the saved plan as `livePlan` for everything on screen.
   pages/                  auth screens, Profile, NotFound, public/ (pricing, terms, privacy, PublicLayout + FooterLinks);
                           everything else lives in client/src/features/<feature>/
 docs/PLAN.md              product spec

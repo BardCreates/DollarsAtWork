@@ -6,6 +6,11 @@ interface MoneyFieldProps {
   value: number;
   /** Called with dollars when the box is left (or Enter is pressed) holding a different, valid amount. */
   onCommit: (dollars: number) => void;
+  /**
+   * Called while typing with the amount so far, so the page can react before anything is saved.
+   * Null means "nothing usable": the text isn't an amount, or the edit was abandoned.
+   */
+  onDraft?: (dollars: number | null) => void;
   /** When set, "10%" is accepted and means 10% of this number. */
   percentOf?: number;
   label?: string;
@@ -19,7 +24,7 @@ interface MoneyFieldProps {
  * An amount box that saves itself: shows "$1,234" at rest, plain digits while editing.
  * Escape puts the old amount back.
  */
-export function MoneyField({ value, onCommit, percentOf, label, ariaLabel, disabled, size = 'small', sx }: MoneyFieldProps) {
+export function MoneyField({ value, onCommit, onDraft, percentOf, label, ariaLabel, disabled, size = 'small', sx }: MoneyFieldProps) {
   const [draft, setDraft] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
   const cancelled = useRef(false);
@@ -40,14 +45,17 @@ export function MoneyField({ value, onCommit, percentOf, label, ariaLabel, disab
       cancelled.current = false;
       setDraft(null);
       setInvalid(false);
+      onDraft?.(null);
       return;
     }
     const dollars = parseMoneyInput(draft, percentOf);
     if (dollars === null) {
       setInvalid(true);
+      onDraft?.(null);
       return;
     }
     setDraft(null);
+    onDraft?.(null);
     if (dollars !== value) onCommit(dollars);
   };
 
@@ -75,6 +83,7 @@ export function MoneyField({ value, onCommit, percentOf, label, ariaLabel, disab
       onChange={(event) => {
         setDraft(event.target.value);
         setInvalid(false);
+        onDraft?.(parseMoneyInput(event.target.value, percentOf));
       }}
       onBlur={finish}
       onKeyDown={(event) => {

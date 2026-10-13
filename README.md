@@ -79,6 +79,13 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - One free trial per email address, even after an account is deleted
 - Every page checked at phone width
 
+## Move a dollar (stand-out step 1)
+
+- On the Plan page, a panel shows your debt-free date and net worth in 10 years, and how far each moves as you
+  type a new amount, before anything is saved
+- Every spending category shows what that monthly amount could grow to in 10 years if invested instead
+- On phones the panel stays pinned at the top while you edit
+
 ## Folder layout
 
 ```

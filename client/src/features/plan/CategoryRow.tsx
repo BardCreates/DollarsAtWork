@@ -6,7 +6,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { MoneyField } from '../../components/MoneyField';
-import { formatPercent } from '../../lib/money';
+import { formatMoney, formatPercent } from '../../lib/money';
+import { habitCost, IMPACT_YEARS } from '../../lib/planImpact';
 import { categoryColors } from '../../theme';
 import { moduleLinks, type Category, type CategoryChanges } from './plan';
 
@@ -15,12 +16,20 @@ interface CategoryRowProps {
   index: number;
   income: number;
   readOnly: boolean;
+  /** The amount as it is being typed, which may not be saved yet. */
+  liveAmount: number;
+  /** The yearly return used for "if invested", or null to leave that line out. */
+  investedReturn: number | null;
+  onDraftAmount: (dollars: number | null) => void;
   onChange: (changes: CategoryChanges) => void;
   onDelete: () => void;
 }
 
-/** One line of the plan: drag handle, color, name, amount, share of income, delete. */
-export function CategoryRow({ category, index, income, readOnly, onChange, onDelete }: CategoryRowProps) {
+/** One line of the plan: drag handle, color, name, amount, share of income, delete, and what a habit costs. */
+export function CategoryRow({ category, index, income, readOnly, liveAmount, investedReturn, onDraftAmount, onChange, onDelete }: CategoryRowProps) {
+  // Cost of a habit: only for the user's own spending categories. Savings, Debt and Investments are already working.
+  const habit = !category.isBuiltIn && investedReturn !== null && liveAmount > 0 ? habitCost(liveAmount, investedReturn) : null;
+
   return (
     <Draggable draggableId={category.id} index={index} isDragDisabled={readOnly}>
       {(drag, snapshot) => (
@@ -41,8 +50,8 @@ export function CategoryRow({ category, index, income, readOnly, onChange, onDel
             boxShadow: snapshot.isDragging ? 8 : 0,
             gridTemplateColumns: { xs: 'auto auto minmax(0, 1fr) auto', sm: 'auto auto minmax(0, 1fr) 150px 64px 40px' },
             gridTemplateAreas: {
-              xs: '"handle color name actions" ". . amount share"',
-              sm: '"handle color name amount share actions"',
+              xs: `"handle color name actions" ". . amount share"${habit === null ? '' : ' ". . habit habit"'}`,
+              sm: `"handle color name amount share actions"${habit === null ? '' : ' ". . habit habit habit ."'}`,
             },
           }}
         >
@@ -70,6 +79,7 @@ export function CategoryRow({ category, index, income, readOnly, onChange, onDel
             <MoneyField
               value={category.amount}
               percentOf={income}
+              onDraft={onDraftAmount}
               ariaLabel={`${category.name} amount`}
               disabled={readOnly}
               onCommit={(amount) => onChange({ amount })}
@@ -81,8 +91,14 @@ export function CategoryRow({ category, index, income, readOnly, onChange, onDel
             color="text.secondary"
             sx={{ gridArea: 'share', textAlign: 'right', minWidth: 52, fontVariantNumeric: 'tabular-nums' }}
           >
-            {formatPercent(category.amount, income)}
+            {formatPercent(liveAmount, income)}
           </Typography>
+
+          {habit !== null && (
+            <Typography variant="caption" color="text.secondary" sx={{ gridArea: 'habit', pl: { sm: 1.75 }, mt: -0.5 }}>
+              ≈ <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>{formatMoney(Math.round(habit))}</Box> in {IMPACT_YEARS} years if invested
+            </Typography>
+          )}
 
           <Box sx={{ gridArea: 'actions', display: 'flex', justifyContent: 'flex-end' }}>
             {category.isBuiltIn ? (

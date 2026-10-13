@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useIsMutating } from '@tanstack/react-query';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Snackbar, Typography } from '@mui/material';
@@ -9,9 +9,12 @@ import { MoneyField } from '../../components/MoneyField';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney, formatPercent } from '../../lib/money';
+import { IMPACT_YEARS } from '../../lib/planImpact';
 import { AddCategoryForm } from './AddCategoryForm';
 import { AllocationDonut } from './AllocationDonut';
 import { CategoryRow } from './CategoryRow';
+import { ImpactPanel } from './ImpactPanel';
+import { plansDiffer, usePlanImpact } from './usePlanImpact';
 import {
   planMutationKey,
   planTotals,
@@ -73,8 +76,38 @@ function PlanEditor({ plan }: { plan: Plan }) {
   /** Set after an income change: the income the current amounts were planned against. */
   const [scaleFrom, setScaleFrom] = useState<number | null>(null);
 
-  const onError = (e: unknown) => setProblem(errorMessage(e));
-  const { allocated, remaining } = planTotals(plan);
+  /** Amounts being typed right now, by category id (or 'income'), before they are saved. */
+  const [drafts, setDrafts] = useState<Record<string, number>>({});
+  /** The plan "Move a dollar" compares against: as it was when the page opened, until the user restarts it. */
+  const [baseline, setBaseline] = useState(plan);
+
+  const setDraft = (key: string) => (dollars: number | null) =>
+    setDrafts((current) => {
+      if (dollars === null) {
+        if (!(key in current)) return current;
+        const { [key]: _removed, ...rest } = current;
+        return rest;
+      }
+      return current[key] === dollars ? current : { ...current, [key]: dollars };
+    });
+
+  /** The plan as it reads on screen this instant: saved values with anything mid-edit laid over them. */
+  const livePlan = useMemo<Plan>(
+    () => ({
+      ...plan,
+      monthlyIncome: drafts.income ?? plan.monthlyIncome,
+      categories: plan.categories.map((c) => (drafts[c.id] === undefined ? c : { ...c, amount: drafts[c.id] })),
+    }),
+    [plan, drafts],
+  );
+  const impact = usePlanImpact(baseline, livePlan);
+  const live = planTotals(livePlan);
+
+  const onError = (e: unknown) => {
+    setDrafts({});
+    setProblem(errorMessage(e));
+  };
+  const { allocated } = planTotals(plan);
   const income = plan.monthlyIncome;
 
   const changeIncome = (next: number) => {
@@ -116,14 +149,26 @@ function PlanEditor({ plan }: { plan: Plan }) {
           }}
         >
           <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-            <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly} onCommit={changeIncome} />
+            <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} />
           </Box>
-          <Figure label="Allocated" value={formatMoney(allocated)} note={income > 0 ? `${formatPercent(allocated, income)} of income` : undefined} />
           <Figure
-            label={remaining < 0 ? 'Over-allocated by' : 'Remaining'}
-            value={formatMoney(Math.abs(remaining))}
-            color={remaining < 0 ? 'error.main' : remaining > 0 ? 'success.main' : 'text.primary'}
-            note={remaining < 0 ? 'Your categories add up to more than your income.' : remaining > 0 ? 'Not yet given a job.' : income > 0 ? 'Every dollar has a job.' : undefined}
+            label="Allocated"
+            value={formatMoney(live.allocated)}
+            note={livePlan.monthlyIncome > 0 ? `${formatPercent(live.allocated, livePlan.monthlyIncome)} of income` : undefined}
+          />
+          <Figure
+            label={live.remaining < 0 ? 'Over-allocated by' : 'Remaining'}
+            value={formatMoney(Math.abs(live.remaining))}
+            color={live.remaining < 0 ? 'error.main' : live.remaining > 0 ? 'success.main' : 'text.primary'}
+            note={
+              live.remaining < 0
+                ? 'Your categories add up to more than your income.'
+                : live.remaining > 0
+                  ? 'Not yet given a job.'
+                  : livePlan.monthlyIncome > 0
+                    ? 'Every dollar has a job.'
+                    : undefined
+            }
           />
         </CardContent>
       </Card>
@@ -160,6 +205,10 @@ function PlanEditor({ plan }: { plan: Plan }) {
             <Typography variant="h6">Categories</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Type an amount in dollars or as a percent of income. Drag to reorder. Changes save as you go.
+              {impact.status === 'ready' &&
+                ` "If invested" shows what a monthly amount could grow to in ${IMPACT_YEARS} years at ${Number(impact.expectedReturn.toFixed(1))}% a year${
+                  impact.hasAccounts ? ", your plan's expected return" : ''
+                }. It's an estimate, not advice.`}
             </Typography>
 
             <DragDropContext onDragEnd={onDragEnd}>
@@ -171,8 +220,11 @@ function PlanEditor({ plan }: { plan: Plan }) {
                         key={category.id}
                         category={category}
                         index={index}
-                        income={income}
+                        income={livePlan.monthlyIncome}
                         readOnly={readOnly}
+                        liveAmount={livePlan.categories[index].amount}
+                        investedReturn={impact.status === 'ready' ? impact.expectedReturn : null}
+                        onDraftAmount={setDraft(category.id)}
                         onChange={(changes) => updateCategory.mutate({ id: category.id, changes }, { onError })}
                         onDelete={() => removeCategory(category, index)}
                       />
@@ -187,14 +239,23 @@ function PlanEditor({ plan }: { plan: Plan }) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Where it goes
-            </Typography>
-            <AllocationDonut plan={plan} />
-          </CardContent>
-        </Card>
+        {/* On phones these two join the page's own column, so the panel can sit above the list and stick there. */}
+        <Box sx={{ display: { xs: 'contents', md: 'grid' }, gap: 3, gridTemplateColumns: 'minmax(0, 1fr)', minWidth: 0 }}>
+          <ImpactPanel
+            state={impact}
+            changed={plansDiffer(baseline, livePlan)}
+            freedMonthly={live.remaining - planTotals(baseline).remaining}
+            onCompareFromHere={() => setBaseline(livePlan)}
+          />
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Where it goes
+              </Typography>
+              <AllocationDonut plan={livePlan} />
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
 
       <Snackbar
