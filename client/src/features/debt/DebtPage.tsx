@@ -119,10 +119,10 @@ function DebtModule({ data }: { data: DebtsData }) {
             <Box component="img" src={mascot} alt="" sx={{ width: 120, height: 'auto', flexShrink: 0 }} />
             <Box>
               <Typography variant="h6" sx={{ mb: 1 }}>
-                No debts yet
+                No debts. Nice.
               </Typography>
               <Typography color="text.secondary" sx={{ mb: 2, maxWidth: 520 }}>
-                Add what you owe, such as cards, loans or a mortgage, and see the date you'll be debt-free and what it will cost in interest.
+                Owe something? Add cards, loans or a mortgage and see the date you'll be debt-free and what it will cost in interest.
               </Typography>
               {addButton}
             </Box>

@@ -66,9 +66,9 @@ export const api = {
 /** A friendly message for any error thrown by a request. */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 429) return 'Too many attempts. Please wait a minute and try again.';
+    if (error.status === 429) return "Whoa, that's a lot of tries. Give it a minute and try again.";
     return error.message;
   }
   if (error instanceof TypeError) return "Can't reach Dollars at Work. Check your connection and try again.";
-  return 'Something went wrong. Please try again.';
+  return "Hmm, that didn't work. Please try again in a moment.";
 }

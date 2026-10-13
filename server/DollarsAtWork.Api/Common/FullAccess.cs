@@ -25,7 +25,7 @@ public static class FullAccess
         if (subscription is null || !subscription.HasFullAccess(clock.GetUtcNow()))
             return Results.Problem(
                 title: "Editing is turned off.",
-                detail: "Your access has ended. Subscribe to make changes again. Your data is still here.",
+                detail: "Your access has ended, but nothing's lost. Subscribe to start editing again.",
                 statusCode: StatusCodes.Status403Forbidden);
 
         return await next(context);

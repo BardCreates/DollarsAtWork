@@ -164,7 +164,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
               live.remaining < 0
                 ? 'Your categories add up to more than your income.'
                 : live.remaining > 0
-                  ? 'Not yet given a job.'
+                  ? 'Not yet at work.'
                   : livePlan.monthlyIncome > 0
                     ? 'Every dollar has a job.'
                     : undefined

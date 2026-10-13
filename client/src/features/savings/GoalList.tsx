@@ -133,7 +133,7 @@ function GoalSummary({ goal, outlook, showShare }: { goal: Goal; outlook: GoalOu
 
       <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.75 }}>
         {full
-          ? 'Reached its target.'
+          ? 'Done. Every dollar made it.'
           : [
               `${formatMoney(outlook.monthlyNow)}/month now`,
               showShare ? `${goal.sharePercent}% share` : null,

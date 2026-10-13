@@ -59,7 +59,7 @@ and decisions already made. Don't re-ask decided questions.
   and the Google Fonts question (see below).
 - Open: fonts load from Google Fonts (index.html), which sends each visitor's address to Google. For a "no tracking"
   pitch, self-host Inter and Coiny (both OFL) instead, then delete the "One honest note" section of SecurityPage.
-- Next: finish step 7, then the launch items above.
+- The voice pass is applied (see "Voice" under Copy). Next: the launch items above.
 
 ## What we compete on
 
@@ -193,6 +193,9 @@ docs/PLAN.md              product spec
 
 **Copy**
 - Plain, friendly sentences. Sentence-case buttons. Money shown as `$1,234` (cents only where it matters).
+- Voice (the mascot's): talk to one person, as "you"; short sentences, no jargon, and say what happened and what to do
+  next; warm and a little playful, never about money mistakes; at most one exclamation mark on a screen and none
+  on errors; never promise an outcome (estimates are estimates) and never promise something the app doesn't do.
 - Every claim on the public Security and Privacy pages must describe something the code does today. If you change
   the behavior, change the page in the same commit.
 

@@ -96,7 +96,7 @@ export function BillingCard({ access }: { access: Access }) {
 
         {access.status === 'PastDue' && (
           <>
-            <Typography sx={{ mb: 2 }}>Your last payment didn't go through. Update your card within 7 days to keep full access.</Typography>
+            <Typography sx={{ mb: 2 }}>Your last payment didn't go through. Update your card within 7 days and nothing changes.</Typography>
             {manageButton('Update your card', 'contained')}
           </>
         )}
@@ -115,7 +115,7 @@ export function BillingCard({ access }: { access: Access }) {
             <Typography sx={{ mb: 2 }}>
               {access.status === 'Trialing'
                 ? `Your free trial ends on ${longDate(access.trialEndsAt)} (${access.trialDaysLeft === 1 ? '1 day' : `${access.trialDaysLeft} days`} left). Subscribe any time; no card is needed until you do.`
-                : 'Your access has ended. Your data is safe and visible, and subscribing turns editing back on.'}
+                : "Your access has ended, but nothing's lost. Everything is still here to look at, and subscribing turns editing back on."}
             </Typography>
             <PlanPicker prices={prices.data} loading={prices.isPending} failed={prices.isError} disabled={leaving} onSubscribe={(interval) => checkout.mutate(interval)} />
           </>

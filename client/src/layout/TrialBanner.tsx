@@ -26,14 +26,14 @@ function useBannerContent() {
       const severity = days <= 7 ? 'warning' : 'info';
       return (
         <Alert severity={severity} action={subscribe}>
-          {days === 1 ? '1 day' : `${days} days`} left in your free trial.
+          {days === 1 ? '1 day' : `${days} days`} left in your free trial. {days === 1 ? 'Make it count.' : 'Make them count.'}
         </Alert>
       );
     }
     case 'PastDue':
       return (
         <Alert severity="warning" action={action('Update card')}>
-          Your last payment didn't go through. Update your card to keep full access.
+          Your last payment didn't go through. Update your card within 7 days and nothing changes.
         </Alert>
       );
     case 'Canceled':
@@ -45,7 +45,7 @@ function useBannerContent() {
     case 'Expired':
       return (
         <Alert severity="error" action={subscribe}>
-          Your access has ended. Your data is safe and visible, but editing is turned off until you subscribe.
+          Your access has ended, but nothing's lost. Everything is still here to look at. Subscribe to start editing again.
         </Alert>
       );
     default:
