@@ -10,6 +10,8 @@ export function FooterLinks() {
     <Box component="footer" sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 2.5, py: 3 }}>
       {[
         { to: '/pricing', label: 'Pricing' },
+        { to: '/tools', label: 'Free calculators' },
+        { to: '/demo', label: 'Sample plan' },
         { to: '/terms', label: 'Terms' },
         { to: '/privacy', label: 'Privacy' },
       ].map((link) => (

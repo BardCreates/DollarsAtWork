@@ -119,6 +119,16 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - Check-ins now keep totals for savings, investments and debt, so the recap can show the change in each; they're in
   your data export too
 
+## Public calculators and demo (stand-out step 6)
+
+- The Tools calculators now open without an account at /tools, with a new "cost of a habit" calculator.
+  Link straight to one with /tools?tool=habit (also compound, payoff, compare, drip)
+- Under each calculator, visitors who aren't signed in are invited to start the free trial
+- /demo is a sample plan anyone can try: a made-up person, the real projection engine, and a slider for
+  "what if more went toward debt each month?"
+- The setup walkthrough keeps your own net worth in 10 years in view and updates it as you enter things
+- Pricing and the footer link to the calculators and the sample plan
+
 ## Folder layout
 
 ```

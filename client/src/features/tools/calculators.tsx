@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Alert, Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Figure } from '../../components/Figure';
-import { compoundGrowth, drip, loanCost, loanPayoff } from '../../lib/calculators';
+import { compoundGrowth, drip, loanCost, loanPayoff, type GrowthYear } from '../../lib/calculators';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney, formatMoneyCompact } from '../../lib/money';
 import { brand } from '../../theme';
@@ -43,12 +43,35 @@ function useChartStyle() {
 
 const yearLabel = (year: unknown) => `Year ${year}`;
 
+/** What went in and what growth added, year by year. Shared by the calculators that grow a monthly amount. */
+function GrowthChartCard({ rows }: { rows: GrowthYear[] }) {
+  const style = useChartStyle();
+  return (
+    <Card>
+      <CardContent>
+        <Box sx={{ height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+              <CartesianGrid stroke={style.grid} vertical={false} />
+              <XAxis dataKey="year" tick={style.tick} stroke={style.grid} minTickGap={24} />
+              <YAxis tickFormatter={(value: number) => formatMoneyCompact(value)} tick={style.tick} stroke={style.grid} width={60} />
+              <Tooltip labelFormatter={yearLabel} formatter={(value) => whole(Number(value))} contentStyle={style.tooltip} labelStyle={style.label} />
+              <Legend wrapperStyle={style.legend} itemSorter={(item) => (item.dataKey === 'contributed' ? 0 : 1)} />
+              <Area type="monotone" dataKey="contributed" name="You put in" stackId="value" stroke={brand.blue} fill={brand.blue} fillOpacity={0.4} />
+              <Area type="monotone" dataKey="growth" name="Growth" stackId="value" stroke={brand.green} fill={brand.green} fillOpacity={0.4} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function CompoundCalculator() {
   const [initial, setInitial] = useState(5_000);
   const [monthly, setMonthly] = useState(300);
   const [annualRate, setAnnualRate] = useState(7);
   const [years, setYears] = useState(20);
-  const style = useChartStyle();
 
   const rows = useMemo(() => compoundGrowth({ initial, monthly, annualRate, years }), [initial, monthly, annualRate, years]);
   const last = rows[rows.length - 1];
@@ -69,23 +92,7 @@ export function CompoundCalculator() {
         <Figure label="You put in" value={whole(last.contributed)} />
         <Figure label="Growth" value={whole(last.growth)} color="success.main" />
       </Figures>
-      <Card>
-        <CardContent>
-          <Box sx={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid stroke={style.grid} vertical={false} />
-                <XAxis dataKey="year" tick={style.tick} stroke={style.grid} minTickGap={24} />
-                <YAxis tickFormatter={(value: number) => formatMoneyCompact(value)} tick={style.tick} stroke={style.grid} width={60} />
-                <Tooltip labelFormatter={yearLabel} formatter={(value) => whole(Number(value))} contentStyle={style.tooltip} labelStyle={style.label} />
-                <Legend wrapperStyle={style.legend} itemSorter={(item) => (item.dataKey === 'contributed' ? 0 : 1)} />
-                <Area type="monotone" dataKey="contributed" name="You put in" stackId="value" stroke={brand.blue} fill={brand.blue} fillOpacity={0.4} />
-                <Area type="monotone" dataKey="growth" name="Growth" stackId="value" stroke={brand.green} fill={brand.green} fillOpacity={0.4} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Box>
-        </CardContent>
-      </Card>
+      <GrowthChartCard rows={rows} />
     </Calculator>
   );
 }
@@ -244,6 +251,46 @@ export function DripCalculator() {
           </Box>
         </CardContent>
       </Card>
+    </Calculator>
+  );
+}
+
+/** "What would that daily coffee be worth?": a monthly habit, invested instead, over some years. */
+export function HabitCalculator() {
+  const [monthly, setMonthly] = useState(250);
+  const [annualRate, setAnnualRate] = useState(7);
+  const [years, setYears] = useState(10);
+
+  const rows = useMemo(() => compoundGrowth({ initial: 0, monthly, annualRate, years }), [monthly, annualRate, years]);
+  const last = rows[rows.length - 1];
+
+  return (
+    <Calculator
+      inputs={
+        <>
+          <NumberField label="Spent each month" prefix="$" value={monthly} onChange={setMonthly} helperText="Dining out, subscriptions, a daily coffee." />
+          <NumberField label="Yearly return if invested" suffix="%" max={50} value={annualRate} onChange={setAnnualRate} helperText="7% is a common long-run figure for stocks. It's an assumption, not a promise." />
+          <NumberField label="For" suffix="years" max={60} value={years} onChange={setYears} />
+        </>
+      }
+    >
+      <Card>
+        <CardContent>
+          <Typography variant="h5" component="p" sx={{ fontWeight: 600 }}>
+            {formatMoney(monthly)} a month is {whole(monthly * 12)} a year. Invested instead, over {last.year} {last.year === 1 ? 'year' : 'years'} it could grow to about{' '}
+            <Box component="span" sx={{ color: 'success.main' }}>
+              {whole(last.value)}
+            </Box>
+            .
+          </Typography>
+        </CardContent>
+      </Card>
+      <Figures>
+        <Figure label="You'd have spent" value={whole(last.contributed)} />
+        <Figure label="Invested, it could be" value={whole(last.value)} color="success.main" />
+        <Figure label="Growth on top" value={whole(last.growth)} color="success.main" />
+      </Figures>
+      <GrowthChartCard rows={rows} />
     </Calculator>
   );
 }

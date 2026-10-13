@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -7,6 +7,8 @@ import { MoneyField } from '../../components/MoneyField';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
+import { project } from '../../lib/projection';
+import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import { DebtDialog } from '../debt/DebtDialog';
 import { useDebts } from '../debt/debts';
 import { AccountDialog } from '../invest/AccountDialog';
@@ -16,6 +18,47 @@ import { GoalDialog } from '../savings/GoalDialog';
 import { useSavings } from '../savings/savings';
 
 const steps = ['Your income', 'Savings, debt and investing', 'What you have and owe'];
+
+/**
+ * Your own 10-year number, live: net worth in 10 years from whatever has been entered so far.
+ * It's the reason to finish the walkthrough, so it stays in view from the first step.
+ */
+function TenYearNumber() {
+  const { data } = useDashboardData();
+  const worth = useMemo(() => (data ? project(buildProjectionInput(data, false)).points[120].netWorth : null), [data]);
+
+  const nothingYet =
+    !!data &&
+    data.plan.monthlyIncome === 0 &&
+    data.plan.categories.every((c) => c.amount === 0) &&
+    data.debts.debts.length === 0 &&
+    data.savings.goals.length === 0 &&
+    data.investments.accounts.length === 0;
+
+  return (
+    <Card sx={{ mb: 3, outline: 1, outlineStyle: 'solid', outlineColor: 'primary.main' }}>
+      <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 1.5, '&:last-child': { pb: 1.5 } }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="body2" color="text.secondary">
+            Your net worth in 10 years
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {nothingYet ? 'Add your income and this number appears.' : 'From what you have entered so far. It updates as you go.'}
+          </Typography>
+        </Box>
+        <Typography
+          role="status"
+          aria-live="polite"
+          variant="h5"
+          component="p"
+          sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums', flexShrink: 0, color: worth !== null && worth < 0 ? 'error.main' : 'success.main' }}
+        >
+          {worth === null || nothingYet ? '—' : formatMoney(Math.round(worth))}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+}
 
 const builtInHelp: Record<string, string> = {
   Savings: 'Money for goals like an emergency fund or a trip.',
@@ -77,6 +120,8 @@ export function WelcomePage() {
           <Typography color="text.secondary">Three quick steps. You can change everything later.</Typography>
         </Box>
       </Box>
+
+      <TenYearNumber />
 
       <Stepper activeStep={step} alternativeLabel sx={{ mb: 3 }}>
         {steps.map((label) => (

@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { PublicOnly, RequireAuth } from './auth/guards';
 import { AppShell } from './layout/AppShell';
+import { VisitorShell } from './layout/VisitorShell';
 import { SignInPage } from './pages/auth/SignInPage';
 import { SignUpPage } from './pages/auth/SignUpPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
@@ -10,6 +11,7 @@ import { ConfirmEmailChangePage } from './pages/auth/ConfirmEmailChangePage';
 import { PricingPage } from './pages/public/PricingPage';
 import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
 import { WelcomePage } from './features/setup/WelcomePage';
+import { DemoPage } from './features/demo/DemoPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { ToolsPage } from './features/tools/ToolsPage';
 import { PlanPage } from './features/plan/PlanPage';
@@ -40,6 +42,12 @@ export default function App() {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
 
+      {/* Open to everyone, in the app frame when signed in and the public frame when not */}
+      <Route element={<VisitorShell />}>
+        <Route path="/tools" element={<ToolsPage />} />
+        <Route path="/demo" element={<DemoPage />} />
+      </Route>
+
       {/* The app */}
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
@@ -50,7 +58,6 @@ export default function App() {
           <Route path="/debt" element={<DebtPage />} />
           <Route path="/invest" element={<InvestPage />} />
           <Route path="/what-if" element={<ScenariosPage />} />
-          <Route path="/tools" element={<ToolsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

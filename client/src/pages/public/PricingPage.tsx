@@ -43,9 +43,14 @@ export function PricingPage() {
         <Typography color="text.secondary" sx={{ maxWidth: 560, mx: 'auto', mb: 3, fontSize: '1.1rem' }}>
           One monthly plan for your savings, debt and investing, and a clear picture of where it takes you.
         </Typography>
-        <Button component={RouterLink} to={cta.to} variant="contained" size="large">
-          {cta.label}
-        </Button>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
+          <Button component={RouterLink} to={cta.to} variant="contained" size="large">
+            {cta.label}
+          </Button>
+          <Button component={RouterLink} to="/demo" variant="outlined" size="large">
+            See a sample plan
+          </Button>
+        </Box>
         {!me && (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
             No card needed.

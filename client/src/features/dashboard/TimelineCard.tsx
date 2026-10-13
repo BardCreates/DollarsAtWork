@@ -51,7 +51,7 @@ function headline(items: TimelineItem[]): string {
 }
 
 /** The dashboard roadmap: dated milestones in order, with the mascot cheering as one gets close. */
-export function TimelineCard({ items }: { items: TimelineItem[] }) {
+export function TimelineCard({ items, links = true }: { items: TimelineItem[]; /** Link each item to its module page. Off for the public demo, which has no pages to go to. */ links?: boolean }) {
   const ahead = items.filter((item) => !isDone(item));
   const done = items.filter(isDone);
   const next = nextUp(items);
@@ -83,7 +83,7 @@ export function TimelineCard({ items }: { items: TimelineItem[] }) {
         <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)' }}>
           {ahead.map((item, index) => {
             const near = isNear(item);
-            const link = kindLink[item.kind];
+            const link = links ? kindLink[item.kind] : undefined;
             const last = index === ahead.length - 1;
             return (
               <Box component="li" key={item.key} sx={{ display: 'flex', gap: 1.5, minWidth: 0 }}>

@@ -48,7 +48,11 @@ and decisions already made. Don't re-ask decided questions.
   its change since the last check-in, savings/investments/debt each, where the plan is headed, next milestone) with an
   "Email me a copy" button that sends it to the user's own address. Snapshots now also record savings, investments and
   debt totals (nullable: older snapshots predate them).
-- Next: stand-out step 6 (Public calculators and demo), then 7, in PLAN.md "Build status and next work".
+- Stand-out step 6 (Public calculators and demo) is built and verified: /tools and /demo are open to signed-out visitors
+  (VisitorShell: app frame when signed in, public frame when not); a cost-of-a-habit calculator joins the Tools; each
+  calculator and the demo end with a trial call to action for visitors; /demo runs the real projection engine on a
+  made-up person (lib/sampleData.ts) with a "move a dollar" slider; /welcome shows the user's own live 10-year number.
+- Next: stand-out step 7 (Launch polish: installable PWA, security page, voice pass), in PLAN.md "Build status and next work".
 
 ## What we compete on
 
@@ -104,6 +108,7 @@ client/src/
   components/             shared UI (PageHeader, Figure, PlanAmountBanner, RolloverList, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/sampleData.ts       the made-up "Alex" plan behind the public /demo page (sampleInput(extraToDebt))
   lib/report.ts           buildReport: latest check-in vs the one before, per area (savings / investments / debt)
   lib/scenarios.ts        resolveScenario / changesBetween (a scenario is the plan + its changes), summarizeProjection
   lib/timeline.ts         buildTimeline: the dated roadmap read from a projection; isNear / isDone / nextUp
@@ -111,6 +116,8 @@ client/src/
   lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
+  features/demo/          DemoPage: the sample plan anyone can play with, no account
+  layout/VisitorShell.tsx the frame for pages open to everyone (/tools, /demo): AppShell when signed in, public frame when not
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
   features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration; ReportDialog: the check-in recap
