@@ -10,7 +10,7 @@ import { debtTypeLabels } from '../debt/debts';
 import { AllocationDonut } from '../plan/AllocationDonut';
 import { planTotals } from '../plan/plan';
 import { otherItemTypeLabels, type Snapshot } from './networth';
-import type { DashboardData, Milestone } from './useDashboard';
+import type { DashboardData } from './useDashboard';
 
 const whole = (value: number) => formatMoney(Math.round(value));
 
@@ -38,29 +38,6 @@ const Empty = ({ children }: { children: ReactNode }) => (
     {children}
   </Typography>
 );
-
-export function MilestonesCard({ milestones }: { milestones: Milestone[] }) {
-  return (
-    <DashCard title="Milestones">
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 1.25 }}>
-        {milestones.map((milestone) => (
-          <Box component="li" key={milestone.key} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-            <Typography variant="body2" noWrap sx={{ minWidth: 0 }}>
-              {milestone.label}
-            </Typography>
-            <Typography
-              variant="body2"
-              color={milestone.month === null ? 'text.secondary' : milestone.month === 0 ? 'success.main' : 'text.primary'}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {milestone.month === null ? 'Not within 40 years' : milestone.month === 0 ? 'Reached' : formatMonthFromNow(milestone.month)}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
-    </DashCard>
-  );
-}
 
 export function PlanCard({ data }: { data: DashboardData }) {
   const { remaining } = planTotals(data.plan);

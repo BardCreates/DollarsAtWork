@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  firstMonthNetWorthReaches,
   project,
   type DebtStrategy,
   type FreedMoneyDestination,
@@ -8,6 +7,7 @@ import {
   type ProjectionResult,
   type SavingsSplitMode,
 } from '../../lib/projection';
+import { buildTimeline, type TimelineItem } from '../../lib/timeline';
 import { useDebts, type DebtsData } from '../debt/debts';
 import { useInvestments, type InvestmentsData } from '../invest/investments';
 import { planTotals, usePlan, type CategoryKind, type Plan } from '../plan/plan';
@@ -80,32 +80,19 @@ export function buildProjectionInput(data: DashboardData, todaysDollars: boolean
   };
 }
 
-export interface Milestone {
-  key: string;
-  label: string;
-  /** Months from now; 0 means already there, null means not within 40 years. */
-  month: number | null;
-}
-
 export interface DashboardProjection {
   result: ProjectionResult;
-  milestones: Milestone[];
+  /** The dated roadmap: debt payoffs, goals and net-worth steps, earliest first. */
+  timeline: TimelineItem[];
 }
 
 export function useDashboardProjection(data: DashboardData, todaysDollars: boolean): DashboardProjection {
   return useMemo(() => {
     const result = project(buildProjectionInput(data, todaysDollars));
-    const milestones: Milestone[] = [];
-
-    if (data.debts.debts.some((d) => d.balance > 0)) milestones.push({ key: 'debt-free', label: 'Debt-free', month: result.debtFreeMonth });
-    data.savings.goals.forEach((goal, index) => {
-      milestones.push({ key: goal.id, label: `${goal.name} reached`, month: result.goalFullMonths[index] });
+    const timeline = buildTimeline(result, {
+      debts: data.debts.debts.map((d) => d.name),
+      goals: data.savings.goals.map((g) => g.name),
     });
-    for (const [amount, label] of [[100_000, '$100k net worth'], [1_000_000, '$1M net worth']] as const) {
-      milestones.push({ key: label, label, month: firstMonthNetWorthReaches(result, amount) });
-    }
-
-    milestones.sort((a, b) => (a.month ?? Infinity) - (b.month ?? Infinity));
-    return { result, milestones };
+    return { result, timeline };
   }, [data, todaysDollars]);
 }

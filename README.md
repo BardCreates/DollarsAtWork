@@ -93,6 +93,14 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - The Savings page does the same for goals: the next goal down the list in priority mode, or every goal still open in percent mode
 - Where finished money goes at the end is the setting under Assumptions on the Dashboard
 
+## Money timeline (stand-out step 3)
+
+- The Dashboard's milestones are now a dated roadmap: each debt paid off, debt-free, each savings goal, and the
+  next few net-worth steps ($10k, $25k, $50k, $100k and so on), with how far away each is
+- Milestones within three months are marked "Almost there"; when one is within a month the mascot sets off confetti
+  (once per visit, and not at all if your device asks for reduced motion). Tap the mascot to celebrate any time
+- Milestones already reached are listed in one line at the bottom
+
 ## Folder layout
 
 ```

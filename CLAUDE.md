@@ -37,7 +37,11 @@ and decisions already made. Don't re-ask decided questions.
 - Stand-out step 2 (Rollover messages) is built and verified: the Debt and Savings pages say, in plain sentences,
   where each paid-off debt's or full goal's money goes next and when ("When Visa is paid off in Nov 2027, its $370
   a month moves to Car loan."). Read from the projection itself, so it can't disagree with the numbers.
-- Next: stand-out step 3 (Money timeline), then 4–7 in PLAN.md "Build status and next work", one step at a time.
+- Stand-out step 3 (Money timeline) is built and verified: the dashboard's milestones are now a dated roadmap
+  (each debt payoff, debt-free, each goal, the next three net-worth steps), and the mascot cheers with confetti when
+  one is within a month (once per visit, never with reduced motion) or when tapped.
+- Next: stand-out step 4 (What-if scenarios; new Scenarios table), then 5–7 in PLAN.md "Build status and next work",
+  one step at a time.
 
 ## What we compete on
 
@@ -92,12 +96,14 @@ client/src/
   components/             shared UI (PageHeader, Figure, PlanAmountBanner, RolloverList, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/timeline.ts         buildTimeline: the dated roadmap read from a projection; isNear / isDone / nextUp
   lib/rollover.ts         debtRollovers / goalRollovers: who receives a finished debt's or goal's money, read from a projection
   lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
+  features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration
   features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page
   features/dashboard/     Dashboard: networth.ts, useDashboard.ts (all data -> one projection), cards, dialogs, check-in
   features/debt/          Debt page: debts.ts (query, mutations, useDebtProjection), list, dialog, chart, schedule

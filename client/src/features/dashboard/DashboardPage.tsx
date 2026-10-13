@@ -11,12 +11,13 @@ import { formatMoney } from '../../lib/money';
 import { brand } from '../../theme';
 import { planTotals } from '../plan/plan';
 import { AssumptionsDialog } from './AssumptionsDialog';
-import { AssetsLiabilitiesCard, CheckInCard, DashCard, DebtPayoffCard, GoalsCard, HistoryCard, MilestonesCard, PlanCard } from './cards';
+import { AssetsLiabilitiesCard, CheckInCard, DashCard, DebtPayoffCard, GoalsCard, HistoryCard, PlanCard } from './cards';
 import { CheckInDialog } from './CheckInDialog';
 import { NetWorthCard } from './NetWorthCard';
 import type { NetWorthData } from './networth';
 import { OtherItemsDialog } from './OtherItemsDialog';
 import { ProjectionChart } from './ProjectionChart';
+import { TimelineCard } from './TimelineCard';
 import { useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
 const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financial advice.';
@@ -70,7 +71,7 @@ function Dashboard({ data }: { data: DashboardData }) {
   const [dialog, setDialog] = useState<'assumptions' | 'items' | 'check-in' | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const { result, milestones } = useDashboardProjection(data, todaysDollars);
+  const { result, timeline } = useDashboardProjection(data, todaysDollars);
   const { remaining } = planTotals(data.plan);
 
   if (isBlank(data)) {
@@ -160,7 +161,7 @@ function Dashboard({ data }: { data: DashboardData }) {
 
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <CheckInCard snapshots={data.netWorth.snapshots} readOnly={readOnly} onStart={() => setDialog('check-in')} />
-          <MilestonesCard milestones={milestones} />
+          <TimelineCard items={timeline} />
           <PlanCard data={data} />
           <DebtPayoffCard data={data} result={result} />
           <GoalsCard data={data} result={result} />
