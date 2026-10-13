@@ -2,14 +2,15 @@ import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Link, Typography } from '@mui/material';
 import { PublicLayout } from './PublicLayout';
+import { SITE } from './siteInfo';
 
 /**
  * DRAFTS. These pages describe what the app actually does, but they have not been reviewed by a lawyer.
- * Before launch: have them reviewed, fill in every [bracketed] placeholder below, and set DRAFT to false.
+ * Before launch: have them reviewed, fill in the placeholders in siteInfo.ts and below, and set `draft` to false.
  */
-const DRAFT = true;
-const COMPANY = '[Company legal name]';
-const CONTACT = '[contact email]';
+const DRAFT = SITE.draft;
+const COMPANY = SITE.company;
+const CONTACT = SITE.contact;
 const UPDATED = '[date]';
 
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {

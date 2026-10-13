@@ -12,6 +12,7 @@ export function FooterLinks() {
         { to: '/pricing', label: 'Pricing' },
         { to: '/tools', label: 'Free calculators' },
         { to: '/demo', label: 'Sample plan' },
+        { to: '/security', label: 'Security' },
         { to: '/terms', label: 'Terms' },
         { to: '/privacy', label: 'Privacy' },
       ].map((link) => (
@@ -34,11 +35,11 @@ export function PublicLayout({ children, maxWidth = 'md' }: { children: ReactNod
           <Wordmark />
         </Box>
         {me ? (
-          <Button component={RouterLink} to="/" variant="outlined" sx={{ flexShrink: 0 }}>
-            Dashboard
+          <Button component={RouterLink} to="/" variant="outlined" sx={{ flexShrink: 0, minWidth: 0, px: { xs: 1.25, sm: 2.5 } }}>
+            Open app
           </Button>
         ) : (
-          <Button component={RouterLink} to="/sign-in" variant="outlined" sx={{ flexShrink: 0 }}>
+          <Button component={RouterLink} to="/sign-in" variant="outlined" sx={{ flexShrink: 0, minWidth: 0, px: { xs: 1.25, sm: 2.5 } }}>
             Sign in
           </Button>
         )}

@@ -20,7 +20,7 @@ const questions = [
   { q: 'Do I need a card to start?', a: 'No. The trial is 30 days of full access with no card. You only enter one if you decide to subscribe.' },
   { q: 'What happens when the trial ends?', a: "Your plan and numbers stay safe and you can still see them. Editing is turned off until you subscribe." },
   { q: 'Can I cancel?', a: 'Any time, from your profile. You keep full access until the end of the period you paid for.' },
-  { q: 'Do you connect to my bank?', a: 'No. You type in your own numbers, so we never see your bank login or your transactions.' },
+  { q: 'Do you connect to my bank?', a: 'No, and we never will ask for your bank login. You type in your own numbers, so we never see your accounts or your transactions. The details are on our security page.' },
   { q: 'Can I get my data out?', a: 'Yes. Download everything as spreadsheets or JSON from your profile, or delete your account and all its data for good.' },
 ];
 

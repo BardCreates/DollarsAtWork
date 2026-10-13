@@ -129,6 +129,15 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - The setup walkthrough keeps your own net worth in 10 years in view and updates it as you enter things
 - Pricing and the footer link to the calculators and the sample plan
 
+## Launch polish (stand-out step 7, so far)
+
+- Installable: a web app manifest, icons, and a small service worker that shows a friendly page when you're offline.
+  It never caches or answers API calls and never stores anything you've entered. Browsers that offer installation
+  get an "Install the app" button on Profile. The worker only registers in a production build
+- A public Security page, "Private by design": what we never ask for (no bank login), what we keep, how the
+  account is protected, and your data being yours
+- The owner's company name and contact email for public pages are set in one place, client/src/pages/public/siteInfo.ts
+
 ## Folder layout
 
 ```

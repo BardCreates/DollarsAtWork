@@ -52,7 +52,14 @@ and decisions already made. Don't re-ask decided questions.
   (VisitorShell: app frame when signed in, public frame when not); a cost-of-a-habit calculator joins the Tools; each
   calculator and the demo end with a trial call to action for visitors; /demo runs the real projection engine on a
   made-up person (lib/sampleData.ts) with a "move a dollar" slider; /welcome shows the user's own live 10-year number.
-- Next: stand-out step 7 (Launch polish: installable PWA, security page, voice pass), in PLAN.md "Build status and next work".
+- Stand-out step 7 (Launch polish), the mechanical parts, are built: an installable app (manifest, icons, a minimal
+  service worker that only serves an offline page and never touches the API or stores anyone's numbers, and an
+  "Install the app" button on Profile when the browser offers it) and a public /security page ("Private by design").
+  Still to do, waiting on the owner: the voice pass (a proposal of before/after wording was sent for approval),
+  and the Google Fonts question (see below).
+- Open: fonts load from Google Fonts (index.html), which sends each visitor's address to Google. For a "no tracking"
+  pitch, self-host Inter and Coiny (both OFL) instead, then delete the "One honest note" section of SecurityPage.
+- Next: finish step 7, then the launch items above.
 
 ## What we compete on
 
@@ -108,6 +115,7 @@ client/src/
   components/             shared UI (PageHeader, Figure, PlanAmountBanner, RolloverList, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/installPrompt.ts    catches the browser's install offer at start-up; useInstallPrompt() for the Profile button
   lib/sampleData.ts       the made-up "Alex" plan behind the public /demo page (sampleInput(extraToDebt))
   lib/report.ts           buildReport: latest check-in vs the one before, per area (savings / investments / debt)
   lib/scenarios.ts        resolveScenario / changesBetween (a scenario is the plan + its changes), summarizeProjection
@@ -116,6 +124,7 @@ client/src/
   lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
+  public/sw.js            the service worker: offline page only; tested in lib/serviceWorker.test.ts. Never cache /api.
   features/demo/          DemoPage: the sample plan anyone can play with, no account
   layout/VisitorShell.tsx the frame for pages open to everyone (/tools, /demo): AppShell when signed in, public frame when not
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
@@ -131,7 +140,8 @@ client/src/
   features/plan/          Plan page: plan.ts (query + mutations), PlanPage, CategoryRow, AddCategoryForm, AllocationDonut,
                           ImpactPanel + usePlanImpact (Move a dollar). MoneyField.onDraft reports amounts while typing;
                           PlanPage lays those drafts over the saved plan as `livePlan` for everything on screen.
-  pages/                  auth screens, Profile, NotFound, public/ (pricing, terms, privacy, PublicLayout + FooterLinks);
+  pages/                  auth screens, Profile, NotFound, public/ (pricing, terms, privacy, security, PublicLayout + FooterLinks,
+                          siteInfo.ts = the owner's company name / contact email still to fill in);
                           everything else lives in client/src/features/<feature>/
 docs/PLAN.md              product spec
 ```
@@ -183,6 +193,8 @@ docs/PLAN.md              product spec
 
 **Copy**
 - Plain, friendly sentences. Sentence-case buttons. Money shown as `$1,234` (cents only where it matters).
+- Every claim on the public Security and Privacy pages must describe something the code does today. If you change
+  the behavior, change the page in the same commit.
 
 ## How to work in this repo
 

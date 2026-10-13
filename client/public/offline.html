@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#181a20" />
+    <title>Offline · Dollars at Work</title>
+    <style>
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid; place-items: center; padding: 24px; box-sizing: border-box;
+        background: #181a20; color: #e3e6eb; text-align: center;
+        font-family: Inter, Roboto, 'Helvetica Neue', Arial, sans-serif;
+      }
+      main { max-width: 420px; }
+      img { width: 120px; height: auto; }
+      h1 { font-size: 1.5rem; margin: 16px 0 8px; }
+      p { color: #b0b8c1; line-height: 1.5; margin: 0 0 24px; }
+      button {
+        font: inherit; font-weight: 600; padding: 10px 20px; border: 0; border-radius: 10px;
+        background: #19c37d; color: #0b1410; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/icon-192.png" alt="" />
+      <h1>You're offline</h1>
+      <p>Your numbers are safe and will be here when your connection is back.</p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>

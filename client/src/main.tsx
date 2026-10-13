@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { theme } from './theme';
 import App from './App';
+import './lib/installPrompt';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,3 +25,13 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 );
+
+// Makes the app installable and gives a friendly page when offline. Production only, so development
+// never fights a cached copy. See public/sw.js: it never touches the API or stores anyone's numbers.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Not installable here (for example, a browser that blocks it). The app works the same without.
+    });
+  });
+}
