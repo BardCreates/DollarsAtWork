@@ -20,9 +20,9 @@ public record OtherItemResponse(Guid Id, string Name, string Kind, string Type, 
     public static OtherItemResponse From(OtherItem i) => new(i.Id, i.Name, i.Kind.ToString(), i.Type.ToString(), i.Value, i.SortOrder);
 }
 
-public record SnapshotResponse(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth)
+public record SnapshotResponse(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth, decimal? Savings, decimal? Investments, decimal? Debts)
 {
-    public static SnapshotResponse From(NetWorthSnapshot s) => new(s.Date, s.Assets, s.Liabilities, s.NetWorth);
+    public static SnapshotResponse From(NetWorthSnapshot s) => new(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts);
 }
 
 public record SettingsResponse(string DebtDoneDestination, string SavingsDoneDestination, decimal InflationRate, decimal IncomeGrowthRate)

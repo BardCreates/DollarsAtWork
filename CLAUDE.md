@@ -44,7 +44,11 @@ and decisions already made. Don't re-ask decided questions.
   compared with the real plan on one chart and a side-by-side table (debt-free date, net worth at 10/20/30 years,
   interest paid). A scenario stores only its changes (income, category amounts, raise, payoff order, where finished
   money goes), so anything it doesn't change keeps following the real plan. It never changes the real plan.
-- Next: stand-out step 5 (Monthly report card), then 6–7 in PLAN.md "Build status and next work", one step at a time.
+- Stand-out step 5 (Monthly report card) is built and verified: saving a check-in opens a one-screen recap (net worth and
+  its change since the last check-in, savings/investments/debt each, where the plan is headed, next milestone) with an
+  "Email me a copy" button that sends it to the user's own address. Snapshots now also record savings, investments and
+  debt totals (nullable: older snapshots predate them).
+- Next: stand-out step 6 (Public calculators and demo), then 7, in PLAN.md "Build status and next work".
 
 ## What we compete on
 
@@ -100,6 +104,7 @@ client/src/
   components/             shared UI (PageHeader, Figure, PlanAmountBanner, RolloverList, Wordmark, MoneyField, formHelpers.muiField)
   lib/money.ts            the ONLY money formatter/parser (formatMoney, formatPercent, parseMoneyInput)
   lib/calculators.ts      the maths for the Tools page (reuses the projection engine); hand-checked tests beside it
+  lib/report.ts           buildReport: latest check-in vs the one before, per area (savings / investments / debt)
   lib/scenarios.ts        resolveScenario / changesBetween (a scenario is the plan + its changes), summarizeProjection
   lib/timeline.ts         buildTimeline: the dated roadmap read from a projection; isNear / isDone / nextUp
   lib/rollover.ts         debtRollovers / goalRollovers: who receives a finished debt's or goal's money, read from a projection
@@ -108,7 +113,7 @@ client/src/
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
-  features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration
+  features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration; ReportDialog: the check-in recap
   features/scenarios/     What if page: scenarios.ts (query, mutations, useComparison), ScenarioDialog, CompareView
   features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page
   features/dashboard/     Dashboard: networth.ts, useDashboard.ts (all data -> one projection), cards, dialogs, check-in

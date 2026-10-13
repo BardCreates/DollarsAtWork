@@ -109,6 +109,16 @@ The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the 
 - A what-if never changes your real plan, and anything it doesn't change keeps following your plan as it changes
 - Included in your data export. Because the nav gained an item, the top menu now collapses to the hamburger below 1200px
 
+## Monthly report card (stand-out step 5)
+
+- Saving a monthly check-in now opens a one-screen recap: your net worth and how it moved since the last check-in,
+  how savings, investments and debt each moved, where your plan is headed (debt-free date, net worth in 10 years)
+  and what's next on your timeline
+- "Email me a copy" sends the recap to your own address (in development it prints in the API terminal)
+- "See your recap" on the Dashboard's check-in card reopens the latest one
+- Check-ins now keep totals for savings, investments and debt, so the recap can show the change in each; they're in
+  your data export too
+
 ## Folder layout
 
 ```

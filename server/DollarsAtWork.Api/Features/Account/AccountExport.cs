@@ -40,8 +40,8 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             Add(zip, "investment-accounts.csv", ["Name", "Type", "Balance", "ExpectedReturn", "SharePercent", "MatchPercent", "MatchLimitPercent"],
                 data.InvestmentAccounts.Select(a => new object?[] { a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent }));
             Add(zip, "other-items.csv", ["Name", "Kind", "Type", "Value"], data.OtherItems.Select(i => new object?[] { i.Name, i.Kind, i.Type, i.Value }));
-            Add(zip, "net-worth-history.csv", ["Date", "Assets", "Liabilities", "NetWorth"],
-                data.NetWorthHistory.Select(s => new object?[] { s.Date, s.Assets, s.Liabilities, s.NetWorth }));
+            Add(zip, "net-worth-history.csv", ["Date", "Assets", "Liabilities", "NetWorth", "Savings", "Investments", "Debts"],
+                data.NetWorthHistory.Select(s => new object?[] { s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts }));
             Add(zip, "scenarios.csv", ["Name", "Changes"], data.Scenarios.Select(s => new object?[] { s.Name, JsonSerializer.Serialize(s.Changes, Json) }));
         }
         return stream.ToArray();
@@ -69,7 +69,7 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             await db.OtherItems.AsNoTracking().Where(i => i.UserId == id).OrderBy(i => i.SortOrder)
                 .Select(i => new ExportOtherItem(i.Name, i.Kind, i.Type, i.Value)).ToListAsync(ct),
             await db.NetWorthSnapshots.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.Date)
-                .Select(s => new ExportSnapshot(s.Date, s.Assets, s.Liabilities, s.NetWorth)).ToListAsync(ct),
+                .Select(s => new ExportSnapshot(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts)).ToListAsync(ct),
             (await db.Scenarios.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.SortOrder)
                 .Select(s => new { s.Name, s.OverridesJson }).ToListAsync(ct))
                 .Select(s => new ExportScenario(s.Name, ScenarioJson.Read(s.OverridesJson))).ToList());
@@ -121,5 +121,5 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
     private record ExportInvestmentAccount(string Name, InvestmentAccountType Type, decimal Balance, decimal ExpectedReturn, decimal SharePercent, decimal? MatchPercent, decimal? MatchLimitPercent);
     private record ExportOtherItem(string Name, OtherItemKind Kind, OtherItemType Type, decimal Value);
     private record ExportScenario(string Name, ScenarioOverrides Changes);
-    private record ExportSnapshot(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth);
+    private record ExportSnapshot(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth, decimal? Savings, decimal? Investments, decimal? Debts);
 }

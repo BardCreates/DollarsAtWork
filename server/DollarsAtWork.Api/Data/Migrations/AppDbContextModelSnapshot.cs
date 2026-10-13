@@ -257,11 +257,23 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<decimal?>("Debts")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal?>("Investments")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
                     b.Property<decimal>("Liabilities")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 
                     b.Property<decimal>("NetWorth")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal?>("Savings")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 

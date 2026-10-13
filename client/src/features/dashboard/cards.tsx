@@ -231,7 +231,7 @@ export function AssetsLiabilitiesCard({ data, readOnly, onManage }: { data: Dash
 
 const longDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
-export function CheckInCard({ snapshots, readOnly, onStart }: { snapshots: Snapshot[]; readOnly: boolean; onStart: () => void }) {
+export function CheckInCard({ snapshots, readOnly, onStart, onShowReport }: { snapshots: Snapshot[]; readOnly: boolean; onStart: () => void; onShowReport: () => void }) {
   const last = snapshots.at(-1);
   const now = new Date();
   const doneThisMonth = !!last && last.date.slice(0, 7) === `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
@@ -243,9 +243,12 @@ export function CheckInCard({ snapshots, readOnly, onStart }: { snapshots: Snaps
           ? `Last check-in: ${longDate.format(new Date(last.date))}. ${doneThisMonth ? "You're up to date for this month." : "It's time for this month's."}`
           : 'Once a month, confirm your real balances so your projections start from the truth. It takes a minute.'}
       </Typography>
-      <Button variant={doneThisMonth ? 'outlined' : 'contained'} disabled={readOnly} onClick={onStart}>
-        {doneThisMonth ? 'Update balances' : 'Start check-in'}
-      </Button>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <Button variant={doneThisMonth ? 'outlined' : 'contained'} disabled={readOnly} onClick={onStart}>
+          {doneThisMonth ? 'Update balances' : 'Start check-in'}
+        </Button>
+        {last && <Button onClick={onShowReport}>See your recap</Button>}
+      </Box>
     </DashCard>
   );
 }

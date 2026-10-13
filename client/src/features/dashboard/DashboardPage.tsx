@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Snackbar, Switch, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Switch, Typography } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import mascot from '../../assets/mascot.png';
 import { PageHeader } from '../../components/PageHeader';
@@ -14,6 +14,7 @@ import { AssumptionsDialog } from './AssumptionsDialog';
 import { AssetsLiabilitiesCard, CheckInCard, DashCard, DebtPayoffCard, GoalsCard, HistoryCard, PlanCard } from './cards';
 import { CheckInDialog } from './CheckInDialog';
 import { NetWorthCard } from './NetWorthCard';
+import { ReportDialog } from './ReportDialog';
 import type { NetWorthData } from './networth';
 import { OtherItemsDialog } from './OtherItemsDialog';
 import { ProjectionChart } from './ProjectionChart';
@@ -68,8 +69,7 @@ function Dashboard({ data }: { data: DashboardData }) {
 
   const [year, setYear] = useState(10);
   const [todaysDollars, setTodaysDollars] = useState(false);
-  const [dialog, setDialog] = useState<'assumptions' | 'items' | 'check-in' | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<'assumptions' | 'items' | 'check-in' | 'report' | null>(null);
 
   const { result, timeline } = useDashboardProjection(data, todaysDollars);
   const { remaining } = planTotals(data.plan);
@@ -99,11 +99,10 @@ function Dashboard({ data }: { data: DashboardData }) {
     );
   }
 
-  const checkInSaved = (saved: NetWorthData) => {
-    setDialog(null);
-    const latest = saved.snapshots.at(-1);
-    setNotice(latest ? `Check-in saved. Your net worth is ${formatMoney(Math.round(latest.netWorth))}.` : 'Check-in saved.');
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.65 }, colors: [brand.green, brand.yellow, brand.pink, brand.blue] });
+  /** After a check-in: celebrate, then show the one-screen recap of the month. */
+  const checkInSaved = (_saved: NetWorthData) => {
+    setDialog('report');
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.65 }, colors: [brand.green, brand.yellow, brand.pink, brand.blue], disableForReducedMotion: true });
   };
 
   return (
@@ -160,7 +159,7 @@ function Dashboard({ data }: { data: DashboardData }) {
         </Box>
 
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
-          <CheckInCard snapshots={data.netWorth.snapshots} readOnly={readOnly} onStart={() => setDialog('check-in')} />
+          <CheckInCard snapshots={data.netWorth.snapshots} readOnly={readOnly} onStart={() => setDialog('check-in')} onShowReport={() => setDialog('report')} />
           <TimelineCard items={timeline} />
           <PlanCard data={data} />
           <DebtPayoffCard data={data} result={result} />
@@ -175,8 +174,8 @@ function Dashboard({ data }: { data: DashboardData }) {
       <AssumptionsDialog open={dialog === 'assumptions'} settings={data.netWorth.settings} onClose={() => setDialog(null)} />
       <OtherItemsDialog open={dialog === 'items'} items={data.netWorth.items} onClose={() => setDialog(null)} />
       <CheckInDialog open={dialog === 'check-in'} data={data} onClose={() => setDialog(null)} onSaved={checkInSaved} />
+      <ReportDialog open={dialog === 'report'} data={data} onClose={() => setDialog(null)} />
 
-      <Snackbar open={!!notice} autoHideDuration={8000} onClose={() => setNotice(null)} message={notice ?? ''} />
     </>
   );
 }

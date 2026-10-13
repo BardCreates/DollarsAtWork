@@ -47,6 +47,10 @@ export interface Snapshot {
   assets: number;
   liabilities: number;
   netWorth: number;
+  /** Totals by area at that check-in; null for check-ins made before these were recorded. */
+  savings: number | null;
+  investments: number | null;
+  debts: number | null;
 }
 
 export interface NetWorthData {
@@ -123,5 +127,12 @@ export function useCheckIn() {
       // The balances live with their own modules; fetch the new ones.
       for (const queryKey of [savingsQueryKey, debtsQueryKey, investmentsQueryKey]) queryClient.invalidateQueries({ queryKey });
     },
+  });
+}
+
+/** Emails the signed-in user a copy of their latest check-in recap, at their own address only. */
+export function useEmailReport() {
+  return useMutation({
+    mutationFn: (projection: { debtFreeMonth: number | null; netWorthIn10Years: number | null }) => api.post('/networth/report/email', projection),
   });
 }

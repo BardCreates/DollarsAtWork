@@ -2,7 +2,9 @@ using System.Security.Claims;
 using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DollarsAtWork.Api.Features.NetWorth;
 
@@ -25,6 +27,8 @@ public static class NetWorthEndpoints
         netWorth.MapPut("/items/{id:guid}", ReplaceItem).RequireFullAccess();
         netWorth.MapDelete("/items/{id:guid}", DeleteItem).RequireFullAccess();
         netWorth.MapPost("/check-in", CheckIn).RequireFullAccess();
+        // Reading your own recap by email changes nothing, so it stays open to expired accounts.
+        netWorth.MapPost("/report/email", EmailReport).RequireRateLimiting(RateLimits.Auth);
 
         return api;
     }
@@ -182,6 +186,9 @@ public static class NetWorthEndpoints
             db.NetWorthSnapshots.Add(snapshot);
         }
         snapshot.Date = today;
+        snapshot.Savings = goals.Sum(g => g.CurrentBalance);
+        snapshot.Investments = accounts.Sum(a => a.Balance);
+        snapshot.Debts = debts.Sum(d => d.Balance);
         snapshot.Assets = assets;
         snapshot.Liabilities = liabilities;
         snapshot.NetWorth = assets - liabilities;
@@ -189,6 +196,43 @@ public static class NetWorthEndpoints
 
         await db.SaveChangesAsync(ct);
         return Results.Ok(await BuildResponse(db, userId, plan, ct));
+    }
+
+    /// <summary>Emails the signed-in user a copy of their latest check-in recap, at their own address only.</summary>
+    private static async Task<IResult> EmailReport(
+        ReportEmailRequest request,
+        ClaimsPrincipal principal,
+        UserManager<AppUser> users,
+        AppDbContext db,
+        IAppEmailSender sender,
+        IOptions<AppOptions> options,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var check = new Validation();
+        if (request.DebtFreeMonth is < 0 or > ReportEmail.MaxMonths)
+            check.Add("debtFreeMonth", "That date isn't valid.");
+        if (request.NetWorthIn10Years is { } ten && Math.Abs(ten) > ReportEmail.MaxNetWorth)
+            check.Add("netWorthIn10Years", "That amount isn't valid.");
+        if (check.Failed)
+            return check.ToResult();
+
+        var userId = principal.GetUserId();
+        var user = await users.FindByIdAsync(userId.ToString());
+        if (user?.Email is null)
+            return Results.Unauthorized();
+
+        var latestTwo = await db.NetWorthSnapshots.AsNoTracking()
+            .Where(s => s.UserId == userId)
+            .OrderByDescending(s => s.Date)
+            .Take(2)
+            .ToListAsync(ct);
+        if (latestTwo.Count == 0)
+            return Results.Problem(title: "Do a check-in first.", detail: "There's nothing to send until you've done a check-in.", statusCode: StatusCodes.Status409Conflict);
+
+        var (subject, body) = ReportEmail.Compose(latestTwo[0], latestTwo.Count > 1 ? latestTwo[1] : null, request, clock.GetUtcNow(), options.Value.PublicUrl.TrimEnd('/'));
+        await sender.SendAsync(user.Email, subject, body, ct);
+        return Results.NoContent();
     }
 
     private static IResult PlanMissing() =>

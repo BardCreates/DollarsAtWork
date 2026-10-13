@@ -203,6 +203,10 @@ public class NetWorthSnapshot
     public decimal Assets { get; set; }
     public decimal Liabilities { get; set; }
     public decimal NetWorth { get; set; }
+    /// <summary>Totals by area at the time of the check-in. Null on snapshots taken before these were recorded.</summary>
+    public decimal? Savings { get; set; }
+    public decimal? Investments { get; set; }
+    public decimal? Debts { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
