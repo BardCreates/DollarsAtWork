@@ -68,6 +68,13 @@ and decisions already made. Don't re-ask decided questions.
 - Open: fonts load from Google Fonts (index.html), which sends each visitor's address to Google. For a "no tracking"
   pitch, self-host Inter and Coiny (both OFL) instead, then delete the "One honest note" section of SecurityPage.
 - The voice pass is applied (see "Voice" under Copy). Next: the launch items above.
+- Home page, waitlist, hints and help (Oct 15) are built: signed-out visitors at `/` get the home page (features/home;
+  `HomeRoute` shows the dashboard inside `AppShell` once signed in); a waitlist box (features/waitlist, POST /api/waitlist,
+  WaitlistEntries table, rate-limited per IP) on the home page and under every calculator and the demo; a first-time hint
+  at the top of each app page plus a tour on the dashboard (features/hints; closed hint ids and an all-off switch are stored
+  on AppUser and sent with /auth/me; Profile has a Show hints switch); a searchable help guide at /help (features/help:
+  articles.ts holds every article in a small markup, helpSearch.ts ranks results; both tested). Help articles describe the
+  app as it is: when a screen changes, change its article in the same commit.
 
 ## What we compete on
 
@@ -133,7 +140,11 @@ client/src/
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   public/sw.js            the service worker: offline page only; tested in lib/serviceWorker.test.ts. Never cache /api.
-  features/demo/          DemoPage: the sample plan anyone can play with, no account
+  features/demo/          DemoPage: the sample plan anyone can play with, no account (SampleImpactCard: its slider, also on the home page)
+  features/home/          HomePage (visitors at /) and HomeRoute (home page or dashboard)
+  features/waitlist/      WaitlistForm + useJoinWaitlist; the box shown to visitors on home, tools and demo
+  features/hints/         Hint card, per-page hint text (PageHints), useShowHint/useDismissHint/useSetHintsOff, Profile HintsCard
+  features/help/          the help guide: articles.ts, helpSearch.ts, helpMarkup.ts, HelpPage (/help), HelpArticlePage (/help/:slug)
   layout/VisitorShell.tsx the frame for pages open to everyone (/tools, /demo): AppShell when signed in, public frame when not
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
