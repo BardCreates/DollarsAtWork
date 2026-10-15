@@ -13,7 +13,7 @@ namespace DollarsAtWork.Api.Features.Waitlist;
 public static class WaitlistEndpoints
 {
     /// <summary>The pages that show the form. Anything else is stored as "other".</summary>
-    private static readonly HashSet<string> Sources = ["home", "tools", "demo", "pricing", "help", "other"];
+    private static readonly HashSet<string> Sources = ["home", "tools", "demo", "pricing", "help", "blog", "other"];
 
     public static RouteGroupBuilder MapWaitlistEndpoints(this RouteGroupBuilder api)
     {

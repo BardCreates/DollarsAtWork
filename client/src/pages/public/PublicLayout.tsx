@@ -12,6 +12,7 @@ export function FooterLinks() {
         { to: '/pricing', label: 'Pricing' },
         { to: '/tools', label: 'Free calculators' },
         { to: '/demo', label: 'Sample plan' },
+        { to: '/blog', label: 'Blog' },
         { to: '/help', label: 'Help' },
         { to: '/security', label: 'Security' },
         { to: '/terms', label: 'Terms' },
@@ -28,6 +29,7 @@ export function FooterLinks() {
 const visitorLinks = [
   { to: '/tools', label: 'Calculators' },
   { to: '/pricing', label: 'Pricing' },
+  { to: '/blog', label: 'Blog' },
   { to: '/help', label: 'Help' },
 ];
 
