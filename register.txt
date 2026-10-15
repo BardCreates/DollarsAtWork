@@ -1,0 +1,2 @@
+url=http://localhost:4173/sign-up?from=blog%2Frates-are-rising-shrink-your-card-debt
+body={"email":"test@example.com","password":"password123","source":"blog/rates-are-rising-shrink-your-card-debt"}
