@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import mascot from '../../assets/mascot.png';
 import { useMe } from '../../auth/auth';
 import { PublicLayout } from './PublicLayout';
+import { signUpPath } from '../../lib/signUp';
 import { SITE } from './siteInfo';
 
 /**
@@ -116,7 +117,7 @@ export function SecurityPage() {
         <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
           <Typography sx={{ flex: 1 }}>See how it works with a made-up plan first, or start your own. No card, no bank login.</Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-            <Button component={RouterLink} to={me ? '/' : '/sign-up'} variant="contained">
+            <Button component={RouterLink} to={me ? '/' : signUpPath('security')} variant="contained">
               {me ? 'Go to your dashboard' : 'Start your free trial'}
             </Button>
             <Button component={RouterLink} to="/demo" variant="outlined">

@@ -3,7 +3,8 @@ title: Inflation Hit 3.7%. Is Your Savings Getting a Raise or a Pay Cut?
 date: 2026-10-15
 summary: Inflation hit 3.7%, but the average savings account pays 0.37%. See what that gap costs you and how to give your savings a raise.
 tags: savings, high-yield savings, inflation, emergency fund, interest rates
-draft: true
+cta: savings
+draft: false
 ---
 
 Every dollar in your savings account has a job: sit tight and be there when you need it. But this week's inflation report raises a fair question. While those dollars wait, are they keeping up with prices? If your money sits at a typical bank rate, the answer right now is no. Each month it can buy a little less than the month before.

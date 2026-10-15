@@ -47,6 +47,7 @@ public static class AuthEndpoints
             UserName = email,
             Email = email,
             CreatedAt = clock.GetUtcNow(),
+            SignupSource = SignupSources.Clean(request.Source),
         };
 
         // User, plan, built-in categories and trial are created together or not at all.

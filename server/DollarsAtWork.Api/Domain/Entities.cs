@@ -12,6 +12,12 @@ public class AppUser : IdentityUser<Guid>
 
     /// <summary>Ids of the hints this person has closed one by one, comma-separated (see HintIds).</summary>
     public string DismissedHints { get; set; } = "";
+
+    /// <summary>
+    /// The page whose sign-up button this person used, such as "blog/gas-prices" or "tools/payoff", so the owner can see
+    /// which pages bring in trials. Null when unknown. Set once, at sign-up.
+    /// </summary>
+    public string? SignupSource { get; set; }
 }
 
 /// <summary>

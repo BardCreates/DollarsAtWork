@@ -6,6 +6,7 @@ import { useMe } from '../../auth/auth';
 import { usePrices } from '../../features/billing/billing';
 import { formatMoney } from '../../lib/money';
 import { PublicLayout } from './PublicLayout';
+import { signUpPath } from '../../lib/signUp';
 
 const features = [
   'A monthly plan that gives every dollar a job',
@@ -31,7 +32,7 @@ export function PricingPage() {
   const annual = prices?.enabled ? prices.annual : null;
   const saving = monthly && annual ? monthly.amount * 12 - annual.amount : 0;
 
-  const cta = me ? { to: '/profile', label: 'Go to your subscription' } : { to: '/sign-up', label: 'Start your free 30-day trial' };
+  const cta = me ? { to: '/profile', label: 'Go to your subscription' } : { to: signUpPath('pricing'), label: 'Start your free 30-day trial' };
 
   return (
     <PublicLayout>

@@ -1,3 +1,4 @@
+import { isCtaKind, CTA_KINDS, type CtaKind } from './ctas';
 import { wordCount } from './markdown';
 
 /**
@@ -8,8 +9,12 @@ import { wordCount } from './markdown';
  *   date: 2026-10-15
  *   summary: One or two sentences for the list and for search engines (under 160 characters).
  *   tags: debt, budgeting
+ *   cta: debt
  *   draft: true
  *   ---
+ *
+ * cta picks the call to action that matches the post (see ctas.ts): debt, payoff, savings, invest, budget or habit.
+ * Leave it out for budget.
  *
  * A post with draft: true is left out of the live site (it still shows when running locally, marked Draft).
  * To publish, set draft: false, or remove the line, and merge.
@@ -23,6 +28,7 @@ export interface BlogPost {
   summary: string;
   tags: string[];
   draft: boolean;
+  cta: CtaKind;
   body: string;
   minutes: number;
 }
@@ -48,6 +54,9 @@ export function parsePost(path: string, raw: string): { post: BlogPost } | { err
   if (!fields.summary) return { error: `${path}: needs a summary` };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) return { error: `${path}: date must be YYYY-MM-DD` };
 
+  const cta = (fields.cta ?? 'budget').toLowerCase();
+  if (!isCtaKind(cta)) return { error: `${path}: cta must be one of ${CTA_KINDS.join(', ')}` };
+
   const body = match[2].trim();
   return {
     post: {
@@ -60,6 +69,7 @@ export function parsePost(path: string, raw: string): { post: BlogPost } | { err
         .map((t) => t.trim())
         .filter(Boolean),
       draft: /^(true|yes)$/i.test(fields.draft ?? ''),
+      cta,
       body,
       minutes: Math.max(1, Math.round(wordCount(body) / 220)),
     },

@@ -13,6 +13,7 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import mascot from '../../assets/mascot.png';
 import { usePrices } from '../billing/billing';
 import { formatMoney } from '../../lib/money';
+import { signUpPath } from '../../lib/signUp';
 import { PublicLayout } from '../../pages/public/PublicLayout';
 import { SampleImpactCard, useSampleImpact } from '../demo/SampleImpactCard';
 import { WaitlistForm } from '../waitlist/WaitlistForm';
@@ -57,7 +58,7 @@ export function HomePage() {
             Dollars at Work turns this month's plan into your debt-free date and your net worth years from now. Change one number and watch your future move.
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 1.5 }}>
-            <Button component={RouterLink} to="/sign-up" variant="contained" size="large">
+            <Button component={RouterLink} to={signUpPath('home')} variant="contained" size="large">
               Start your free trial
             </Button>
             <Button component={RouterLink} to="/demo" variant="outlined" size="large">
@@ -163,7 +164,7 @@ export function HomePage() {
                 {monthly && annual ? ` After your free month, it's ${formatMoney(monthly.amount)} a month or ${formatMoney(annual.amount)} a year.` : ''}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                <Button component={RouterLink} to="/sign-up" variant="contained" size="large">
+                <Button component={RouterLink} to={signUpPath('home')} variant="contained" size="large">
                   Start your free trial
                 </Button>
                 <Button component={RouterLink} to="/pricing" variant="outlined" size="large">

@@ -4,6 +4,7 @@ import { Alert, Box, Button, Card, CardContent, Typography } from '@mui/material
 import { PageHeader } from '../../components/PageHeader';
 import { useMe } from '../../auth/auth';
 import { SAMPLE_NAMES, SAMPLE_PERSON } from '../../lib/sampleData';
+import { signUpPath } from '../../lib/signUp';
 import { buildTimeline } from '../../lib/timeline';
 import { NetWorthCard } from '../dashboard/NetWorthCard';
 import { ProjectionChart } from '../dashboard/ProjectionChart';
@@ -30,7 +31,7 @@ export function DemoPage() {
         sx={{ mb: 3 }}
         action={
           me ? undefined : (
-            <Button component={RouterLink} to="/sign-up" color="inherit" size="small" variant="outlined">
+            <Button component={RouterLink} to={signUpPath('demo')} color="inherit" size="small" variant="outlined">
               Start free
             </Button>
           )
@@ -57,7 +58,7 @@ export function DemoPage() {
       </Box>
 
       {!me && (
-        <TrialCta headline="Now make it yours" body="Enter your income, your debts and your goals. It takes about three minutes to see your own 10-year number." showDemoLink={false} source="demo" />
+        <TrialCta headline="Now make it yours" body="Enter your income, your debts and your goals. It takes about three minutes to see your own 10-year number." secondary={null} from="demo" source="demo" />
       )}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
         Estimates based on a made-up plan and assumed returns, not financial advice.

@@ -81,6 +81,10 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SignupSource")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
