@@ -1,0 +1,32 @@
+# TEMPORARY: screenshots of the new pages for review. Removed before merging.
+name: Screenshots
+on:
+  push:
+    branches: [feature/home-hints-help]
+    paths: [.github/tmp-shots/**, .github/workflows/tmp-shots.yml, client/src/**]
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: client
+      - run: npx vite build --outDir ../preview-dist --emptyOutDir
+        working-directory: client
+      - run: npm i --no-save playwright@1 && npx playwright install --with-deps chromium
+        working-directory: client
+      - run: (npx vite preview --outDir ../preview-dist --port 4173 --strictPort &) && sleep 4
+        working-directory: client
+      - run: node ../.github/tmp-shots/shots.mjs
+        working-directory: client
+      - name: Push screenshots to a scratch branch
+        run: |
+          cd client/shots
+          git init -q -b shots && git add -A
+          git -c user.name=bot -c user.email=bot@example.com commit -qm "Screenshots for ${GITHUB_SHA}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" shots:tmp-screenshots
