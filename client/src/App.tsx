@@ -24,6 +24,8 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { HomeRoute } from './features/home/HomeRoute';
 import { HelpPage } from './features/help/HelpPage';
 import { HelpArticlePage } from './features/help/HelpArticlePage';
+import { BlogPage } from './features/blog/BlogPage';
+import { BlogPostPage } from './features/blog/BlogPostPage';
 
 export default function App() {
   return (
@@ -52,6 +54,8 @@ export default function App() {
         <Route path="/demo" element={<DemoPage />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/help/:slug" element={<HelpArticlePage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
       </Route>
 
       {/* The home page for visitors, the dashboard once signed in */}

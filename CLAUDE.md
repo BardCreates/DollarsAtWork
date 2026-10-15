@@ -75,6 +75,11 @@ and decisions already made. Don't re-ask decided questions.
   on AppUser and sent with /auth/me; Profile has a Show hints switch); a searchable help guide at /help (features/help:
   articles.ts holds every article in a small markup, helpSearch.ts ranks results; both tested). Help articles describe the
   app as it is: when a screen changes, change its article in the same commit.
+- Blog (Oct 15) is built into the app at /blog and /blog/:slug (features/blog), open to everyone. Posts are Markdown
+  files in client/src/content/blog named YYYY-MM-DD-slug.md with a --- block (title, date, summary, tags, draft).
+  draft: true keeps a post off the live site (it shows locally, marked Draft); publish by setting draft: false and
+  merging. markdown.ts is a small reader (headings, lists, tables, bold/italic/links); tests check every post file.
+  Later: move the blog to a separate static site at blog.dollarsatwork.app (launch plan) for better search ranking.
 
 ## What we compete on
 
@@ -145,6 +150,8 @@ client/src/
   features/waitlist/      WaitlistForm + useJoinWaitlist; the box shown to visitors on home, tools and demo
   features/hints/         Hint card, per-page hint text (PageHints), useShowHint/useDismissHint/useSetHintsOff, Profile HintsCard
   features/help/          the help guide: articles.ts, helpSearch.ts, helpMarkup.ts, HelpPage (/help), HelpArticlePage (/help/:slug)
+  features/blog/          the blog: posts.ts (reads content/blog/*.md), markdown.ts, MarkdownContent, BlogPage, BlogPostPage
+  content/blog/           one Markdown file per post (see posts.ts for the format)
   layout/VisitorShell.tsx the frame for pages open to everyone (/tools, /demo): AppShell when signed in, public frame when not
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome

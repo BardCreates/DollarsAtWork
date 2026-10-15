@@ -152,6 +152,9 @@ export function TopBar() {
             <ListItemButton component={RouterLink} to="/help" selected={pathname.startsWith('/help')} onClick={() => setDrawerOpen(false)}>
               <ListItemText primary="Help" />
             </ListItemButton>
+            <ListItemButton component={RouterLink} to="/blog" selected={pathname.startsWith('/blog')} onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Blog" />
+            </ListItemButton>
           </List>
         </Box>
       </Drawer>

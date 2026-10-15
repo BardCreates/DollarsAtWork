@@ -201,6 +201,8 @@ delete account, /welcome walkthrough, pricing page, draft terms/privacy, 360px p
 calculators, help and security), a launch waitlist (email only, no account), first-time hints on every page with a
 dashboard tour (close one, hide all, turn back on in Profile), a searchable help guide at /help, and a tooltip on the
 Today's dollars switch.
+A blog at /blog inside the app (posts are Markdown files in the repo; drafts stay hidden until published). A separate
+static blog site at blog.dollarsatwork.app comes later.
 
 **Waiting on the owner for launch:** hosting + domain, real email provider, error tracking, legal review of
 terms/privacy, final prices, production Stripe webhook.
