@@ -99,10 +99,6 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi(); // JSON description of the API at /openapi/v1.json
-
-    // Keep the local database in step with the code's migrations.
-    using var scope = app.Services.CreateScope();
-    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
 }
 else
 {
@@ -116,6 +112,13 @@ else
         if (string.IsNullOrWhiteSpace(app.Configuration[key]))
             throw new InvalidOperationException($"Missing required setting '{key}'. Set it in the host's application settings.");
     }
+}
+
+// Keep the database in step with the code's migrations, in every environment. The app runs as one instance,
+// so there is no race; if that changes, move this to a deploy step.
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
 }
 
 app.UseHttpsRedirection();
