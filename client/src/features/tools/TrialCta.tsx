@@ -1,12 +1,14 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Divider, Typography } from '@mui/material';
 import mascot from '../../assets/mascot.png';
+import { WaitlistForm } from '../waitlist/WaitlistForm';
+import type { WaitlistSource } from '../waitlist/waitlist';
 
 /**
  * The close of every public calculator and of the demo: take the numbers you just played with
  * and put your own in. Only ever shown to visitors who aren't signed in.
  */
-export function TrialCta({ headline, body, showDemoLink = true }: { headline: string; body: string; showDemoLink?: boolean }) {
+export function TrialCta({ headline, body, showDemoLink = true, source = 'tools' }: { headline: string; body: string; showDemoLink?: boolean; source?: WaitlistSource }) {
   return (
     <Card sx={{ mt: 4, outline: 1, outlineStyle: 'solid', outlineColor: 'primary.main' }}>
       <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: 3, p: { xs: 2.5, md: 3 } }}>
@@ -29,6 +31,10 @@ export function TrialCta({ headline, body, showDemoLink = true }: { headline: st
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', px: { xs: 2.5, md: 3 }, pb: 2 }}>
         30 days of full access. No card needed.
       </Typography>
+      <Divider />
+      <Box sx={{ px: { xs: 2.5, md: 3 }, py: 2.5 }}>
+        <WaitlistForm source={source} />
+      </Box>
     </Card>
   );
 }

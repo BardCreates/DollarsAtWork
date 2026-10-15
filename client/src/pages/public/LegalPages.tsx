@@ -137,6 +137,8 @@ export function PrivacyPage() {
       <ul>
         <li><strong>Account details:</strong> your email address and a scrambled (hashed) version of your password. We cannot read your password.</li>
         <li><strong>What you enter:</strong> your income, budget categories, savings goals, debts, investment accounts, other assets and liabilities, and the net-worth snapshots from your check-ins. These are numbers and names you type; we never see bank logins, account numbers or transactions.</li>
+        <li><strong>Your settings:</strong> small preferences such as whether the app's first-time hints are on and which ones you've closed.</li>
+        <li><strong>Waitlist sign-ups:</strong> if you leave your email in a "tell me when you launch" box, we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one.</li>
         <li><strong>Subscription status:</strong> whether you are on trial, subscribed, past due or canceled, and identifiers that link your account to Stripe. Your card details go to Stripe and never reach us.</li>
         <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. [Retention period: to be decided, e.g. 30 days.]</li>
       </ul>
@@ -145,6 +147,7 @@ export function PrivacyPage() {
       <ul>
         <li>To run the service: showing your plan, calculating projections, and keeping you signed in.</li>
         <li>To send account emails: confirming your address, password resets, trial reminders, and billing notices.</li>
+        <li>To email waitlist sign-ups news about the launch. Only addresses left in a waitlist box get these.</li>
         <li>To take payment, through Stripe.</li>
         <li>To keep the service secure and to fix errors.</li>
       </ul>
@@ -170,7 +173,7 @@ export function PrivacyPage() {
         We keep your data for as long as you have an account. When you delete your account, your account details and everything you entered are deleted from our
         database straight away, and your Stripe customer record is removed, which cancels any subscription. Two things outlast the account: Stripe keeps payment
         records as the law requires, and we keep a one-way fingerprint (hash) of your email address so the same address cannot start a second free trial. The
-        fingerprint cannot be turned back into your email. Backups are overwritten within [number] days.
+        fingerprint cannot be turned back into your email. Waitlist addresses are kept until you ask us to remove yours. Backups are overwritten within [number] days.
       </P>
 
       <H>Your choices</H>
