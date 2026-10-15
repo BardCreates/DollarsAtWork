@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { Tab, Tabs, Typography } from '@mui/material';
 import { PageHeader } from '../../components/PageHeader';
+import { ToolsHint } from '../hints/PageHints';
 import { useMe } from '../../auth/auth';
 import { CompoundCalculator, DripCalculator, HabitCalculator, LoanCompareCalculator, PayoffCalculator } from './calculators';
 import { TrialCta } from './TrialCta';
@@ -60,6 +61,7 @@ export function ToolsPage() {
   return (
     <>
       <PageHeader title="Tools" subtitle="Calculators for the questions that come up along the way." />
+      <ToolsHint />
       <Tabs
         value={tool.id}
         onChange={(_, value: ToolId) => setParams({ tool: value }, { replace: true })}

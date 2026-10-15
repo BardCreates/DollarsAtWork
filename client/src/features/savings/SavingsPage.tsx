@@ -24,6 +24,7 @@ import AddIcon from '@mui/icons-material/Add';
 import mascot from '../../assets/mascot.png';
 import { Figure } from '../../components/Figure';
 import { PageHeader } from '../../components/PageHeader';
+import { SavingsHint } from '../hints/PageHints';
 import { PlanAmountBanner } from '../../components/PlanAmountBanner';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
@@ -117,6 +118,7 @@ function SavingsModule({ data }: { data: SavingsData }) {
   return (
     <>
       <PageHeader title="Savings" subtitle={SUBTITLE} actions={hasGoals ? addButton : undefined} />
+      <SavingsHint />
       <PlanAmountBanner amount={data.monthlyAmount} />
 
       {!hasGoals ? (
