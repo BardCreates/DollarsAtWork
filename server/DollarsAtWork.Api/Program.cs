@@ -73,9 +73,10 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
-if (string.IsNullOrWhiteSpace(builder.Configuration["Email:ResendApiKey"]))
+if (!(builder.Configuration["Email:ResendApiKey"] ?? "").StartsWith("re_", StringComparison.Ordinal))
 {
-    // No provider key: print emails to the console (development, or a host that isn't set up yet).
+    // No real provider key (Resend keys start with "re_"): print emails to the console instead of sending.
+    // Development, or a host whose placeholder key hasn't been replaced yet.
     builder.Services.AddScoped<IAppEmailSender, LoggingEmailSender>();
 }
 else
