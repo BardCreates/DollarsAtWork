@@ -34,6 +34,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<AppUser>(e =>
         {
             e.Property(u => u.DismissedHints).HasMaxLength(1000).HasDefaultValue("");
+            e.Property(u => u.SignupSource).HasMaxLength(80);
         });
 
         builder.Entity<WaitlistEntry>(e =>

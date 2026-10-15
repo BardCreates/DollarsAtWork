@@ -3,7 +3,8 @@ using DollarsAtWork.Api.Features.Hints;
 
 namespace DollarsAtWork.Api.Features.Auth;
 
-public record RegisterRequest(string? Email, string? Password);
+/// <summary>Source: the page whose sign-up button was used (see SignupSources). Optional.</summary>
+public record RegisterRequest(string? Email, string? Password, string? Source = null);
 
 public record LoginRequest(string? Email, string? Password, bool RememberMe = true);
 
