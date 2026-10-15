@@ -29,21 +29,23 @@ export function TrialCta({
 }) {
   return (
     <Card sx={{ mt: 4, outline: 1, outlineStyle: 'solid', outlineColor: 'primary.main' }}>
-      <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: 3, p: { xs: 2.5, md: 3 } }}>
+      <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 3, p: { xs: 2.5, md: 3 } }}>
         <Box component="img" src={mascot} alt="" sx={{ width: 72, height: 'auto', flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography variant="h6">{headline}</Typography>
-          <Typography color="text.secondary">{body}</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, flexShrink: 0 }}>
-          <Button component={RouterLink} to={signUpPath(from)} variant="contained" size="large">
-            {primaryLabel}
-          </Button>
-          {secondary && (
-            <Button component={RouterLink} to={secondary.to} variant="outlined" size="large">
-              {secondary.label}
+          <Typography color="text.secondary" sx={{ maxWidth: 640 }}>
+            {body}
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 2 }}>
+            <Button component={RouterLink} to={signUpPath(from)} variant="contained" size="large">
+              {primaryLabel}
             </Button>
-          )}
+            {secondary && (
+              <Button component={RouterLink} to={secondary.to} variant="outlined" size="large">
+                {secondary.label}
+              </Button>
+            )}
+          </Box>
         </Box>
       </CardContent>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', px: { xs: 2.5, md: 3 }, pb: 2 }}>

@@ -44,3 +44,4 @@ await run('signup-from-post', '/blog/rates-are-rising-shrink-your-card-debt', 12
   await page.waitForTimeout(800);
   appendFileSync(`${out}/register.txt`, `url=${page.url()}\nbody=${JSON.stringify(registered)}\n`);
 });
+// rerun
