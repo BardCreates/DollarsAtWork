@@ -5,6 +5,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import LockIcon from '@mui/icons-material/Lock';
 import SavingsIcon from '@mui/icons-material/Savings';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -130,7 +131,7 @@ export function HomePage() {
         {[
           { to: '/security', icon: <LockIcon />, title: 'Private by design', body: 'No bank login, no tracking, no selling your data. You type in your numbers; you can export or delete them any time.' },
           { to: '/tools', icon: <CalculateIcon />, title: 'Free calculators', body: 'Early payoff, loan comparison, compound interest, DRIP and the cost of a habit. No account needed.' },
-          { to: '/help', icon: <TaskAltIcon />, title: 'Help guide', body: 'How everything works, in plain words, with a search box for the question you have.' },
+          { to: '/help', icon: <HelpOutlineIcon />, title: 'Help guide', body: 'How everything works, in plain words, with a search box for the question you have.' },
         ].map((card) => (
           <Card key={card.to}>
             <CardActionArea component={RouterLink} to={card.to} sx={{ height: '100%' }}>
