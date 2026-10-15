@@ -22,9 +22,10 @@ jobs:
         working-directory: client
       - run: (npx vite preview --outDir ../preview-dist --port 4173 --strictPort &) && sleep 4
         working-directory: client
-      - run: node ../.github/tmp-shots/shots.mjs
+      - run: cp ../.github/tmp-shots/shots.mjs ./shots.mjs && node shots.mjs
         working-directory: client
       - name: Push screenshots to a scratch branch
+        if: always()
         run: |
           cd client/shots
           git init -q -b shots && git add -A

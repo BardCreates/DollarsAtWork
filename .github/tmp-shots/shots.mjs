@@ -1,10 +1,11 @@
 // TEMPORARY: screenshots of the new pages for review. Removed before merging.
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { appendFileSync, mkdirSync } from 'node:fs';
 
 const base = 'http://localhost:4173';
 const out = 'shots';
 mkdirSync(out, { recursive: true });
+appendFileSync(`${out}/errors.txt`, '');
 
 const me = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -16,8 +17,18 @@ const me = {
 const prices = { enabled: true, monthly: { amount: 7, currency: 'usd' }, annual: { amount: 59, currency: 'usd' } };
 
 async function run(name, path, width, signedIn, action) {
+  try {
+    await shoot(name, path, width, signedIn, action);
+  } catch (error) {
+    appendFileSync(`${out}/errors.txt`, `${name}-${width}: ${error}\n`);
+  }
+}
+
+async function shoot(name, path, width, signedIn, action) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
+  page.on('pageerror', (e) => appendFileSync(`${out}/errors.txt`, `${name}-${width} page error: ${e}\n`));
+  page.on('console', (m) => m.type() === 'error' && appendFileSync(`${out}/console.txt`, `${name}-${width}: ${m.text()}\n`));
   await page.route('**/api/**', (route) => {
     const url = route.request().url();
     if (url.includes('/api/auth/me')) return signedIn ? route.fulfill({ json: me }) : route.fulfill({ status: 401, json: {} });
