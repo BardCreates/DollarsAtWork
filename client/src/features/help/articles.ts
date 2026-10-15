@@ -336,6 +336,9 @@ Go to [Profile & billing](/profile), choose **Annual** or **Monthly**, and press
 ## Managing or canceling
 Press **Manage billing** on [Profile & billing](/profile) to update your card, see your invoices, or cancel. When you cancel, you keep full access until the end of the period you've paid for.
 
+## Refunds
+Not happy? Email dollarsatworkapp@gmail.com within 30 days of your first payment and we'll refund it in full.
+
 ## If a payment fails
 You'll see an **Update your card** banner. Update it within 7 days and nothing changes.
 

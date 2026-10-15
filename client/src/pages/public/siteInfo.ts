@@ -1,9 +1,9 @@
 /**
- * The details every public page needs from the owner. Fill these in before launch; each one still shown in
- * [brackets] is something a visitor would see. `draft` shows a "not yet reviewed" banner on the legal pages.
+ * The details every public page needs from the owner. Changing one here changes it on every page that shows it.
+ * `draft` shows a "not yet in effect" banner on the legal pages; keep it false once they're live.
  */
 export const SITE = {
-  company: '[Company legal name]',
-  contact: '[contact email]',
-  draft: true,
+  company: 'Dollars at Work',
+  contact: 'dollarsatworkapp@gmail.com',
+  draft: false,
 } as const;
