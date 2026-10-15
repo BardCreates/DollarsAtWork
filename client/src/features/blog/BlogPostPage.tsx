@@ -2,7 +2,9 @@ import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Alert, Box, Breadcrumbs, Button, Card, CardContent, Chip, Link, Typography } from '@mui/material';
 import { useMe } from '../../auth/auth';
 import { TrialCta } from '../tools/TrialCta';
+import { POST_CTAS } from './ctas';
 import { MarkdownContent } from './MarkdownContent';
+import { PostCtaCard } from './PostCtaCard';
 import { findPost, formatPostDate, visiblePosts } from './posts';
 import { usePageMeta } from './usePageMeta';
 
@@ -30,6 +32,7 @@ export function BlogPostPage() {
   }
 
   const more = visiblePosts.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const cta = POST_CTAS[post.cta];
 
   return (
     <Box component="article" sx={{ maxWidth: 760 }}>
@@ -62,21 +65,21 @@ export function BlogPostPage() {
 
       <Card>
         <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
-          <MarkdownContent text={post.body} />
+          <MarkdownContent text={post.body} middle={<PostCtaCard cta={cta} slug={post.slug} signedIn={!!me} />} />
         </CardContent>
       </Card>
 
       {me ? (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 3 }}>
-          <Button component={RouterLink} to="/plan" variant="contained">
-            Try it in your plan
+          <Button component={RouterLink} to={cta.inApp.to} variant="contained">
+            {cta.inApp.label}
           </Button>
           <Button component={RouterLink} to="/what-if" variant="outlined">
             Make a what-if
           </Button>
         </Box>
       ) : (
-        <TrialCta headline="See it with your own numbers" body="Put in your income, debts and goals and see your own debt-free date and 10-year net worth. It takes about three minutes." source="blog" />
+        <TrialCta headline={cta.headline} body={cta.body} primaryLabel={cta.button} secondary={cta.secondary} from={`blog/${post.slug}`} source="blog" />
       )}
 
       {more.length > 0 && (

@@ -3,6 +3,7 @@ title: Rates Are Rising Again. Here's How to Shrink Your Card Debt Anyway
 date: 2026-10-15
 summary: Inflation hit 3.7% and the Fed is raising rates. Here's why your card APR follows, and a simple debt snowball plan to beat it.
 tags: debt snowball, credit cards, interest rates, inflation, budgeting
+cta: debt
 draft: true
 ---
 

@@ -3,6 +3,7 @@ title: Mortgage Rates Are Stuck at 7.4%. Here's What an Extra $100 a Month Does
 date: 2026-10-15
 summary: Mortgage rates held at 7.4% this week. See how an extra $100 or $250 a month can cut years and tens of thousands off your loan.
 tags: early payoff, mortgage rates, extra principal, home loans, debt-free
+cta: payoff
 draft: true
 ---
 

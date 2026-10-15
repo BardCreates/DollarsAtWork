@@ -78,7 +78,7 @@ export function ToolsPage() {
         {tool.about} Nothing here is saved or changes your plan.
       </Typography>
       <View />
-      {!me && <TrialCta headline={tool.cta.headline} body={tool.cta.body} />}
+      {!me && <TrialCta headline={tool.cta.headline} body={tool.cta.body} from={`tools/${tool.id}`} />}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
         Estimates based on the numbers you enter, not financial advice.
       </Typography>

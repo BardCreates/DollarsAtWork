@@ -80,6 +80,12 @@ and decisions already made. Don't re-ask decided questions.
   draft: true keeps a post off the live site (it shows locally, marked Draft); publish by setting draft: false and
   merging. markdown.ts is a small reader (headings, lists, tables, bold/italic/links); tests check every post file.
   Later: move the blog to a separate static site at blog.dollarsatwork.app (launch plan) for better search ranking.
+- Blog as a sales tool (Oct 15): each post names a call to action with cta: (debt, payoff, savings, invest, budget,
+  habit; see features/blog/ctas.ts). Visitors get a compact ask before the heading nearest the middle of the post
+  (PostCtaCard) and the full TrialCta at the end; signed-in readers get a link to the matching app page instead.
+  Every sign-up link carries ?from=<page> (lib/signUp.ts: signUpPath); the sign-up page sends it and the server keeps
+  it on AppUser.SignupSource (cleaned by Common/SignupSources). Which pages bring trials:
+  SELECT SignupSource, COUNT(*) FROM AspNetUsers GROUP BY SignupSource ORDER BY COUNT(*) DESC;
 
 ## What we compete on
 

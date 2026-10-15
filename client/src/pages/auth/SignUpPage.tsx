@@ -1,4 +1,4 @@
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { muiField } from '../../components/formHelpers';
 import { useSignUp } from '../../auth/auth';
 import { passwordRule } from '../../auth/passwordRule';
 import { ApiError, errorMessage } from '../../api/client';
+import { cleanSignupSource } from '../../lib/signUp';
 
 const schema = z
   .object({
@@ -24,6 +25,8 @@ type FormValues = z.infer<typeof schema>;
 export function SignUpPage() {
   const navigate = useNavigate();
   const signUp = useSignUp();
+  const [params] = useSearchParams();
+  const source = cleanSignupSource(params.get('from'));
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -36,7 +39,7 @@ export function SignUpPage() {
   const generalError = signUp.isError && !emailError && !passwordError ? errorMessage(signUp.error) : undefined;
 
   const onSubmit = handleSubmit(({ email, password }) =>
-    signUp.mutate({ email, password }, { onSuccess: () => navigate('/welcome', { replace: true }) }),
+    signUp.mutate({ email, password, source }, { onSuccess: () => navigate('/welcome', { replace: true }) }),
   );
 
   return (

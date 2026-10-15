@@ -3,6 +3,7 @@ title: Gas Is Up 34%. Give Your Dollars New Jobs Before Inflation Does
 date: 2026-10-15
 summary: Gas is up 34% in a year and inflation hit 3.7%. Here's how to re-plan your budget so your debt payoff stays on track.
 tags: inflation, zero-based budgeting, debt snowball, gas prices, credit card interest
+cta: budget
 draft: true
 ---
 

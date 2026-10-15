@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { signUpPath, sourceFromPath } from '../../lib/signUp';
 import { Box, Button, Container, Link } from '@mui/material';
 import { Wordmark } from '../../components/Wordmark';
 import { useMe } from '../../auth/auth';
@@ -36,6 +37,7 @@ const visitorLinks = [
 /** Frame for pages anyone can read: home, pricing, terms, privacy, help. */
 export function PublicLayout({ children, maxWidth = 'md' }: { children: ReactNode; maxWidth?: 'sm' | 'md' | 'lg' }) {
   const { data: me } = useMe();
+  const { pathname } = useLocation();
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 0%, rgba(25,195,125,0.12) 0%, rgba(24,26,32,0) 55%)' }}>
@@ -59,7 +61,7 @@ export function PublicLayout({ children, maxWidth = 'md' }: { children: ReactNod
               <Button component={RouterLink} to="/sign-in" variant="outlined" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 } }}>
                 Sign in
               </Button>
-              <Button component={RouterLink} to="/sign-up" variant="contained" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 }, display: { xs: 'none', sm: 'inline-flex' } }}>
+              <Button component={RouterLink} to={signUpPath(sourceFromPath(pathname))} variant="contained" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 }, display: { xs: 'none', sm: 'inline-flex' } }}>
                 Start free
               </Button>
             </>

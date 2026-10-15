@@ -65,7 +65,7 @@ export function useSignIn() {
 export function useSignUp() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (values: Credentials) => api.post<Me>('/auth/register', values),
+    mutationFn: (values: Credentials & { source?: string }) => api.post<Me>('/auth/register', values),
     onSuccess: (me) => queryClient.setQueryData(meQueryKey, me),
   });
 }

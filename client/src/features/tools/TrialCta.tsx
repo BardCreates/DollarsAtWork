@@ -1,14 +1,32 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Card, CardContent, Divider, Typography } from '@mui/material';
 import mascot from '../../assets/mascot.png';
+import { signUpPath } from '../../lib/signUp';
 import { WaitlistForm } from '../waitlist/WaitlistForm';
 import type { WaitlistSource } from '../waitlist/waitlist';
 
+const SAMPLE_PLAN = { label: 'See a sample plan', to: '/demo' };
+
 /**
- * The close of every public calculator and of the demo: take the numbers you just played with
- * and put your own in. Only ever shown to visitors who aren't signed in.
+ * The close of every public calculator, the demo and every blog post: take the numbers you just read about
+ * and put your own in. Only ever shown to visitors who aren't signed in. `from` says which page the sign-up came from.
  */
-export function TrialCta({ headline, body, showDemoLink = true, source = 'tools' }: { headline: string; body: string; showDemoLink?: boolean; source?: WaitlistSource }) {
+export function TrialCta({
+  headline,
+  body,
+  from,
+  primaryLabel = 'Start your free trial',
+  secondary = SAMPLE_PLAN,
+  source = 'tools',
+}: {
+  headline: string;
+  body: string;
+  from: string;
+  primaryLabel?: string;
+  /** A second, lighter button; null for none. */
+  secondary?: { label: string; to: string } | null;
+  source?: WaitlistSource;
+}) {
   return (
     <Card sx={{ mt: 4, outline: 1, outlineStyle: 'solid', outlineColor: 'primary.main' }}>
       <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: 3, p: { xs: 2.5, md: 3 } }}>
@@ -18,12 +36,12 @@ export function TrialCta({ headline, body, showDemoLink = true, source = 'tools'
           <Typography color="text.secondary">{body}</Typography>
         </Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, flexShrink: 0 }}>
-          <Button component={RouterLink} to="/sign-up" variant="contained" size="large">
-            Start your free trial
+          <Button component={RouterLink} to={signUpPath(from)} variant="contained" size="large">
+            {primaryLabel}
           </Button>
-          {showDemoLink && (
-            <Button component={RouterLink} to="/demo" variant="outlined" size="large">
-              See a sample plan
+          {secondary && (
+            <Button component={RouterLink} to={secondary.to} variant="outlined" size="large">
+              {secondary.label}
             </Button>
           )}
         </Box>

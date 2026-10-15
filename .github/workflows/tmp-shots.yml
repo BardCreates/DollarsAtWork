@@ -1,0 +1,36 @@
+# TEMPORARY: screenshots of the blog calls to action. Removed before merging.
+name: Screenshots
+on:
+  push:
+    branches: [feature/blog-sales]
+    paths: [.github/tmp-shots/**, .github/workflows/tmp-shots.yml]
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: client
+      - run: npm i --no-save playwright@1 && npx playwright install --with-deps chromium
+        working-directory: client
+      - run: |
+          sed -i 's/^draft: true$/draft: false/' src/content/blog/*.md
+        working-directory: client
+      - run: npx vite build --mode development --outDir ../preview-dist --emptyOutDir
+        working-directory: client
+      - run: (npx vite preview --outDir ../preview-dist --port 4173 --strictPort &) && sleep 4
+        working-directory: client
+      - run: cp ../.github/tmp-shots/shots.mjs ./shots.mjs && node shots.mjs
+        working-directory: client
+      - name: Push screenshots to a scratch branch
+        if: always()
+        run: |
+          cd client/shots
+          git init -q -b shots && git add -A
+          git -c user.name=bot -c user.email=bot@example.com commit -qm "Screenshots"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" shots:tmp-screenshots

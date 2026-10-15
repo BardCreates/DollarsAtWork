@@ -112,3 +112,20 @@ export function wordCount(text: string): number {
     .split(/\s+/)
     .filter((w) => /[A-Za-z0-9]/.test(w)).length;
 }
+
+/**
+ * Where a call to action goes partway through a post: just before the heading nearest the middle, so it lands
+ * after the reader has seen the example and before the how-to. Returns the block index to insert before, or null
+ * when the post has too few sections to break up (fewer than three headings).
+ */
+export function middleHeadingIndex(blocks: MarkdownBlock[]): number | null {
+  const headings = blocks.flatMap((b, i) => (b.kind === 'heading' ? [i] : []));
+  // The first heading opens the post, and the "Sources" heading closes it; neither is a good break.
+  const candidates = headings.slice(1).filter((i) => {
+    const b = blocks[i];
+    return b.kind === 'heading' && !/^sources$/i.test(b.text.trim());
+  });
+  if (headings.length < 3 || candidates.length === 0) return null;
+  const middle = blocks.length / 2;
+  return candidates.reduce((best, i) => (Math.abs(i - middle) < Math.abs(best - middle) ? i : best));
+}

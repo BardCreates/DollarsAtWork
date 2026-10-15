@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseInline, parseMarkdown, wordCount } from './markdown';
+import { middleHeadingIndex, parseInline, parseMarkdown, wordCount } from './markdown';
 import { ALL_POSTS, POST_ERRORS, formatPostDate, parsePost, sortPosts } from './posts';
 
 describe('blog markdown', () => {
@@ -49,6 +49,14 @@ describe('blog markdown', () => {
     ]);
   });
 
+  it('puts the mid-post call to action before the heading nearest the middle, never before the first or Sources', () => {
+    const blocks = parseMarkdown(['Intro.', '### One', 'a', 'b', '### Two', 'c', 'd', '### Three', 'e', '## Sources', '- x'].join('\n\n'));
+    // Blocks: 0 Intro, 1 One, 2 a, 3 b, 4 Two, 5 c, 6 d, 7 Three, 8 e, 9 Sources, 10 list. Middle is 5.5:
+    // headings 4 and 7 tie, and the earlier one wins. Heading 1 opens the post and 9 is Sources.
+    expect(middleHeadingIndex(blocks)).toBe(4);
+    expect(middleHeadingIndex(parseMarkdown('Intro.\n\n### Only one\n\nText.'))).toBeNull();
+  });
+
   it('counts words, ignoring link addresses and table pipes', () => {
     expect(wordCount('Read [the guide](https://example.com/long/path) now. | a | b |')).toBe(6);
   });
@@ -59,7 +67,14 @@ describe('blog posts', () => {
 
   it('reads the details block, the slug from the file name, and the draft flag', () => {
     const result = parsePost('../../content/blog/2026-10-15-a-title.md', sample);
-    expect('post' in result && result.post).toMatchObject({ slug: 'a-title', title: 'A title', date: '2026-10-15', tags: ['debt', 'savings'], draft: true, body: 'Body text.', minutes: 1 });
+    expect('post' in result && result.post).toMatchObject({ slug: 'a-title', title: 'A title', date: '2026-10-15', tags: ['debt', 'savings'], draft: true, cta: 'budget', body: 'Body text.', minutes: 1 });
+  });
+
+  it('reads the call to action, and refuses one that does not exist', () => {
+    const withCta = (cta: string) => sample.replace('draft: true', `cta: ${cta}\ndraft: true`);
+    const good = parsePost('../../content/blog/2026-10-15-a.md', withCta('savings'));
+    expect('post' in good && good.post.cta).toBe('savings');
+    expect(parsePost('../../content/blog/2026-10-15-a.md', withCta('lottery'))).toHaveProperty('error');
   });
 
   it('explains what is wrong with a bad file instead of dropping it silently', () => {
@@ -69,7 +84,7 @@ describe('blog posts', () => {
   });
 
   it('sorts newest first', () => {
-    const post = (slug: string, date: string) => ({ slug, title: slug, date, summary: '', tags: [], draft: false, body: '', minutes: 1 });
+    const post = (slug: string, date: string) => ({ slug, title: slug, date, summary: '', tags: [], draft: false, cta: 'budget' as const, body: '', minutes: 1 });
     expect(sortPosts([post('a', '2026-01-01'), post('b', '2026-03-01')]).map((p) => p.slug)).toEqual(['b', 'a']);
   });
 
