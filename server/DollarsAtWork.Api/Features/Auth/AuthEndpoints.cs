@@ -3,6 +3,7 @@ using System.Security.Claims;
 using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
+using DollarsAtWork.Api.Features.Hints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -180,7 +181,7 @@ public static class AuthEndpoints
     private static async Task<MeResponse> BuildMe(AppUser user, AppDbContext db, TimeProvider clock, CancellationToken ct)
     {
         var subscription = await db.Subscriptions.AsNoTracking().SingleAsync(s => s.UserId == user.Id, ct);
-        return new MeResponse(user.Id, user.Email!, user.EmailConfirmed, AccessResponse.From(subscription, clock.GetUtcNow()));
+        return new MeResponse(user.Id, user.Email!, user.EmailConfirmed, AccessResponse.From(subscription, clock.GetUtcNow()), HintIds.ToResponse(user));
     }
 
     private static string? NormalizeEmail(string? email)
