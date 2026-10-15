@@ -4,7 +4,7 @@ date: 2026-10-15
 summary: Gas is up 34% in a year and inflation hit 3.7%. Here's how to re-plan your budget so your debt payoff stays on track.
 tags: inflation, zero-based budgeting, debt snowball, gas prices, credit card interest
 cta: budget
-draft: true
+draft: false
 ---
 
 Prices rose 3.7% over the past year, according to the inflation report released this week. That sounds manageable. Then you fill your tank. Gasoline costs 34% more than it did a year ago, and when one line of your budget jumps like that, the money has to come from somewhere. The only question is whether you pick where, or your credit card does.
