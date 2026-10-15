@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Switch, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Switch, Tooltip, Typography } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import mascot from '../../assets/mascot.png';
 import { PageHeader } from '../../components/PageHeader';
@@ -9,6 +10,7 @@ import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
 import { brand } from '../../theme';
+import { DashboardHint, TourHint } from '../hints/PageHints';
 import { planTotals } from '../plan/plan';
 import { AssumptionsDialog } from './AssumptionsDialog';
 import { AssetsLiabilitiesCard, CheckInCard, DashCard, DebtPayoffCard, GoalsCard, HistoryCard, PlanCard } from './cards';
@@ -78,6 +80,7 @@ function Dashboard({ data }: { data: DashboardData }) {
     return (
       <>
         <PageHeader title="Dashboard" subtitle={me ? `Welcome, ${me.email}` : undefined} />
+        <TourHint />
         <Card>
           <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 4, p: { xs: 3, md: 5 } }}>
             <Box component="img" src={mascot} alt="" sx={{ width: 160, height: 'auto' }} />
@@ -112,17 +115,30 @@ function Dashboard({ data }: { data: DashboardData }) {
         subtitle="Where you stand today, and where your plan takes you."
         actions={
           <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-            <FormControlLabel
-              control={<Switch checked={todaysDollars} onChange={(_, checked) => setTodaysDollars(checked)} />}
-              label="Today's dollars"
-              sx={{ mr: 1 }}
-            />
+            <Tooltip
+              enterTouchDelay={0}
+              leaveTouchDelay={6000}
+              title={`Shows future amounts in what they'd buy today, after ${Number(data.netWorth.settings.inflationRate.toFixed(2))}% yearly inflation. Turn it off to see the actual dollar amounts. Change the inflation rate under Assumptions.`}
+            >
+              <FormControlLabel
+                control={<Switch checked={todaysDollars} onChange={(_, checked) => setTodaysDollars(checked)} />}
+                label={
+                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                    Today's dollars
+                    <InfoOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} aria-hidden />
+                  </Box>
+                }
+                sx={{ mr: 1 }}
+              />
+            </Tooltip>
             <Button variant="outlined" startIcon={<TuneIcon />} disabled={readOnly} onClick={() => setDialog('assumptions')}>
               Assumptions
             </Button>
           </Box>
         }
       />
+      <TourHint />
+      <DashboardHint />
 
       {remaining < 0 && (
         <Alert

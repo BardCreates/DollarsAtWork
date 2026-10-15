@@ -6,6 +6,25 @@ namespace DollarsAtWork.Api.Domain;
 public class AppUser : IdentityUser<Guid>
 {
     public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>True when the person has turned first-time hints off everywhere.</summary>
+    public bool HintsOff { get; set; }
+
+    /// <summary>Ids of the hints this person has closed one by one, comma-separated (see HintIds).</summary>
+    public string DismissedHints { get; set; } = "";
+}
+
+/// <summary>
+/// Someone who asked to hear when Dollars at Work launches. Not tied to an account; the address is kept
+/// lower-cased so the same person can't be listed twice.
+/// </summary>
+public class WaitlistEntry
+{
+    public Guid Id { get; set; }
+    public string Email { get; set; } = "";
+    /// <summary>Which page the address came from (home, tools, demo…), to see which pages bring people in.</summary>
+    public string Source { get; set; } = "";
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>

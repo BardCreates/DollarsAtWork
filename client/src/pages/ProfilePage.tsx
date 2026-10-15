@@ -5,6 +5,7 @@ import { useMe, useSignOut } from '../auth/auth';
 import { AccountCard, DataCard } from '../features/account/AccountCards';
 import { InstallCard } from '../features/account/InstallCard';
 import { BillingCard } from '../features/billing/BillingCard';
+import { HintsCard } from '../features/hints/HintsCard';
 
 export function ProfilePage() {
   const { data: me } = useMe();
@@ -19,6 +20,7 @@ export function ProfilePage() {
       <Stack spacing={3} sx={{ maxWidth: 760 }}>
         <AccountCard me={me} />
         <BillingCard access={me.access} />
+        <HintsCard hints={me.hints} />
         <InstallCard />
         <DataCard />
         <Box>

@@ -30,6 +30,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import mascot from '../../assets/mascot.png';
 import { Figure } from '../../components/Figure';
 import { PageHeader } from '../../components/PageHeader';
+import { InvestHint } from '../hints/PageHints';
 import { PlanAmountBanner } from '../../components/PlanAmountBanner';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
@@ -104,6 +105,7 @@ function InvestModule({ data }: { data: InvestmentsData }) {
   return (
     <>
       <PageHeader title="Invest" subtitle={SUBTITLE} actions={hasAccounts ? addButton : undefined} />
+      <InvestHint />
       <PlanAmountBanner amount={data.monthlyAmount} />
 
       {!hasAccounts ? (

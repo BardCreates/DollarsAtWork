@@ -13,7 +13,6 @@ import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
 import { SecurityPage } from './pages/public/SecurityPage';
 import { WelcomePage } from './features/setup/WelcomePage';
 import { DemoPage } from './features/demo/DemoPage';
-import { DashboardPage } from './features/dashboard/DashboardPage';
 import { ToolsPage } from './features/tools/ToolsPage';
 import { PlanPage } from './features/plan/PlanPage';
 import { DebtPage } from './features/debt/DebtPage';
@@ -22,6 +21,9 @@ import { InvestPage } from './features/invest/InvestPage';
 import { ScenariosPage } from './features/scenarios/ScenariosPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { HomeRoute } from './features/home/HomeRoute';
+import { HelpPage } from './features/help/HelpPage';
+import { HelpArticlePage } from './features/help/HelpArticlePage';
 
 export default function App() {
   return (
@@ -48,12 +50,16 @@ export default function App() {
       <Route element={<VisitorShell />}>
         <Route path="/tools" element={<ToolsPage />} />
         <Route path="/demo" element={<DemoPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/help/:slug" element={<HelpArticlePage />} />
       </Route>
+
+      {/* The home page for visitors, the dashboard once signed in */}
+      <Route index element={<HomeRoute />} />
 
       {/* The app */}
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
-          <Route index element={<DashboardPage />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/plan" element={<PlanPage />} />
           <Route path="/savings" element={<SavingsPage />} />

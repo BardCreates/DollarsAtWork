@@ -15,11 +15,18 @@ export interface Access {
   hasBillingAccount: boolean;
 }
 
+/** First-time hint settings: all off, or the ids of the hints closed one by one. */
+export interface HintSettings {
+  off: boolean;
+  dismissed: string[];
+}
+
 export interface Me {
   id: string;
   email: string;
   emailConfirmed: boolean;
   access: Access;
+  hints: HintSettings;
 }
 
 export const meQueryKey = ['me'] as const;

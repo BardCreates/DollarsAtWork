@@ -6,11 +6,13 @@ using DollarsAtWork.Api.Features.Account;
 using DollarsAtWork.Api.Features.Auth;
 using DollarsAtWork.Api.Features.Billing;
 using DollarsAtWork.Api.Features.Debts;
+using DollarsAtWork.Api.Features.Hints;
 using DollarsAtWork.Api.Features.Investments;
 using DollarsAtWork.Api.Features.NetWorth;
 using DollarsAtWork.Api.Features.Scenarios;
 using DollarsAtWork.Api.Features.Plan;
 using DollarsAtWork.Api.Features.Savings;
+using DollarsAtWork.Api.Features.Waitlist;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +69,10 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(RateLimits.Auth, http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
+    // Forms anyone can send without an account (the waitlist): a few a minute is plenty for a person.
+    options.AddPolicy(RateLimits.PublicForm, http => RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
 });
 
 // ---------- App services ----------
@@ -143,6 +149,8 @@ api.MapInvestmentsEndpoints();
 api.MapNetWorthEndpoints();
 api.MapScenarioEndpoints();
 api.MapBillingEndpoints();
+api.MapHintsEndpoints();
+api.MapWaitlistEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
 app.MapFallbackToFile("index.html");
@@ -152,6 +160,7 @@ app.Run();
 public static class RateLimits
 {
     public const string Auth = "auth";
+    public const string PublicForm = "public-form";
 }
 
 // Lets integration tests reference the app.

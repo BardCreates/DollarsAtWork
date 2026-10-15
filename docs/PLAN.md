@@ -197,6 +197,11 @@ Investments, Dashboard (slider, milestones, monthly check-in), trial + Stripe bi
 (compound interest, early payoff, loan comparison, DRIP), launch basics (change email/password, export,
 delete account, /welcome walkthrough, pricing page, draft terms/privacy, 360px pass).
 
+**Added Oct 15:** a home page for signed-out visitors (pitch, live sample-plan slider, sign in / start free, links to the
+calculators, help and security), a launch waitlist (email only, no account), first-time hints on every page with a
+dashboard tour (close one, hide all, turn back on in Profile), a searchable help guide at /help, and a tooltip on the
+Today's dollars switch.
+
 **Waiting on the owner for launch:** hosting + domain, real email provider, error tracking, legal review of
 terms/privacy, final prices, production Stripe webhook.
 

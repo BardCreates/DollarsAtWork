@@ -22,6 +22,7 @@ import AddIcon from '@mui/icons-material/Add';
 import mascot from '../../assets/mascot.png';
 import { Figure } from '../../components/Figure';
 import { PageHeader } from '../../components/PageHeader';
+import { DebtHint } from '../hints/PageHints';
 import { PlanAmountBanner } from '../../components/PlanAmountBanner';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
@@ -111,6 +112,7 @@ function DebtModule({ data }: { data: DebtsData }) {
   return (
     <>
       <PageHeader title="Debt" subtitle={SUBTITLE} actions={hasDebts ? addButton : undefined} />
+      <DebtHint />
       <PlanAmountBanner amount={data.monthlyBudget} />
 
       {!hasDebts ? (

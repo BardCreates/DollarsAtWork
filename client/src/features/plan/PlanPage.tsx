@@ -5,6 +5,7 @@ import { Alert, Box, Button, Card, CardContent, CircularProgress, Snackbar, Typo
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { Figure } from '../../components/Figure';
 import { PageHeader } from '../../components/PageHeader';
+import { PlanHint } from '../hints/PageHints';
 import { MoneyField } from '../../components/MoneyField';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
@@ -138,6 +139,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
   return (
     <>
       <PageHeader title="Plan" subtitle={SUBTITLE} actions={<SaveStatus saving={saving} />} />
+      <PlanHint />
 
       <Card sx={{ mb: 3 }}>
         <CardContent

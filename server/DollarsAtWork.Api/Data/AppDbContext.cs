@@ -19,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
     public DbSet<UsedTrial> UsedTrials => Set<UsedTrial>();
     public DbSet<Scenario> Scenarios => Set<Scenario>();
+    public DbSet<WaitlistEntry> WaitlistEntries => Set<WaitlistEntry>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -29,6 +30,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<AppUser>(e =>
+        {
+            e.Property(u => u.DismissedHints).HasMaxLength(1000).HasDefaultValue("");
+        });
+
+        builder.Entity<WaitlistEntry>(e =>
+        {
+            e.Property(w => w.Email).HasMaxLength(254);
+            e.Property(w => w.Source).HasMaxLength(20);
+            e.HasIndex(w => w.Email).IsUnique();
+        });
 
         builder.Entity<Plan>(e =>
         {

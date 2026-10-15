@@ -1,4 +1,5 @@
 using DollarsAtWork.Api.Domain;
+using DollarsAtWork.Api.Features.Hints;
 
 namespace DollarsAtWork.Api.Features.Auth;
 
@@ -35,4 +36,4 @@ public record AccessResponse(
     }
 }
 
-public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access);
+public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints);

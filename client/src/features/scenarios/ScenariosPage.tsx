@@ -21,6 +21,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import mascot from '../../assets/mascot.png';
 import { PageHeader } from '../../components/PageHeader';
+import { WhatIfHint } from '../hints/PageHints';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
@@ -125,6 +126,7 @@ function ScenariosView({ data, scenarios }: { data: DashboardData; scenarios: Sc
   return (
     <>
       <PageHeader title="What if" subtitle={SUBTITLE} actions={scenarios.length > 0 ? newButton : undefined} />
+      <WhatIfHint />
 
       {scenarios.length === 0 ? (
         <Card>

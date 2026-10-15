@@ -13,9 +13,11 @@ import {
   Menu,
   MenuItem,
   Toolbar,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Wordmark } from '../components/Wordmark';
 import { useMe, useSignOut } from '../auth/auth';
@@ -83,6 +85,11 @@ export function TopBar() {
           ))}
         </Box>
 
+        <Tooltip title="Help">
+          <IconButton component={RouterLink} to="/help" color="primary" size="large" aria-label="Help" sx={{ ml: 1, display: { xs: 'none', sm: 'inline-flex' } }}>
+            <HelpOutlineIcon />
+          </IconButton>
+        </Tooltip>
         <IconButton
           color="primary"
           size="large"
@@ -114,6 +121,9 @@ export function TopBar() {
           <MenuItem component={RouterLink} to="/profile" onClick={() => setAccountAnchor(null)}>
             Profile &amp; billing
           </MenuItem>
+          <MenuItem component={RouterLink} to="/help" onClick={() => setAccountAnchor(null)}>
+            Help
+          </MenuItem>
           <MenuItem onClick={handleSignOut} disabled={signOut.isPending}>
             Sign out
           </MenuItem>
@@ -138,6 +148,10 @@ export function TopBar() {
                 <ListItemText primary={item.label} />
               </ListItemButton>
             ))}
+            <Divider sx={{ my: 1 }} />
+            <ListItemButton component={RouterLink} to="/help" selected={pathname.startsWith('/help')} onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Help" />
+            </ListItemButton>
           </List>
         </Box>
       </Drawer>
