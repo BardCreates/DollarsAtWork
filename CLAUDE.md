@@ -27,9 +27,17 @@ and decisions already made. Don't re-ask decided questions.
 - Phase 10 (Launch), the parts that needed no owner input, are built and verified: change password, change email
   (confirmed by a link to the new address), export data (JSON or a zip of CSVs), delete account (cancels Stripe),
   one trial per email, first-run walkthrough (/welcome), pricing page, draft terms and privacy pages, 360px pass.
-- Still open for launch, all waiting on the owner: hosting + domain, a real email provider, error tracking,
-  legal review of `client/src/pages/public/LegalPages.tsx` (fill the [bracketed] placeholders, set DRAFT to false),
-  final prices, Managed Payments on or off, registering the production webhook endpoint.
+- Email provider is wired: `ResendEmailSender` (Common/Email.cs) is used when `Email:ResendApiKey` is set, otherwise
+  emails still print to the console. Production refuses to start if any required setting is missing (Program.cs).
+- Deploy: `.github/workflows/deploy.yml` builds the client into wwwroot, publishes the API and deploys to one Azure
+  App Service on every push to `main`. Needs the two GitHub secrets named at the top of that file.
+- Fonts are self-hosted via `@fontsource/inter` and `@fontsource/coiny` (main.tsx); the Google Fonts links and the
+  Security page's "One honest note" are gone.
+- Still open for launch, all waiting on the owner: Azure resources + domain, a Resend account (verify the domain,
+  set `Email__ResendApiKey` and `Email__From` on the host), error tracking (Sentry: `dotnet add package Sentry.AspNetCore`,
+  `builder.WebHost.UseSentry()`, DSN in `Sentry__Dsn`), `client/src/pages/public/siteInfo.ts` (company, contact,
+  draft=false), legal review of `LegalPages.tsx`, live Stripe prices ($7 monthly, $59 annual, $49 founding x200),
+  registering the production webhook endpoint.
 
 - Stand-out step 1 (Move a dollar) is built and verified: live impact panel on the Plan page (debt-free date and
   10-year net worth vs the plan you started the visit with, updating as you type) and "if invested" cost of a habit

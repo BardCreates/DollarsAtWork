@@ -72,7 +72,17 @@ builder.Services.AddRateLimiter(options =>
 // ---------- App services ----------
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<IAppEmailSender, LoggingEmailSender>();
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+if (string.IsNullOrWhiteSpace(builder.Configuration["Email:ResendApiKey"]))
+{
+    // No provider key: print emails to the console (development, or a host that isn't set up yet).
+    builder.Services.AddScoped<IAppEmailSender, LoggingEmailSender>();
+}
+else
+{
+    builder.Services.AddHttpClient<IAppEmailSender, ResendEmailSender>(client =>
+        client.Timeout = TimeSpan.FromSeconds(15));
+}
 builder.Services.AddScoped<AccountEmails>();
 builder.Services.AddScoped<AccountSetup>();
 builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
@@ -98,6 +108,14 @@ else
 {
     app.UseExceptionHandler();
     app.UseHsts();
+
+    // Production: refuse to start half-configured rather than fail on the first sign-up.
+    foreach (var key in new[] { "ConnectionStrings:Default", "App:PublicUrl", "Email:ResendApiKey", "Email:From",
+                                "Stripe:SecretKey", "Stripe:WebhookSecret", "Stripe:MonthlyPriceId", "Stripe:AnnualPriceId" })
+    {
+        if (string.IsNullOrWhiteSpace(app.Configuration[key]))
+            throw new InvalidOperationException($"Missing required setting '{key}'. Set it in the host's application settings.");
+    }
 }
 
 app.UseHttpsRedirection();

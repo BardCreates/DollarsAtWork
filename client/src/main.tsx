@@ -6,6 +6,12 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { theme } from './theme';
 import App from './App';
 import './lib/installPrompt';
+// Self-hosted typefaces (both OFL). Served from our own origin, so loading a page tells no third party about the visitor.
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/coiny/400.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

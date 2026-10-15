@@ -81,6 +81,7 @@ export function SecurityPage() {
           <Point>Five wrong passwords lock sign-in for 15 minutes, and sign-in attempts are rate-limited.</Point>
           <Point>Every request is tied to your signed-in account. Nothing you can type into the address bar will show you someone else's numbers.</Point>
           <Point>Password-reset and email-change links expire and work once.</Point>
+          <Point>Our typefaces are served from our own site. Opening a page here tells no third party you visited.</Point>
         </List>
       </Section>
 
@@ -102,13 +103,6 @@ export function SecurityPage() {
             Privacy Policy
           </Link>
           .
-        </Typography>
-      </Section>
-
-      <Section title="One honest note">
-        <Typography>
-          When a page loads, your browser fetches our two typefaces from Google Fonts, so Google can see that a visitor opened the site. We don't send it anything
-          you've entered.
         </Typography>
       </Section>
 

@@ -12,7 +12,7 @@ public interface IAppEmailSender
 
 /// <summary>
 /// Development sender: writes emails to the console log instead of sending them.
-/// Replaced by a real provider (Postmark or Resend) when trial emails are built.
+/// Program.cs uses it whenever Email:ResendApiKey is not set.
 /// </summary>
 public class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IAppEmailSender
 {
@@ -20,6 +20,48 @@ public class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IAppEmailS
     {
         logger.LogInformation("EMAIL to {To}\nSubject: {Subject}\n{Body}", to, subject, body);
         return Task.CompletedTask;
+    }
+}
+
+public class EmailOptions
+{
+    /// <summary>The From header, e.g. "Dollars at Work &lt;hello@dollarsatwork.com&gt;". The domain must be verified in Resend.</summary>
+    public string From { get; set; } = "Dollars at Work <hello@example.com>";
+
+    /// <summary>Resend API key. Keep it in user secrets or the host's app settings, never in the repo.</summary>
+    public string? ResendApiKey { get; set; }
+}
+
+/// <summary>
+/// Production sender: Resend's REST API (https://resend.com/docs/api-reference/emails/send-email).
+/// Plain-text bodies only, which is what every email in the app uses. A failed send throws, so the caller's
+/// request fails loudly instead of silently losing a reset link.
+/// </summary>
+public class ResendEmailSender(
+    HttpClient http,
+    Microsoft.Extensions.Options.IOptions<EmailOptions> options,
+    ILogger<ResendEmailSender> logger) : IAppEmailSender
+{
+    public async Task SendAsync(string to, string subject, string body, CancellationToken ct = default)
+    {
+        var settings = options.Value;
+        using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", settings.ResendApiKey);
+        request.Content = JsonContent.Create(new
+        {
+            from = settings.From,
+            to = new[] { to },
+            subject,
+            text = body,
+        });
+
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            var detail = await response.Content.ReadAsStringAsync(ct);
+            logger.LogError("Resend rejected an email to {To} ({Status}): {Detail}", to, (int)response.StatusCode, detail);
+            throw new InvalidOperationException($"Email provider returned {(int)response.StatusCode}.");
+        }
     }
 }
 
