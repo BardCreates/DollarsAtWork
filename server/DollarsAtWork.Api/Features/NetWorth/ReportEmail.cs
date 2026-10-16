@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.Text;
+using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Domain;
 
 namespace DollarsAtWork.Api.Features.NetWorth;
@@ -25,53 +25,61 @@ public static class ReportEmail
 
     private static string Month(DateOnly date) => date.ToString("MMMM yyyy", Invariant);
 
-    public static (string Subject, string Body) Compose(
+    public static EmailMessage Compose(
         NetWorthSnapshot latest,
         NetWorthSnapshot? previous,
         ReportEmailRequest request,
         DateTimeOffset now,
         string appUrl)
     {
-        var body = new StringBuilder();
-        body.AppendLine($"Your {Month(latest.Date)} check-in");
-        body.AppendLine();
-        body.AppendLine($"Net worth: {Money(latest.NetWorth)}");
-        if (previous is null)
-            body.AppendLine("This is your starting point. Next month you'll see how far you've come.");
-        else
-            body.AppendLine($"That's {Change(latest.NetWorth - previous.NetWorth, "up", "down")} since {Month(previous.Date)}.");
-        body.AppendLine();
+        var month = Month(latest.Date);
+        var change = previous is null ? null : Math.Round(latest.NetWorth - previous.NetWorth, 0, MidpointRounding.AwayFromZero);
+        var caption = previous is null
+            ? "This is your starting point. Next month you'll see how far you've come."
+            : $"That's {Change(latest.NetWorth - previous.NetWorth, "up", "down")} since {Month(previous.Date)}.";
 
         // Only areas the snapshot recorded; older snapshots predate the breakdown.
-        void Area(string label, decimal? value, decimal? before, string up, string down)
+        var areas = new List<EmailLayout.Row>();
+        void Area(string label, decimal? value, decimal? before, string up, string down, bool lowerIsBetter = false)
         {
             if (value is null) return;
-            var line = $"  {label}: {Money(value.Value)}";
-            if (before is not null) line += $" ({Change(value.Value - before.Value, up, down)})";
-            body.AppendLine(line);
+            string? note = null;
+            var tone = EmailLayout.Tone.Plain;
+            if (before is not null)
+            {
+                var delta = Math.Round(value.Value - before.Value, 0, MidpointRounding.AwayFromZero);
+                note = Change(delta, up, down);
+                if (delta != 0) tone = (delta < 0) == lowerIsBetter ? EmailLayout.Tone.Good : EmailLayout.Tone.Plain;
+            }
+            areas.Add(new EmailLayout.Row(label, Money(value.Value), note, tone));
         }
-        body.AppendLine("Where it stands:");
         Area("Savings", latest.Savings, previous?.Savings, "up", "down");
         Area("Investments", latest.Investments, previous?.Investments, "up", "down");
-        Area("Debt", latest.Debts, previous?.Debts, "up", "paid down by");
-        body.AppendLine();
+        Area("Debt", latest.Debts, previous?.Debts, "up", "paid down by", lowerIsBetter: true);
 
-        var ahead = new List<string>();
+        var ahead = new List<EmailLayout.Row>();
         if (request.DebtFreeMonth is { } months and > 0)
-            ahead.Add($"  Debt-free: {Month(DateOnly.FromDateTime(now.UtcDateTime.AddMonths(months)))}");
+            ahead.Add(new EmailLayout.Row("Debt-free", Month(DateOnly.FromDateTime(now.UtcDateTime.AddMonths(months)))));
         if (request.NetWorthIn10Years is { } ten)
-            ahead.Add($"  Net worth in 10 years: about {Money(ten)}");
-        if (ahead.Count > 0)
+            ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)}"));
+
+        var opener = change switch
         {
-            body.AppendLine("Where you're headed:");
-            foreach (var line in ahead) body.AppendLine(line);
-            body.AppendLine();
-        }
+            null => "Nice work doing your first check-in. Here's where things stand.",
+            > 0 => "Your plan is moving. Here's where things stand this month.",
+            _ => "Every check-in keeps your plan honest. Here's where things stand this month.",
+        };
 
-        body.AppendLine($"See the full picture: {appUrl}");
-        body.AppendLine();
-        body.AppendLine("Estimates based on your plan and assumed returns, not financial advice.");
-
-        return ($"Your Dollars at Work check-in for {Month(latest.Date)}", body.ToString());
+        return new EmailLayout(appUrl)
+            .Preheader($"Net worth: {Money(latest.NetWorth)}. {caption}")
+            .Heading($"Your {month} check-in")
+            .Paragraph(opener)
+            .Figure("Net worth", Money(latest.NetWorth), caption)
+            .Rows("Where it stands", areas)
+            .Rows("Where you're headed", ahead)
+            .Button("See the full picture", appUrl)
+            .Small("Estimates are based on your plan and assumed returns. They're not financial advice.")
+            .FooterNote("You're getting this because you asked for a copy of your check-in.")
+            .Build($"Your Dollars at Work check-in for {month}");
     }
 }
