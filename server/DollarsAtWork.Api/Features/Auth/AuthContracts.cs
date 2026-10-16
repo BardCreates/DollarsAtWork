@@ -37,4 +37,5 @@ public record AccessResponse(
     }
 }
 
-public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints);
+/// <summary>IsOwner: this account's email matches App:OwnerEmail, so it can open the Numbers page.</summary>
+public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints, bool IsOwner);

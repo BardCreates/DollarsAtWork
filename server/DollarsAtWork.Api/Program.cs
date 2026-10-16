@@ -12,6 +12,7 @@ using DollarsAtWork.Api.Features.NetWorth;
 using DollarsAtWork.Api.Features.Scenarios;
 using DollarsAtWork.Api.Features.Plan;
 using DollarsAtWork.Api.Features.Savings;
+using DollarsAtWork.Api.Features.Usage;
 using DollarsAtWork.Api.Features.Waitlist;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
@@ -88,6 +89,11 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(RateLimits.PublicForm, http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+    // Anonymous usage counts (page visits, calculator use): one per page view, so roomier than a form, and kept
+    // apart from the waitlist's budget so clicking around never blocks the form.
+    options.AddPolicy(RateLimits.Usage, http => RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) }));
 });
 
 // ---------- App services ----------
@@ -166,6 +172,7 @@ api.MapScenarioEndpoints();
 api.MapBillingEndpoints();
 api.MapHintsEndpoints();
 api.MapWaitlistEndpoints();
+api.MapUsageEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
 app.MapFallbackToFile("index.html");
@@ -176,6 +183,7 @@ public static class RateLimits
 {
     public const string Auth = "auth";
     public const string PublicForm = "public-form";
+    public const string Usage = "usage";
 }
 
 // Lets integration tests reference the app.
