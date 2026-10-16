@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +7,8 @@ using Microsoft.Extensions.Options;
 namespace DollarsAtWork.Api.Common;
 
 /// <summary>
-/// The plain-text onboarding emails for a trial's first days. Each is sent at most once per account,
-/// recorded on AppUser (WelcomeEmailSentAt, NudgeEmailSentAt).
+/// The onboarding emails for a trial's first days, in the branded layout (EmailLayout). Each is sent at most once per
+/// account, recorded on AppUser (WelcomeEmailSentAt, NudgeEmailSentAt).
 /// </summary>
 public static class OnboardingEmails
 {
@@ -18,70 +17,63 @@ public static class OnboardingEmails
     /// <summary>How long after sign-up a welcome of either kind can still go out.</summary>
     public static readonly TimeSpan WelcomeWindow = TimeSpan.FromDays(3);
 
-    private const string ReplyLine = "Reply to this email if anything is confusing — a person reads it.";
-    private const string TrialLine = "Your 30-day trial is free and we didn't ask for a card.";
-    private const string EstimatesLine = "Estimates based on your plan and assumed returns, not financial advice.";
+    private const string ReplyLine = "Questions or stuck on something? Just reply. A real person reads every email.";
+    private const string TrialLine = "Your 30-day trial is free, and we never asked for a card.";
+    private const string EstimatesLine = "Estimates are based on your plan and assumed returns. They're not financial advice.";
+    private const string Footer = "You're getting this because you started a Dollars at Work free trial.";
 
     private static string Money(decimal value) => Math.Round(value, 0, MidpointRounding.AwayFromZero).ToString("$#,##0;-$#,##0", Invariant);
 
     /// <summary>
-    /// The hour-1 welcome, with the person's own numbers worked out by the browser. Lines whose number is missing are left out.
+    /// The hour-1 welcome, with the person's own numbers worked out by the browser. Rows whose number is missing are left out.
     /// </summary>
-    public static (string Subject, string Body) Welcome(int? debtFreeMonth, decimal? netWorthIn10Years, DateTimeOffset now, string appUrl)
+    public static EmailMessage Welcome(int? debtFreeMonth, decimal? netWorthIn10Years, DateTimeOffset now, string appUrl)
     {
-        var body = new StringBuilder();
-        body.AppendLine("Your plan is set up and your dollars have clocked in.");
-        body.AppendLine();
-
-        var ahead = new List<string>();
+        var ahead = new List<EmailLayout.Row>();
         if (netWorthIn10Years is { } ten)
-            ahead.Add($"  Net worth in 10 years: about {Money(ten)}");
+            ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)}"));
         if (debtFreeMonth is { } months and > 0)
-            ahead.Add($"  Debt-free: {DateOnly.FromDateTime(now.UtcDateTime.AddMonths(months)).ToString("MMMM yyyy", Invariant)}");
-        if (ahead.Count > 0)
-        {
-            body.AppendLine("Where you're headed:");
-            foreach (var line in ahead) body.AppendLine(line);
-            body.AppendLine();
-        }
+            ahead.Add(new EmailLayout.Row("Debt-free", DateOnly.FromDateTime(now.UtcDateTime.AddMonths(months)).ToString("MMMM yyyy", Invariant)));
 
-        body.AppendLine($"Move a dollar from one category to another on the Plan page and those numbers change in front of you: {appUrl}/plan");
-        body.AppendLine();
-        body.AppendLine(TrialLine);
-        body.AppendLine();
-        body.AppendLine(ReplyLine);
-        body.AppendLine();
-        body.AppendLine(EstimatesLine);
-        return ("Your dollars clocked in", body.ToString());
+        return new EmailLayout(appUrl)
+            .Preheader("Your plan is set up. Here's where it's headed.")
+            .Heading("Your dollars just clocked in")
+            .Paragraph("Your plan is set up and every dollar has a job. Here's where this month's plan is headed if you stick with it.")
+            .Rows("Where you're headed", ahead)
+            .Paragraph("Now the fun part: move a dollar from one category to another on the Plan page and watch these numbers change as you type.")
+            .Button("Move a dollar", $"{appUrl}/plan")
+            .Paragraph(TrialLine)
+            .Small(ReplyLine)
+            .Small(EstimatesLine)
+            .FooterNote(Footer)
+            .Build("Your dollars clocked in");
     }
 
     /// <summary>For someone who signed up but never reached the dashboard, an hour or more later.</summary>
-    public static (string Subject, string Body) PlanWaiting(string appUrl)
-    {
-        var body = new StringBuilder();
-        body.AppendLine("You signed up for Dollars at Work but haven't built a plan yet.");
-        body.AppendLine();
-        body.AppendLine($"It takes about three minutes: your monthly income, a few categories, and you'll see where you're headed. Start here: {appUrl}/welcome");
-        body.AppendLine();
-        body.AppendLine(ReplyLine);
-        return ("Your plan is waiting", body.ToString());
-    }
+    public static EmailMessage PlanWaiting(string appUrl) =>
+        new EmailLayout(appUrl)
+            .Preheader("About three minutes to see where your money can take you.")
+            .Heading("Your plan is waiting")
+            .Paragraph("You signed up for Dollars at Work but haven't built your plan yet. No rush, it's right where you left it.")
+            .Paragraph("It takes about three minutes: add your monthly income and a few categories, and you'll see where you're headed.")
+            .Button("Build my plan", $"{appUrl}/welcome")
+            .Small(ReplyLine)
+            .FooterNote(Footer)
+            .Build("Your plan is waiting");
 
     /// <summary>The day-3 nudge: try one what-if scenario.</summary>
-    public static (string Subject, string Body) Nudge(string appUrl)
-    {
-        var body = new StringBuilder();
-        body.AppendLine("Pick one question. Pay an extra $100 toward debt? A raise next year? A house in 2029?");
-        body.AppendLine();
-        body.AppendLine($"Save it as a scenario and compare it with your real plan on one chart. Your real plan doesn't change: {appUrl}/what-if");
-        body.AppendLine();
-        body.AppendLine(TrialLine);
-        body.AppendLine();
-        body.AppendLine(ReplyLine);
-        body.AppendLine();
-        body.AppendLine(EstimatesLine);
-        return ("Try one what-if", body.ToString());
-    }
+    public static EmailMessage Nudge(string appUrl) =>
+        new EmailLayout(appUrl)
+            .Preheader("Pay extra on debt? A raise? A house in 2029? See it on one chart.")
+            .Heading("Try one what-if")
+            .Paragraph("Pick one question. Pay an extra $100 a month toward debt? A raise next year? A house in 2029?")
+            .Paragraph("Save it as a scenario and compare it with your real plan on one chart. Your real plan stays exactly as it is.")
+            .Button("Try a what-if", $"{appUrl}/what-if")
+            .Paragraph(TrialLine)
+            .Small(ReplyLine)
+            .Small(EstimatesLine)
+            .FooterNote(Footer)
+            .Build("Try one what-if");
 }
 
 /// <summary>
@@ -113,12 +105,12 @@ public class OnboardingEmailService(AppDbContext db, IAppEmailSender sender, IOp
             .Where(u => u.EmailConfirmed && u.WelcomeEmailSentAt == null && u.CreatedAt > oldest && u.CreatedAt <= newest)
             .ToListAsync(ct);
 
-        var (subject, body) = OnboardingEmails.PlanWaiting(BaseUrl);
+        var message = OnboardingEmails.PlanWaiting(BaseUrl);
         var sent = 0;
         foreach (var user in due)
         {
             if (user.Email is null) continue;
-            await sender.SendAsync(user.Email, subject, body, ct);
+            await sender.SendAsync(user.Email, message, ct);
             user.WelcomeEmailSentAt = now;
             sent++;
         }
@@ -140,12 +132,12 @@ public class OnboardingEmailService(AppDbContext db, IAppEmailSender sender, IOp
                 && subscription.Status == SubscriptionStatus.Trialing
             select user).ToListAsync(ct);
 
-        var (subject, body) = OnboardingEmails.Nudge(BaseUrl);
+        var message = OnboardingEmails.Nudge(BaseUrl);
         var sent = 0;
         foreach (var user in due)
         {
             if (user.Email is null) continue;
-            await sender.SendAsync(user.Email, subject, body, ct);
+            await sender.SendAsync(user.Email, message, ct);
             user.NudgeEmailSentAt = now;
             sent++;
         }

@@ -155,8 +155,8 @@ public static class AccountEndpoints
         // A welcome only makes sense in the first days. Older accounts (made before this email existed) are marked done, not emailed.
         if (now - user.CreatedAt <= OnboardingEmails.WelcomeWindow)
         {
-            var (subject, body) = OnboardingEmails.Welcome(request.DebtFreeMonth, request.NetWorthIn10Years, now, options.Value.PublicUrl.TrimEnd('/'));
-            await sender.SendAsync(user.Email, subject, body, ct);
+            var message = OnboardingEmails.Welcome(request.DebtFreeMonth, request.NetWorthIn10Years, now, options.Value.PublicUrl.TrimEnd('/'));
+            await sender.SendAsync(user.Email, message, ct);
         }
         user.WelcomeEmailSentAt = now;
         await users.UpdateAsync(user);
