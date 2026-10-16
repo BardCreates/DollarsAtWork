@@ -33,7 +33,7 @@ public static class ReportEmail
         string appUrl)
     {
         var month = Month(latest.Date);
-        var change = previous is null ? null : Math.Round(latest.NetWorth - previous.NetWorth, 0, MidpointRounding.AwayFromZero);
+        decimal? change = previous is null ? null : Math.Round(latest.NetWorth - previous.NetWorth, 0, MidpointRounding.AwayFromZero);
         var caption = previous is null
             ? "This is your starting point. Next month you'll see how far you've come."
             : $"That's {Change(latest.NetWorth - previous.NetWorth, "up", "down")} since {Month(previous.Date)}.";
