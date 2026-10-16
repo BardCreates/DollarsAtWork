@@ -118,6 +118,7 @@ builder.Services.AddScoped<BillingService>();
 builder.Services.AddScoped<AccountExport>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<TrialEmailService>();
+builder.Services.AddScoped<OnboardingEmailService>();
 builder.Services.AddHostedService<TrialEmailWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();

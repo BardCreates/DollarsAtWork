@@ -28,7 +28,9 @@ and decisions already made. Don't re-ask decided questions.
   (confirmed by a link to the new address), export data (JSON or a zip of CSVs), delete account (cancels Stripe),
   one trial per email, first-run walkthrough (/welcome), pricing page, draft terms and privacy pages, 360px pass.
 - Email provider is wired: `ResendEmailSender` (Common/Email.cs) is used when `Email:ResendApiKey` is set, otherwise
-  emails still print to the console. Production refuses to start if any required setting is missing (Program.cs).
+  emails still print to the console. Every email is built with `EmailLayout` (Common/EmailLayout.cs): branded HTML
+  (dark card, mascot from /email/mascot.png, wordmark, one green button, footer) plus a matching plain-text version,
+  both sent. New emails use it too, written in the Voice below. Production refuses to start if any required setting is missing (Program.cs).
 - Deploy: `.github/workflows/deploy.yml` builds the client into wwwroot, publishes the API and deploys to one Azure
   App Service on every push to `main`. Needs the two GitHub secrets named at the top of that file.
 - Fonts are self-hosted via `@fontsource/inter` and `@fontsource/coiny` (main.tsx); the Google Fonts links and the
@@ -99,6 +101,12 @@ and decisions already made. Don't re-ask decided questions.
   from Profile) are owner-only: `App:OwnerEmail` (host setting `App__OwnerEmail`, optional: empty = nobody, and production
   still starts without it) names the account; `.RequireOwner()` answers 404 to anyone else and /auth/me carries `isOwner`.
   The Privacy, Security and help pages describe this counting; change them together with the code.
+- Onboarding emails (Oct 16): two more trial emails, each sent once (AppUser.WelcomeEmailSentAt / NudgeEmailSentAt). Hour 1:
+  the dashboard POSTs its first projection's 10-year net worth and debt-free month to /api/account/welcome-email
+  (features/account/welcomeEmail.ts; the numbers come from the browser, like the check-in report email) and the server sends
+  "Your dollars clocked in" with them. The hourly worker (Common/OnboardingEmails.cs, run by TrialEmailWorker) sends "Your plan
+  is waiting" to confirmed accounts 1 hour to 3 days old that never got the welcome, and "Try one what-if" to trialing accounts
+  3 to 10 days old. /auth/me carries welcomeEmailSent. The help trial article and the Privacy Policy list these emails.
 
 ## What we compete on
 

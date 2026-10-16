@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Switch, Tooltip, Typography } from '@mui/material';
@@ -8,6 +8,8 @@ import mascot from '../../assets/mascot.png';
 import { PageHeader } from '../../components/PageHeader';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
+import { project } from '../../lib/projection';
+import { useSendWelcomeEmail } from '../account/welcomeEmail';
 import { formatMoney } from '../../lib/money';
 import { recordUsage } from '../../lib/usage';
 import { brand } from '../../theme';
@@ -22,7 +24,7 @@ import type { NetWorthData } from './networth';
 import { OtherItemsDialog } from './OtherItemsDialog';
 import { ProjectionChart } from './ProjectionChart';
 import { TimelineCard } from './TimelineCard';
-import { useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
+import { buildProjectionInput, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
 const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financial advice.';
 
@@ -87,6 +89,12 @@ function Dashboard({ data }: { data: DashboardData }) {
     projectionCounted = true;
     recordUsage('first_projection');
   }, [blank]);
+  // The welcome email goes out the first time there is a real plan to show, in actual dollars whatever the toggle says.
+  const welcomeOutlook = useMemo(
+    () => (blank ? null : todaysDollars ? outlookOf(project(buildProjectionInput(data, false))) : outlookOf(result)),
+    [blank, data, todaysDollars, result],
+  );
+  useSendWelcomeEmail(me, welcomeOutlook);
 
   if (blank) {
     return (

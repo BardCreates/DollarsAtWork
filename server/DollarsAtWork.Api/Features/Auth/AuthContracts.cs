@@ -37,5 +37,8 @@ public record AccessResponse(
     }
 }
 
-/// <summary>IsOwner: this account's email matches App:OwnerEmail, so it can open the Numbers page.</summary>
-public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints, bool IsOwner);
+/// <summary>
+/// IsOwner: this account's email matches App:OwnerEmail, so it can open the Numbers page.
+/// WelcomeEmailSent tells the browser whether the hour-1 welcome (with the person's own numbers) is still to be sent.
+/// </summary>
+public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints, bool IsOwner, bool WelcomeEmailSent);

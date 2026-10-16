@@ -41,8 +41,8 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
             if (stage <= row.subscription.TrialEmailStage || row.Email is null)
                 continue;
 
-            var (subject, body) = Compose(stage, row.subscription.TrialEndsAt);
-            await sender.SendAsync(row.Email, subject, body, ct);
+            var message = Compose(stage, row.subscription.TrialEndsAt, options.Value.PublicUrl);
+            await sender.SendAsync(row.Email, message, ct);
             row.subscription.TrialEmailStage = stage;
             row.subscription.UpdatedAt = now;
             sent++;
@@ -56,26 +56,42 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
         return sent;
     }
 
-    private (string Subject, string Body) Compose(TrialEmailStage stage, DateTimeOffset trialEndsAt)
+    public static EmailMessage Compose(TrialEmailStage stage, DateTimeOffset trialEndsAt, string appUrl)
     {
-        var link = $"{options.Value.PublicUrl.TrimEnd('/')}/profile";
-        var ends = trialEndsAt.ToString("MMMM d");
+        var baseUrl = appUrl.TrimEnd('/');
+        var link = $"{baseUrl}/profile";
+        var ends = trialEndsAt.ToString("dddd, MMMM d", System.Globalization.CultureInfo.InvariantCulture);
+        var layout = new EmailLayout(baseUrl)
+            .FooterNote("You're getting this because your Dollars at Work free trial is ending.");
         return stage switch
         {
-            TrialEmailStage.SevenDaysLeft => (
-                "7 days left in your Dollars at Work trial",
-                $"Your free trial ends on {ends}. Subscribe any time to keep editing your plan:\n{link}"),
-            TrialEmailStage.TwoDaysLeft => (
-                "2 days left in your Dollars at Work trial",
-                $"Your free trial ends on {ends}. Subscribe now so nothing changes:\n{link}"),
-            _ => (
-                "Your Dollars at Work trial has ended",
-                $"Your plan and all your numbers are safe and you can still see them, but editing is turned off. Subscribe to pick up where you left off:\n{link}"),
+            TrialEmailStage.SevenDaysLeft => layout
+                .Preheader($"Your trial ends {ends}. Keep your plan moving.")
+                .Heading("One week left in your free trial")
+                .Paragraph($"Your free trial ends on {ends}. We hope your plan is already showing you where your money can go.")
+                .Paragraph("Subscribe before then and everything keeps working: your plan, your money timeline, what-if scenarios and monthly check-ins.")
+                .Button("Choose a plan", link)
+                .Small("Not ready yet? That's okay. Your numbers stay safe either way.")
+                .Build("7 days left in your Dollars at Work trial"),
+            TrialEmailStage.TwoDaysLeft => layout
+                .Preheader($"On {ends} your plan becomes view-only.")
+                .Heading("Your trial ends in 2 days")
+                .Paragraph($"On {ends} your plan switches to view-only. You'll still see every number, but you won't be able to change them.")
+                .Paragraph("Subscribe now and nothing changes. Keep moving dollars, checking in and trying what-ifs.")
+                .Button("Keep my plan going", link)
+                .Build("2 days left in your Dollars at Work trial"),
+            _ => layout
+                .Preheader("Your numbers are safe. Pick up where you left off any time.")
+                .Heading("Your free trial has ended")
+                .Paragraph("Your plan and every number in it are safe, and you can still see them. Editing is paused for now.")
+                .Paragraph("Whenever you're ready, subscribe to pick up right where you left off. Nothing to rebuild.")
+                .Button("Pick up where I left off", link)
+                .Build("Your Dollars at Work trial has ended"),
         };
     }
 }
 
-/// <summary>Runs the trial emails shortly after start-up and then once an hour.</summary>
+/// <summary>Runs the trial and onboarding emails shortly after start-up and then once an hour.</summary>
 public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, ILogger<TrialEmailWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan FirstRun = TimeSpan.FromSeconds(20);
@@ -92,6 +108,7 @@ public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, I
                 {
                     using var scope = scopes.CreateScope();
                     await scope.ServiceProvider.GetRequiredService<TrialEmailService>().SendDueAsync(stoppingToken);
+                    await scope.ServiceProvider.GetRequiredService<OnboardingEmailService>().SendDueAsync(stoppingToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {

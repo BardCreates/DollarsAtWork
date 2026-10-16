@@ -198,7 +198,8 @@ public static class AuthEndpoints
             user.EmailConfirmed,
             AccessResponse.From(subscription, clock.GetUtcNow()),
             HintIds.ToResponse(user),
-            OwnerAccess.IsOwner(user, appOptions));
+            OwnerAccess.IsOwner(user, appOptions),
+            user.WelcomeEmailSentAt is not null);
     }
 
     private static string? NormalizeEmail(string? email)
