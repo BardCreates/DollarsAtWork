@@ -30,26 +30,74 @@ public class BillingService(
     private StripeClient Client => _client ??= new StripeClient(_stripe.SecretKey);
     private string BaseUrl => appOptions.Value.PublicUrl.TrimEnd('/');
 
+    public bool HasFoundingOffer => IsConfigured && !string.IsNullOrWhiteSpace(_stripe.FoundingPriceId);
+
     public async Task<PricesResponse> GetPricesAsync(CancellationToken ct)
     {
         if (!IsConfigured)
             return new PricesResponse(false, null, null);
 
         // Prices rarely change; don't ask Stripe on every page view.
-        return (await cache.GetOrCreateAsync("billing:prices", async entry =>
+        var (monthly, annual, founding) = (await cache.GetOrCreateAsync("billing:prices", async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
             var prices = new PriceService(Client);
-            var monthly = await prices.GetAsync(_stripe.MonthlyPriceId, cancellationToken: ct);
-            var annual = await prices.GetAsync(_stripe.AnnualPriceId, cancellationToken: ct);
-            return new PricesResponse(true, ToResponse(monthly), ToResponse(annual));
-        }))!;
+            var m = await prices.GetAsync(_stripe.MonthlyPriceId, cancellationToken: ct);
+            var a = await prices.GetAsync(_stripe.AnnualPriceId, cancellationToken: ct);
+            PriceResponse? f = null;
+            if (HasFoundingOffer)
+            {
+                try
+                {
+                    f = ToResponse(await prices.GetAsync(_stripe.FoundingPriceId, cancellationToken: ct));
+                }
+                catch (StripeException ex)
+                {
+                    // A wrong founding price id shouldn't take the regular prices down with it.
+                    logger.LogWarning(ex, "Couldn't load the founding price {PriceId}", _stripe.FoundingPriceId);
+                }
+            }
+            return (ToResponse(m), ToResponse(a), f);
+        }));
+
+        if (founding is null)
+            return new PricesResponse(true, monthly, annual);
+
+        var taken = await FoundingTakenAsync(ct);
+        return new PricesResponse(true, monthly, annual, new FoundingResponse(founding, Math.Min(taken, _stripe.FoundingLimit), _stripe.FoundingLimit, taken < _stripe.FoundingLimit));
 
         static PriceResponse ToResponse(Price price) => new((price.UnitAmount ?? 0) / 100m, price.Currency.ToUpperInvariant());
     }
 
-    /// <summary>Starts Stripe Checkout for a monthly or annual subscription and returns its address.</summary>
-    public async Task<string> CreateCheckoutUrlAsync(AppUser user, bool annual, CancellationToken ct)
+    /// <summary>
+    /// How many founding spots are taken: subscriptions on the founding price that got as far as a first payment
+    /// (or a 100% off code), counted from Stripe itself so nothing here can drift from it. Cached for a minute.
+    /// The cap is soft: two people checking out in the same minute as the last spot could both get it.
+    /// </summary>
+    public async Task<int> FoundingTakenAsync(CancellationToken ct)
+    {
+        if (!HasFoundingOffer)
+            return 0;
+
+        return await cache.GetOrCreateAsync("billing:founding-taken", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+            var count = 0;
+            var options = new SubscriptionListOptions { Price = _stripe.FoundingPriceId, Status = "all", Limit = 100 };
+            await foreach (var s in new SubscriptionService(Client).ListAutoPagingAsync(options, cancellationToken: ct))
+            {
+                // Never-paid checkouts don't hold a spot.
+                if (s.Status is not ("incomplete" or "incomplete_expired"))
+                    count++;
+                if (count >= _stripe.FoundingLimit)
+                    break;
+            }
+            return count;
+        });
+    }
+
+    /// <summary>Starts Stripe Checkout for the monthly, annual or founding plan and returns its address.</summary>
+    public async Task<string> CreateCheckoutUrlAsync(AppUser user, BillingPlan plan, CancellationToken ct)
     {
         var subscription = await db.Subscriptions.SingleAsync(s => s.UserId == user.Id, ct);
         var customerId = await EnsureCustomerAsync(user, subscription, ct);
@@ -59,7 +107,11 @@ public class BillingService(
             Mode = "subscription",
             Customer = customerId,
             ClientReferenceId = user.Id.ToString(),
-            LineItems = [new Stripe.Checkout.SessionLineItemOptions { Price = annual ? _stripe.AnnualPriceId : _stripe.MonthlyPriceId, Quantity = 1 }],
+            LineItems = [new Stripe.Checkout.SessionLineItemOptions { Price = PriceIdFor(plan), Quantity = 1 }],
+            // Lets someone enter a promotion code made in the Stripe dashboard (a coach's free code, say).
+            AllowPromotionCodes = true,
+            // A code that makes it free needs no card; everything else still asks for one.
+            PaymentMethodCollection = "if_required",
             SuccessUrl = $"{BaseUrl}/profile?billing=success",
             CancelUrl = $"{BaseUrl}/profile?billing=canceled",
         };
@@ -72,6 +124,13 @@ public class BillingService(
 
         return session.Url;
     }
+
+    private string PriceIdFor(BillingPlan plan) => plan switch
+    {
+        BillingPlan.Founding => _stripe.FoundingPriceId,
+        BillingPlan.Annual => _stripe.AnnualPriceId,
+        _ => _stripe.MonthlyPriceId,
+    };
 
     /// <summary>Opens the Stripe customer portal (change card, switch plan, cancel). Null if the user has never checked out.</summary>
     public async Task<string?> CreatePortalUrlAsync(Guid userId, CancellationToken ct)
@@ -251,4 +310,11 @@ public class BillingService(
             // "incomplete" and "paused": the first payment hasn't settled, so nothing changes yet.
         }
     }
+}
+
+public enum BillingPlan
+{
+    Monthly,
+    Annual,
+    Founding,
 }
