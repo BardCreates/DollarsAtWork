@@ -83,6 +83,10 @@ export function SecurityPage() {
           <Point>Every request is tied to your signed-in account. Nothing you can type into the address bar will show you someone else's numbers.</Point>
           <Point>Password-reset and email-change links expire and work once.</Point>
           <Point>Our typefaces are served from our own site. Opening a page here tells no third party you visited.</Point>
+          <Point>
+            We count how many people open our public pages and use the calculators with an anonymous event of our own: its name, the time and the referral
+            tag if the address had one. No cookie, no IP address, no user id, no analytics scripts.
+          </Point>
         </List>
       </Section>
 

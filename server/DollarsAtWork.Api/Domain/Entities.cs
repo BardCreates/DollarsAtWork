@@ -45,6 +45,19 @@ public class WaitlistEntry
 }
 
 /// <summary>
+/// One anonymous count: "someone opened the tools page", "someone signed up". Name, time and the referral tag,
+/// nothing else: no user id, no IP address, no browser details. See Common/UsageEvents for the allowed names.
+/// </summary>
+public class UsageEvent
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    /// <summary>The cleaned ?from tag of the page, when it had one (see SignupSources). Null otherwise.</summary>
+    public string? Source { get; set; }
+    public DateTimeOffset At { get; set; }
+}
+
+/// <summary>
 /// What a category is for. The three built-in kinds link to their modules and exist exactly once per user.
 /// Modules always look categories up by Kind, never by name.
 /// </summary>

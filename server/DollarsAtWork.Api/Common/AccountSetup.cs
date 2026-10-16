@@ -23,8 +23,9 @@ public class AccountSetup(AppDbContext db, TimeProvider clock)
     /// <summary>
     /// Adds the defaults to the context. The caller saves, so it can share a transaction with user creation.
     /// An email that has already had a trial starts with it used up: read-only until they subscribe.
+    /// Returns true when a fresh 30-day trial started.
     /// </summary>
-    public async Task AddDefaultsAsync(Guid userId, string email, CancellationToken ct)
+    public async Task<bool> AddDefaultsAsync(Guid userId, string email, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
         var emailHash = HashEmail(email);
@@ -69,5 +70,7 @@ public class AccountSetup(AppDbContext db, TimeProvider clock)
             CreatedAt = now,
             UpdatedAt = now,
         });
+
+        return !trialUsed;
     }
 }

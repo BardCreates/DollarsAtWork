@@ -72,6 +72,12 @@ public class AppOptions
 {
     /// <summary>Address of the web app, used to build links in emails. Dev: the Vite server.</summary>
     public string PublicUrl { get; set; } = "http://localhost:5173";
+
+    /// <summary>
+    /// The owner's sign-in email. Only this account can read the usage numbers (/api/usage/summary). Optional:
+    /// empty means nobody can, and the app still starts.
+    /// </summary>
+    public string OwnerEmail { get; set; } = "";
 }
 
 /// <summary>Builds and sends the account emails (confirm address, reset password).</summary>

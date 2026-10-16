@@ -18,6 +18,7 @@ const me: Me = {
     hasBillingAccount: false,
   },
   hints: { off: false, dismissed: [] },
+  isOwner: false,
   welcomeEmailSent: false,
 };
 

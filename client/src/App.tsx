@@ -21,6 +21,7 @@ import { SavingsPage } from './features/savings/SavingsPage';
 import { InvestPage } from './features/invest/InvestPage';
 import { ScenariosPage } from './features/scenarios/ScenariosPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { NumbersPage } from './features/numbers/NumbersPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { HomeRoute } from './features/home/HomeRoute';
 import { HelpPage } from './features/help/HelpPage';
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="/invest" element={<InvestPage />} />
           <Route path="/what-if" element={<ScenariosPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/numbers" element={<NumbersPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

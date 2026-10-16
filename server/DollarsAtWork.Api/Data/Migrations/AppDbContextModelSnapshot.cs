@@ -580,6 +580,31 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("Subscriptions");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.UsageEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name", "At");
+
+                    b.ToTable("UsageEvents");
+                });
+
             modelBuilder.Entity("DollarsAtWork.Api.Domain.UsedTrial", b =>
                 {
                     b.Property<string>("EmailHash")

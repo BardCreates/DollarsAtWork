@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<UsedTrial> UsedTrials => Set<UsedTrial>();
     public DbSet<Scenario> Scenarios => Set<Scenario>();
     public DbSet<WaitlistEntry> WaitlistEntries => Set<WaitlistEntry>();
+    public DbSet<UsageEvent> UsageEvents => Set<UsageEvent>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -43,6 +44,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(w => w.Source).HasMaxLength(20);
             e.Property(w => w.Note).HasMaxLength(200);
             e.HasIndex(w => w.Email).IsUnique();
+        });
+
+        builder.Entity<UsageEvent>(e =>
+        {
+            e.Property(u => u.Name).HasMaxLength(40);
+            e.Property(u => u.Source).HasMaxLength(60);
+            e.HasIndex(u => new { u.Name, u.At });
         });
 
         builder.Entity<Plan>(e =>

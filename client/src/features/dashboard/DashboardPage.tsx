@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Switch, Tooltip, Typography } from '@mui/material';
@@ -11,6 +11,7 @@ import { useMe } from '../../auth/auth';
 import { project } from '../../lib/projection';
 import { useSendWelcomeEmail } from '../account/welcomeEmail';
 import { formatMoney } from '../../lib/money';
+import { recordUsage } from '../../lib/usage';
 import { brand } from '../../theme';
 import { DashboardHint, TourHint } from '../hints/PageHints';
 import { planTotals } from '../plan/plan';
@@ -26,6 +27,9 @@ import { TimelineCard } from './TimelineCard';
 import { buildProjectionInput, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
 const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financial advice.';
+
+/** Once per page load (not per visit to the dashboard): the anonymous "someone reached a projection" count. */
+let projectionCounted = false;
 
 export function DashboardPage() {
   const { data, isPending, error, refetch } = useDashboardData();
@@ -77,9 +81,15 @@ function Dashboard({ data }: { data: DashboardData }) {
 
   const { result, timeline } = useDashboardProjection(data, todaysDollars);
   const { remaining } = planTotals(data.plan);
-
-  // The welcome email goes out the first time there is a real plan to show, in actual dollars whatever the toggle says.
   const blank = isBlank(data);
+
+  useEffect(() => {
+    // A projection of a blank plan is all zeros; count the first real one in this session.
+    if (blank || projectionCounted) return;
+    projectionCounted = true;
+    recordUsage('first_projection');
+  }, [blank]);
+  // The welcome email goes out the first time there is a real plan to show, in actual dollars whatever the toggle says.
   const welcomeOutlook = useMemo(
     () => (blank ? null : todaysDollars ? outlookOf(project(buildProjectionInput(data, false))) : outlookOf(result)),
     [blank, data, todaysDollars, result],

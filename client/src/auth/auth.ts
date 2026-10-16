@@ -27,6 +27,8 @@ export interface Me {
   emailConfirmed: boolean;
   access: Access;
   hints: HintSettings;
+  /** True for the account named in the server's App:OwnerEmail setting: the only one that can open /numbers. */
+  isOwner: boolean;
   /** True once the welcome email (hour-1 numbers or the fallback) has gone out, so the dashboard knows not to ask for it. */
   welcomeEmailSent: boolean;
 }

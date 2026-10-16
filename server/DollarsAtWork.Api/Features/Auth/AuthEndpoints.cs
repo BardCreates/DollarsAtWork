@@ -6,6 +6,7 @@ using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Hints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DollarsAtWork.Api.Features.Auth;
 
@@ -34,6 +35,7 @@ public static class AuthEndpoints
         AppDbContext db,
         AccountSetup setup,
         AccountEmails emails,
+        IOptions<AppOptions> appOptions,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -57,7 +59,13 @@ public static class AuthEndpoints
             if (!created.Succeeded)
                 return Results.ValidationProblem(ToErrors(created));
 
-            await setup.AddDefaultsAsync(user.Id, email, ct);
+            var trialStarted = await setup.AddDefaultsAsync(user.Id, email, ct);
+
+            // Anonymous counts for the owner's Numbers page: the event isn't linked to the account.
+            UsageEvents.Record(db, clock, UsageEvents.Signup, user.SignupSource);
+            if (trialStarted)
+                UsageEvents.Record(db, clock, UsageEvents.TrialStarted, user.SignupSource);
+
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }
@@ -65,7 +73,7 @@ public static class AuthEndpoints
         await emails.SendConfirmationAsync(user, ct);
         await signIn.SignInAsync(user, isPersistent: true);
 
-        return Results.Ok(await BuildMe(user, db, clock, ct));
+        return Results.Ok(await BuildMe(user, db, appOptions.Value, clock, ct));
     }
 
     private static async Task<IResult> Login(
@@ -73,6 +81,7 @@ public static class AuthEndpoints
         UserManager<AppUser> users,
         SignInManager<AppUser> signIn,
         AppDbContext db,
+        IOptions<AppOptions> appOptions,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -92,7 +101,7 @@ public static class AuthEndpoints
         if (!result.Succeeded)
             return WrongCredentials();
 
-        return Results.Ok(await BuildMe(user, db, clock, ct));
+        return Results.Ok(await BuildMe(user, db, appOptions.Value, clock, ct));
     }
 
     private static async Task<IResult> Logout(SignInManager<AppUser> signIn)
@@ -105,13 +114,14 @@ public static class AuthEndpoints
         ClaimsPrincipal principal,
         UserManager<AppUser> users,
         AppDbContext db,
+        IOptions<AppOptions> appOptions,
         TimeProvider clock,
         CancellationToken ct)
     {
         var user = await users.FindByIdAsync(principal.GetUserId().ToString());
         return user is null
             ? Results.Unauthorized()
-            : Results.Ok(await BuildMe(user, db, clock, ct));
+            : Results.Ok(await BuildMe(user, db, appOptions.Value, clock, ct));
     }
 
     private static async Task<IResult> ForgotPassword(
@@ -179,10 +189,17 @@ public static class AuthEndpoints
         return Results.NoContent();
     }
 
-    private static async Task<MeResponse> BuildMe(AppUser user, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    private static async Task<MeResponse> BuildMe(AppUser user, AppDbContext db, AppOptions appOptions, TimeProvider clock, CancellationToken ct)
     {
         var subscription = await db.Subscriptions.AsNoTracking().SingleAsync(s => s.UserId == user.Id, ct);
-        return new MeResponse(user.Id, user.Email!, user.EmailConfirmed, AccessResponse.From(subscription, clock.GetUtcNow()), HintIds.ToResponse(user), user.WelcomeEmailSentAt is not null);
+        return new MeResponse(
+            user.Id,
+            user.Email!,
+            user.EmailConfirmed,
+            AccessResponse.From(subscription, clock.GetUtcNow()),
+            HintIds.ToResponse(user),
+            OwnerAccess.IsOwner(user, appOptions),
+            user.WelcomeEmailSentAt is not null);
     }
 
     private static string? NormalizeEmail(string? email)

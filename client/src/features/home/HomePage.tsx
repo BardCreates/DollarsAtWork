@@ -17,6 +17,7 @@ import { signUpPath } from '../../lib/signUp';
 import { PublicLayout } from '../../pages/public/PublicLayout';
 import { SampleImpactCard, useSampleImpact } from '../demo/SampleImpactCard';
 import { WaitlistForm } from '../waitlist/WaitlistForm';
+import { useRecordVisit } from '../../lib/usage';
 
 const steps = [
   { title: 'Give every dollar a job', body: 'Enter your take-home pay and split it into categories, including Savings, Debt and Investments.' },
@@ -38,6 +39,7 @@ const features: { icon: ReactNode; title: string; body: string }[] = [
  * sample plan, and the ways in (trial, sign in, calculators, help, or the waitlist).
  */
 export function HomePage() {
+  useRecordVisit('visit_home');
   const { extra, setExtra, result, impact } = useSampleImpact();
   const { data: prices } = usePrices();
   const monthly = prices?.enabled ? prices.monthly : null;

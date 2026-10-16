@@ -281,6 +281,7 @@ public class BillingService(
         var item = theirs.Items?.Data?.FirstOrDefault();
         DateTimeOffset? periodEnd = item is null ? null : new DateTimeOffset(DateTime.SpecifyKind(item.CurrentPeriodEnd, DateTimeKind.Utc));
 
+        var newSubscription = ours.StripeSubscriptionId != theirs.Id;
         ours.StripeSubscriptionId = theirs.Id;
         ours.BillingInterval = item?.Price?.Recurring?.Interval ?? ours.BillingInterval;
         ours.UpdatedAt = now;
@@ -309,6 +310,11 @@ public class BillingService(
 
             // "incomplete" and "paused": the first payment hasn't settled, so nothing changes yet.
         }
+
+        // An anonymous count for the owner's Numbers page, the first time each Stripe subscription turns up live.
+        // A side effect of copying Stripe's state, never an input to it.
+        if (newSubscription && theirs.Status is ("active" or "trialing"))
+            Common.UsageEvents.Record(db, clock, Common.UsageEvents.Subscribed);
     }
 }
 
