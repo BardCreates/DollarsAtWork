@@ -12,7 +12,7 @@ public static class EmailEndpoints
 
         // Anonymous on purpose: the sealed token in the link is the proof. Mail apps POST here for one-click
         // unsubscribe (List-Unsubscribe-Post), and the /unsubscribe page POSTs here when its button is pressed.
-        email.MapPost("/unsubscribe", Unsubscribe).AllowAnonymous().RequireRateLimiting(RateLimits.Usage); // roomier: one-click requests all come from a few mail servers
+        email.MapPost("/unsubscribe", Unsubscribe).AllowAnonymous().RequireRateLimiting(RateLimits.Unsubscribe);
 
         return api;
     }

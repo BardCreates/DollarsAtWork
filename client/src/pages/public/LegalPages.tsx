@@ -155,7 +155,7 @@ export function PrivacyPage() {
           To send account emails: confirming your address, password resets, billing notices, and a few during your trial: a welcome in your first
           hour that repeats the projection numbers from your own plan (or, if you haven't set one up yet, a reminder that it's waiting), one
           suggestion around day 3 to try a what-if scenario, and reminders a week and two days before the trial ends. We record when each of
-          these went out so you never get one twice. The welcome and the day-3 suggestion have an unsubscribe link; if you use it, we record
+          these went out so you never get one twice. The getting-started emails (the welcome or "your plan is waiting", and the day-3 suggestion) have an unsubscribe link; if you use it, we record
           that and send no more of them.
         </li>
         <li>To email the occasional money note (new articles and launch deals). Only addresses left in a money note box get these.</li>

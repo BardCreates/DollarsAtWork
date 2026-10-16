@@ -27,8 +27,8 @@ export function UnsubscribePage() {
                 Done. No more tips from us
               </Typography>
               <Typography color="text.secondary" sx={{ mb: 3 }}>
-                You won't get any more getting-started emails. We'll still email you about your account itself, such as password resets, your trial
-                ending, and receipts.
+                You won't get any more getting-started emails. We'll still email you about your account itself, such as password resets and your
+                trial ending. Payment emails come from Stripe and aren't affected.
               </Typography>
               <Button component={RouterLink} to="/" variant="outlined">
                 Go to Dollars at Work
@@ -41,7 +41,7 @@ export function UnsubscribePage() {
               </Typography>
               <Typography color="text.secondary" sx={{ mb: 3 }}>
                 These are the few tips we send in your first days, like the welcome with your 10-year number and the what-if idea. Emails about
-                your account itself, such as password resets, your trial ending and receipts, still come.
+                your account itself, such as password resets and your trial ending, still come.
               </Typography>
               {!token && (
                 <Alert severity="warning" sx={{ mb: 2, textAlign: 'left' }}>

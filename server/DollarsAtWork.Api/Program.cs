@@ -90,6 +90,11 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(RateLimits.PublicForm, http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+    // One-click unsubscribes (RFC 8058) arrive from a handful of mail-provider servers, so a per-IP limit must be
+    // generous: a refused request would leave someone subscribed without knowing. The sealed token is the only key.
+    options.AddPolicy(RateLimits.Unsubscribe, http => RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 600, Window = TimeSpan.FromMinutes(1) }));
     // Anonymous usage counts (page visits, calculator use): one per page view, so roomier than a form, and kept
     // apart from the waitlist's budget so clicking around never blocks the form.
     options.AddPolicy(RateLimits.Usage, http => RateLimitPartition.GetFixedWindowLimiter(
@@ -163,14 +168,19 @@ app.UseHttpsRedirection();
 // - frame-ancestors / X-Frame-Options: no other site can put our pages in a frame (clickjacking).
 // - Referrer-Policy same-origin: an address with a reset or confirm token in it is never sent to another site.
 // - Permissions-Policy: the app uses no camera, microphone, location, payment or USB features, so none can be asked for.
+// Set as the response starts, so error pages (which clear headers when they're rewritten) carry them too.
 app.Use(async (context, next) =>
 {
-    var headers = context.Response.Headers;
-    headers["X-Content-Type-Options"] = "nosniff";
-    headers["Content-Security-Policy"] = "frame-ancestors 'none'";
-    headers["X-Frame-Options"] = "DENY";
-    headers["Referrer-Policy"] = "same-origin";
-    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
+    context.Response.OnStarting(() =>
+    {
+        var headers = context.Response.Headers;
+        headers["X-Content-Type-Options"] = "nosniff";
+        headers["Content-Security-Policy"] = "frame-ancestors 'none'";
+        headers["X-Frame-Options"] = "DENY";
+        headers["Referrer-Policy"] = "same-origin";
+        headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
+        return Task.CompletedTask;
+    });
     await next();
 });
 
@@ -208,6 +218,7 @@ public static class RateLimits
     public const string Auth = "auth";
     public const string PublicForm = "public-form";
     public const string Usage = "usage";
+    public const string Unsubscribe = "unsubscribe";
 }
 
 // Lets integration tests reference the app.
