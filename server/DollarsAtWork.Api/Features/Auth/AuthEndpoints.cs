@@ -182,7 +182,7 @@ public static class AuthEndpoints
     private static async Task<MeResponse> BuildMe(AppUser user, AppDbContext db, TimeProvider clock, CancellationToken ct)
     {
         var subscription = await db.Subscriptions.AsNoTracking().SingleAsync(s => s.UserId == user.Id, ct);
-        return new MeResponse(user.Id, user.Email!, user.EmailConfirmed, AccessResponse.From(subscription, clock.GetUtcNow()), HintIds.ToResponse(user));
+        return new MeResponse(user.Id, user.Email!, user.EmailConfirmed, AccessResponse.From(subscription, clock.GetUtcNow()), HintIds.ToResponse(user), user.WelcomeEmailSentAt is not null);
     }
 
     private static string? NormalizeEmail(string? email)

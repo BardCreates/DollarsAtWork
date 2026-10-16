@@ -27,6 +27,8 @@ export interface Me {
   emailConfirmed: boolean;
   access: Access;
   hints: HintSettings;
+  /** True once the welcome email (hour-1 numbers or the fallback) has gone out, so the dashboard knows not to ask for it. */
+  welcomeEmailSent: boolean;
 }
 
 export const meQueryKey = ['me'] as const;

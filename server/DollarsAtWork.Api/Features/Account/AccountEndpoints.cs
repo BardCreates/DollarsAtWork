@@ -3,7 +3,9 @@ using System.Security.Claims;
 using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Billing;
+using DollarsAtWork.Api.Features.NetWorth;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 namespace DollarsAtWork.Api.Features.Account;
 
@@ -22,6 +24,7 @@ public static class AccountEndpoints
         account.MapPost("/confirm-email-change", ConfirmEmailChange).RequireRateLimiting(RateLimits.Auth);
         account.MapGet("/export", Export).RequireAuthorization();
         account.MapPost("/delete", DeleteAccount).RequireAuthorization().RequireRateLimiting(RateLimits.Auth);
+        account.MapPost("/welcome-email", SendWelcomeEmail).RequireAuthorization().RequireRateLimiting(RateLimits.Auth);
 
         return api;
     }
@@ -119,6 +122,45 @@ public static class AccountEndpoints
             null or "" or "json" => Results.File(await export.ToJsonAsync(user, ct), "application/json", "dollars-at-work-export.json"),
             _ => Results.ValidationProblem(new Dictionary<string, string[]> { ["format"] = ["Choose json or csv."] }),
         };
+    }
+
+    /// <summary>
+    /// Sends the hour-1 welcome with the person's own numbers, once. The browser calls this the first time the dashboard
+    /// has a projection; a second call (another tab, another day) does nothing. Only ever goes to the person's own address.
+    /// </summary>
+    private static async Task<IResult> SendWelcomeEmail(
+        WelcomeEmailRequest request,
+        ClaimsPrincipal principal,
+        UserManager<AppUser> users,
+        IAppEmailSender sender,
+        IOptions<AppOptions> options,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var check = new Validation();
+        if (request.DebtFreeMonth is < 0 or > ReportEmail.MaxMonths)
+            check.Add("debtFreeMonth", "That date isn't valid.");
+        if (request.NetWorthIn10Years is { } ten && Math.Abs(ten) > ReportEmail.MaxNetWorth)
+            check.Add("netWorthIn10Years", "That amount isn't valid.");
+        if (check.Failed)
+            return check.ToResult();
+
+        var user = await users.FindByIdAsync(principal.GetUserId().ToString());
+        if (user?.Email is null)
+            return Results.Unauthorized();
+        if (user.WelcomeEmailSentAt is not null)
+            return Results.NoContent();
+
+        var now = clock.GetUtcNow();
+        // A welcome only makes sense in the first days. Older accounts (made before this email existed) are marked done, not emailed.
+        if (now - user.CreatedAt <= OnboardingEmails.WelcomeWindow)
+        {
+            var (subject, body) = OnboardingEmails.Welcome(request.DebtFreeMonth, request.NetWorthIn10Years, now, options.Value.PublicUrl.TrimEnd('/'));
+            await sender.SendAsync(user.Email, subject, body, ct);
+        }
+        user.WelcomeEmailSentAt = now;
+        await users.UpdateAsync(user);
+        return Results.NoContent();
     }
 
     /// <summary>Cancels billing, then deletes the user. Every table cascades from the user, so nothing is left behind.</summary>

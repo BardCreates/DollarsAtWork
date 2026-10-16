@@ -96,3 +96,28 @@ export function useDashboardProjection(data: DashboardData, todaysDollars: boole
     return { result, timeline };
   }, [data, todaysDollars]);
 }
+
+/** The forward-looking numbers the emails and the check-in recap share, always in actual dollars. */
+export interface Outlook {
+  /** False when there is no debt at all, so "debt-free" means nothing. */
+  hasDebt: boolean;
+  /** Months from now, or null when not within the projection. */
+  debtFreeMonth: number | null;
+  netWorthIn10Years: number;
+}
+
+export function outlookOf(result: ProjectionResult): Outlook {
+  return {
+    hasDebt: result.debtPayoffMonths.some((month) => month !== 0),
+    debtFreeMonth: result.debtFreeMonth,
+    netWorthIn10Years: result.points[Math.min(120, result.points.length - 1)].netWorth,
+  };
+}
+
+/** What the server's emails ask for: the debt-free month only when there is debt, and the 10-year figure in whole dollars. */
+export function outlookForEmail(outlook: Outlook): { debtFreeMonth: number | null; netWorthIn10Years: number } {
+  return {
+    debtFreeMonth: outlook.hasDebt ? outlook.debtFreeMonth : null,
+    netWorthIn10Years: Math.round(outlook.netWorthIn10Years),
+  };
+}

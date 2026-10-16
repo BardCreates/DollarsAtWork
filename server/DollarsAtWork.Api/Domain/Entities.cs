@@ -18,6 +18,15 @@ public class AppUser : IdentityUser<Guid>
     /// which pages bring in trials. Null when unknown. Set once, at sign-up.
     /// </summary>
     public string? SignupSource { get; set; }
+
+    /// <summary>
+    /// When the first onboarding email went out: either the hour-1 welcome with the person's own numbers (sent when the
+    /// dashboard first has a projection) or the "your plan is waiting" fallback an hour after sign-up. Null until then.
+    /// </summary>
+    public DateTimeOffset? WelcomeEmailSentAt { get; set; }
+
+    /// <summary>When the day-3 "try one what-if" nudge went out. Null until then.</summary>
+    public DateTimeOffset? NudgeEmailSentAt { get; set; }
 }
 
 /// <summary>

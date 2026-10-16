@@ -147,7 +147,12 @@ export function PrivacyPage() {
       <H>How we use it</H>
       <ul>
         <li>To run the service: showing your plan, calculating projections, and keeping you signed in.</li>
-        <li>To send account emails: confirming your address, password resets, trial reminders, and billing notices.</li>
+        <li>
+          To send account emails: confirming your address, password resets, billing notices, and a few during your trial: a welcome in your first
+          hour that repeats the projection numbers from your own plan (or, if you haven't set one up yet, a reminder that it's waiting), one
+          suggestion around day 3 to try a what-if scenario, and reminders a week and two days before the trial ends. We record when each of
+          these went out so you never get one twice.
+        </li>
         <li>To email waitlist sign-ups news about the launch. Only addresses left in a waitlist box get these.</li>
         <li>To take payment, through Stripe.</li>
         <li>To keep the service secure and to fix errors.</li>

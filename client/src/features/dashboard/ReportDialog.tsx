@@ -9,7 +9,7 @@ import { project } from '../../lib/projection';
 import { buildReport, isImprovement, type ReportArea } from '../../lib/report';
 import { buildTimeline, nextUp } from '../../lib/timeline';
 import { useEmailReport } from './networth';
-import { buildProjectionInput, type DashboardData } from './useDashboard';
+import { buildProjectionInput, outlookForEmail, outlookOf, type DashboardData } from './useDashboard';
 
 const whole = (value: number) => formatMoney(Math.round(value));
 const monthName = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -55,21 +55,12 @@ export function ReportDialog({ open, data, onClose }: { open: boolean; data: Das
     if (!open) return null;
     const result = project(buildProjectionInput(data, false));
     const timeline = buildTimeline(result, { debts: data.debts.debts.map((d) => d.name), goals: data.savings.goals.map((g) => g.name) });
-    return {
-      hasDebt: result.debtPayoffMonths.some((month) => month !== 0),
-      debtFreeMonth: result.debtFreeMonth,
-      netWorthIn10Years: result.points[Math.min(120, result.points.length - 1)].netWorth,
-      next: nextUp(timeline),
-    };
+    return { ...outlookOf(result), next: nextUp(timeline) };
   }, [open, data]);
 
   if (!report) return null;
 
-  const sendCopy = () =>
-    email.mutate({
-      debtFreeMonth: outlook?.hasDebt ? outlook.debtFreeMonth : null,
-      netWorthIn10Years: outlook ? Math.round(outlook.netWorthIn10Years) : null,
-    });
+  const sendCopy = () => email.mutate(outlook ? outlookForEmail(outlook) : { debtFreeMonth: null, netWorthIn10Years: null });
 
   const up = report.change !== null && report.change > 0.5;
   const down = report.change !== null && report.change < -0.5;
