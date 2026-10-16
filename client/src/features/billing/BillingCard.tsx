@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { errorMessage } from '../../api/client';
 import type { Access, SubscriptionStatus } from '../../auth/auth';
+import { formatMomentFromNow } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
 import { brand } from '../../theme';
 import { useOpenPortal, usePrices, useStartCheckout, useSyncBilling, type BillingPlan, type Prices } from './billing';
@@ -114,7 +115,7 @@ export function BillingCard({ access }: { access: Access }) {
           <>
             <Typography sx={{ mb: 2 }}>
               {access.status === 'Trialing'
-                ? `Your free trial ends on ${longDate(access.trialEndsAt)} (${access.trialDaysLeft === 1 ? '1 day' : `${access.trialDaysLeft} days`} left). Subscribe any time; no card is needed until you do.`
+                ? `Your free trial ends ${formatMomentFromNow(access.trialEndsAt)}. Subscribe any time; no card is needed until you do.`
                 : "Your access has ended, but nothing's lost. Everything is still here to look at, and subscribing turns editing back on."}
             </Typography>
             <PlanPicker prices={prices.data} loading={prices.isPending} failed={prices.isError} disabled={leaving} onSubscribe={(plan) => checkout.mutate(plan)} />

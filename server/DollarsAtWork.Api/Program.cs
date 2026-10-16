@@ -6,6 +6,7 @@ using DollarsAtWork.Api.Features.Account;
 using DollarsAtWork.Api.Features.Auth;
 using DollarsAtWork.Api.Features.Billing;
 using DollarsAtWork.Api.Features.Debts;
+using DollarsAtWork.Api.Features.Email;
 using DollarsAtWork.Api.Features.Hints;
 using DollarsAtWork.Api.Features.Investments;
 using DollarsAtWork.Api.Features.NetWorth;
@@ -112,6 +113,7 @@ else
         client.Timeout = TimeSpan.FromSeconds(15));
 }
 builder.Services.AddScoped<AccountEmails>();
+builder.Services.AddSingleton<EmailUnsubscribe>();
 builder.Services.AddScoped<AccountSetup>();
 builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
 builder.Services.AddScoped<BillingService>();
@@ -119,6 +121,7 @@ builder.Services.AddScoped<AccountExport>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<TrialEmailService>();
 builder.Services.AddScoped<OnboardingEmailService>();
+builder.Services.AddScoped<RetentionService>();
 builder.Services.AddHostedService<TrialEmailWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -141,6 +144,9 @@ else
         if (string.IsNullOrWhiteSpace(app.Configuration[key]))
             throw new InvalidOperationException($"Missing required setting '{key}'. Set it in the host's application settings.");
     }
+    // A placeholder email key would quietly switch to printing emails in the log, so nobody gets a reset link.
+    if (!(app.Configuration["Email:ResendApiKey"] ?? "").StartsWith("re_", StringComparison.Ordinal))
+        throw new InvalidOperationException("Email:ResendApiKey isn't a Resend key (they start with \"re_\"). Set the real key in the host's application settings.");
 }
 
 // Keep the database in step with the code's migrations, in every environment. The app runs as one instance,
@@ -151,6 +157,22 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+
+// Security headers on every response, the React app's files included (the Security page describes these):
+// - nosniff: browsers treat each file as the type we say, never guess.
+// - frame-ancestors / X-Frame-Options: no other site can put our pages in a frame (clickjacking).
+// - Referrer-Policy same-origin: an address with a reset or confirm token in it is never sent to another site.
+// - Permissions-Policy: the app uses no camera, microphone, location, payment or USB features, so none can be asked for.
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["Content-Security-Policy"] = "frame-ancestors 'none'";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "same-origin";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
+    await next();
+});
 
 // In production the built React app lives in wwwroot and is served from the same address as the API.
 app.UseDefaultFiles();
@@ -174,6 +196,7 @@ api.MapBillingEndpoints();
 api.MapHintsEndpoints();
 api.MapWaitlistEndpoints();
 api.MapUsageEndpoints();
+api.MapEmailEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
 app.MapFallbackToFile("index.html");

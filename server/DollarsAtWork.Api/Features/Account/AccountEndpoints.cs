@@ -133,11 +133,14 @@ public static class AccountEndpoints
         ClaimsPrincipal principal,
         UserManager<AppUser> users,
         IAppEmailSender sender,
+        EmailUnsubscribe unsubscribe,
         IOptions<AppOptions> options,
         TimeProvider clock,
         CancellationToken ct)
     {
         var check = new Validation();
+        if (request.DebtFreeOn is { Length: > 7 })
+            check.Add("debtFreeOn", "That date isn't valid.");
         if (request.DebtFreeMonth is < 0 or > ReportEmail.MaxMonths)
             check.Add("debtFreeMonth", "That date isn't valid.");
         if (request.NetWorthIn10Years is { } ten && Math.Abs(ten) > ReportEmail.MaxNetWorth)
@@ -153,9 +156,12 @@ public static class AccountEndpoints
 
         var now = clock.GetUtcNow();
         // A welcome only makes sense in the first days. Older accounts (made before this email existed) are marked done, not emailed.
-        if (now - user.CreatedAt <= OnboardingEmails.WelcomeWindow)
+        // Someone who unsubscribed gets none of these, but is still marked done.
+        if (now - user.CreatedAt <= OnboardingEmails.WelcomeWindow && !user.OnboardingEmailsOff)
         {
-            var message = OnboardingEmails.Welcome(request.DebtFreeMonth, request.NetWorthIn10Years, now, options.Value.PublicUrl.TrimEnd('/'));
+            var message = OnboardingEmails.Welcome(
+                request.DebtFreeMonth, request.DebtFreeOn, request.NetWorthIn10Years, now, options.Value.PublicUrl.TrimEnd('/'),
+                OnboardingEmails.OptOut.For(unsubscribe, user.Id));
             await sender.SendAsync(user.Email, message, ct);
         }
         user.WelcomeEmailSentAt = now;

@@ -91,7 +91,7 @@ export interface ProjectionInput {
   todaysDollars?: boolean;
   /** Yearly inflation used by todaysDollars. Default 3. */
   inflationRate?: number;
-  /** Yearly raise, applied on each anniversary. The extra income lands in Remaining. Default 0. */
+  /** Yearly raise, first paid in month 13 (then 25, 37…): months 1–12 are year one. The extra income lands in Remaining. Default 0. */
   incomeGrowthRate?: number;
 }
 
@@ -147,6 +147,8 @@ export interface ProjectionResult {
   warnings: {
     /** The debt budget didn't cover the minimum payments in at least one month. */
     debtBudgetBelowMinimums: boolean;
+    /** In at least one month a debt was paid less than the interest it charged, so its balance grew. */
+    debtGrowing: boolean;
     /** Money was invested with no investment accounts set up. */
     investingWithoutAccounts: boolean;
   };

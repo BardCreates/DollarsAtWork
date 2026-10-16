@@ -35,6 +35,7 @@ import { PlanAmountBanner } from '../../components/PlanAmountBanner';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
+import { useNetWorth } from '../dashboard/networth';
 import { AccountDialog } from './AccountDialog';
 import { GrowthChart } from './GrowthChart';
 import { SplitDialog } from './SplitDialog';
@@ -83,7 +84,9 @@ export function InvestPage() {
 function InvestModule({ data }: { data: InvestmentsData }) {
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
-  const projection = useInvestmentProjection(data);
+  // The yearly raise (Dashboard > Assumptions) lifts the match cap, as on the dashboard.
+  const { data: netWorth } = useNetWorth();
+  const projection = useInvestmentProjection(data, netWorth?.settings.incomeGrowthRate ?? 0);
   const remove = useDeleteAccount();
 
   const [tab, setTab] = useState<'overview' | 'growth'>('overview');

@@ -60,7 +60,7 @@ export function ReportDialog({ open, data, onClose }: { open: boolean; data: Das
 
   if (!report) return null;
 
-  const sendCopy = () => email.mutate(outlook ? outlookForEmail(outlook) : { debtFreeMonth: null, netWorthIn10Years: null });
+  const sendCopy = () => email.mutate(outlook ? outlookForEmail(outlook) : { debtFreeMonth: null, debtFreeOn: null, netWorthIn10Years: null });
 
   const up = report.change !== null && report.change > 0.5;
   const down = report.change !== null && report.change < -0.5;

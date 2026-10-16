@@ -146,6 +146,12 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
               Raise the Debt amount in Plan to cover them.
             </Alert>
           )}
+          {projection.planned.warnings.debtGrowing && (
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              At least one debt is getting less each month than the interest it charges, so it grows instead of shrinking. Check its minimum
+              payment, or give Debt more in Plan.
+            </Alert>
+          )}
 
           <Card sx={{ mb: 3 }}>
             <CardContent sx={{ display: 'grid', gap: { xs: 2, md: 4 }, alignItems: 'start', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>

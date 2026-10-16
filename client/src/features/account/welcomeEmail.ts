@@ -21,7 +21,7 @@ export function useSendWelcomeEmail(me: Me | null | undefined, outlook: Outlook 
   const queryClient = useQueryClient();
   const tried = useRef(false);
   const send = useMutation({
-    mutationFn: (values: { debtFreeMonth: number | null; netWorthIn10Years: number }) => api.post('/account/welcome-email', values),
+    mutationFn: (values: { debtFreeMonth: number | null; debtFreeOn: string | null; netWorthIn10Years: number }) => api.post('/account/welcome-email', values),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: meQueryKey }),
   });
 

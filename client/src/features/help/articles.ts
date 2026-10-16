@@ -330,7 +330,7 @@ Every result is an estimate based on the numbers you enter, not financial advice
     body: `## Your free trial
 Every new account gets 30 days of full access, and no card is needed. The banner at the top of each page counts down the days.
 
-A few emails come with the trial, each at most once: a welcome in your first hour with your own numbers (your net worth in 10 years and your debt-free date, if you have debt) or, if you haven't built a plan yet, a note that it's waiting; a suggestion around day 3 to try one what-if scenario; and a reminder a week before the trial ends and again two days before. You can reply to any of them.
+A few emails come with the trial, each at most once: a welcome in your first hour with your own numbers (your net worth in 10 years and your debt-free date, if you have debt) or, if you haven't built a plan yet, a note that it's waiting; a suggestion around day 3 to try one what-if scenario; and a reminder a week before the trial ends and again two days before. You can reply to any of them. The welcome and the what-if suggestion have an **Unsubscribe** link at the bottom if you'd rather not get them; the trial reminders still come, since they're about your account.
 
 ## Subscribing
 Go to [Profile & billing](/profile), choose a plan, and press **Subscribe**. You'll enter your card on Stripe's secure checkout page; Dollars at Work never sees or stores your card. Current prices are on the [Pricing](/pricing) page.
@@ -363,6 +363,7 @@ If your trial or subscription ends without payment, nothing is deleted. Everythi
 
 ## Email and password
 - **Change email**: enter the new address and your password. We send a link to the new address, and your email changes when you open it.
+- **Confirm your email**: until you open the link we sent when you signed up, the dashboard reminds you, with a **Resend** button. Your trial reminders go to that address, so it's worth getting right.
 - **Change password**: enter your current password and a new one (at least 8 characters, including a number). Other devices are signed out.
 - **Forgot your password?** Use the link on the sign-in page and we'll email you a reset link.
 - After five wrong passwords, sign-in locks for 15 minutes.

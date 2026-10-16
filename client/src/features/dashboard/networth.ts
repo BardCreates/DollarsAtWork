@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { localToday } from '../../lib/dates';
 import { debtsQueryKey } from '../debt/debts';
 import { investmentsQueryKey } from '../invest/investments';
 import { savingsQueryKey } from '../savings/savings';
@@ -121,7 +122,8 @@ export interface CheckIn {
 export function useCheckIn() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (checkIn: CheckIn) => api.post<NetWorthData>('/networth/check-in', checkIn),
+    // today: this browser's own date, so a late-evening check-in on the 31st counts for this month, not UTC's next one.
+    mutationFn: (checkIn: CheckIn) => api.post<NetWorthData>('/networth/check-in', { ...checkIn, today: localToday() }),
     onSuccess: (data) => {
       queryClient.setQueryData(netWorthQueryKey, data);
       // The balances live with their own modules; fetch the new ones.
@@ -133,6 +135,6 @@ export function useCheckIn() {
 /** Emails the signed-in user a copy of their latest check-in recap, at their own address only. */
 export function useEmailReport() {
   return useMutation({
-    mutationFn: (projection: { debtFreeMonth: number | null; netWorthIn10Years: number | null }) => api.post('/networth/report/email', projection),
+    mutationFn: (projection: { debtFreeMonth: number | null; debtFreeOn: string | null; netWorthIn10Years: number | null }) => api.post('/networth/report/email', projection),
   });
 }

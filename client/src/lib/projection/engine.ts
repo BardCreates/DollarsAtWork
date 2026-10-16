@@ -56,7 +56,7 @@ export function project(input: ProjectionInput): ProjectionResult {
   let investedToDate = 0;
   let matchedToDate = 0;
   let investmentGrowthToDate = 0;
-  const warnings = { debtBudgetBelowMinimums: false, investingWithoutAccounts: false };
+  const warnings = { debtBudgetBelowMinimums: false, debtGrowing: false, investingWithoutAccounts: false };
 
   /** What each goal has received so far this month. */
   let deposits = goals.map(() => 0);
@@ -97,6 +97,13 @@ export function project(input: ProjectionInput): ProjectionResult {
 
   /** Charges interest, makes this month's payments, and returns what the debts didn't need. */
   const payDebts = (budget: number, payments: number[], interest: number[]): number => {
+    const left = payDebtsOnce(budget, payments, interest);
+    // A debt that got less than this month's interest grew: say so, since "never paid off" alone doesn't explain why.
+    if (interest.some((charged, i) => charged > DUST && payments[i] < charged - DUST)) warnings.debtGrowing = true;
+    return left;
+  };
+
+  const payDebtsOnce = (budget: number, payments: number[], interest: number[]): number => {
     debts.forEach((balance, i) => {
       if (balance === 0) return;
       interest[i] = (balance * input.debts[i].apr) / 100 / 12;
@@ -174,7 +181,8 @@ export function project(input: ProjectionInput): ProjectionResult {
   const points: MonthPoint[] = [snapshot(0, input.monthlyIncome, zeros(), zeros())];
 
   for (let month = 1; month <= horizon; month++) {
-    const income = input.monthlyIncome * Math.pow(1 + raise, Math.floor(month / 12));
+    // Months 1–12 are the first year at today's income; the first raise is paid in month 13, the next in month 25.
+    const income = input.monthlyIncome * Math.pow(1 + raise, Math.floor((month - 1) / 12));
 
     // 1. Savings
     deposits = goals.map(() => 0);

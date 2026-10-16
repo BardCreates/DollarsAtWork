@@ -7,6 +7,7 @@ import {
   type ProjectionResult,
   type SavingsSplitMode,
 } from '../../lib/projection';
+import { yearMonthFromNow } from '../../lib/dates';
 import { buildTimeline, type TimelineItem } from '../../lib/timeline';
 import { useDebts, type DebtsData } from '../debt/debts';
 import { useInvestments, type InvestmentsData } from '../invest/investments';
@@ -118,10 +119,15 @@ export function outlookOf(result: ProjectionResult): Outlook {
   };
 }
 
-/** What the server's emails ask for: the debt-free month only when there is debt, and the 10-year figure in whole dollars. */
-export function outlookForEmail(outlook: Outlook): { debtFreeMonth: number | null; netWorthIn10Years: number } {
+/**
+ * What the server's emails ask for: the debt-free month only when there is debt (with the month this screen shows
+ * for it, so the email can't name a different one), and the 10-year figure in whole dollars.
+ */
+export function outlookForEmail(outlook: Outlook, now: Date = new Date()): { debtFreeMonth: number | null; debtFreeOn: string | null; netWorthIn10Years: number } {
+  const debtFreeMonth = outlook.hasDebt ? outlook.debtFreeMonth : null;
   return {
-    debtFreeMonth: outlook.hasDebt ? outlook.debtFreeMonth : null,
+    debtFreeMonth,
+    debtFreeOn: debtFreeMonth != null && debtFreeMonth > 0 ? yearMonthFromNow(debtFreeMonth, now) : null,
     netWorthIn10Years: Math.round(outlook.netWorthIn10Years),
   };
 }

@@ -1,6 +1,7 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button } from '@mui/material';
 import { useMe } from '../auth/auth';
+import { formatMomentFromNow } from '../lib/dates';
 
 /** Shown under the top bar on every page while the account is not fully paid up. */
 export function TrialBanner() {
@@ -24,9 +25,13 @@ function useBannerContent() {
     case 'Trialing': {
       const days = access.trialDaysLeft;
       const severity = days <= 7 ? 'warning' : 'info';
+      // Near the end, say exactly when (in this browser's time), since "1 day left" can mean this evening.
+      const ends = formatMomentFromNow(access.trialEndsAt);
       return (
         <Alert severity={severity} action={subscribe}>
-          {days === 1 ? '1 day' : `${days} days`} left in your free trial. {days === 1 ? 'Make it count.' : 'Make them count.'}
+          {days <= 2 && !ends.startsWith('on ')
+            ? `Your free trial ends ${ends}. Make it count.`
+            : `${days === 1 ? '1 day' : `${days} days`} left in your free trial. ${days === 1 ? 'Make it count.' : 'Make them count.'}`}
         </Alert>
       );
     }

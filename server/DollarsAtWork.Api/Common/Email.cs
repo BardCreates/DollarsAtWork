@@ -19,7 +19,9 @@ public class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IAppEmailS
     public Task SendAsync(string to, EmailMessage message, CancellationToken ct = default)
     {
         // The plain-text version reads well in a console; the HTML version is the same content.
-        logger.LogInformation("EMAIL to {To}\nSubject: {Subject}\n{Body}", to, message.Subject, message.Text);
+        // Only ever used in development (production refuses to start without a real key), so the body is shown for testing
+        // links; the address is still masked like everywhere else in the logs.
+        logger.LogInformation("EMAIL to {To}\nSubject: {Subject}\n{Body}", LogMask.Email(to), message.Subject, message.Text);
         return Task.CompletedTask;
     }
 }
@@ -43,11 +45,20 @@ public class ResendEmailSender(
     Microsoft.Extensions.Options.IOptions<EmailOptions> options,
     ILogger<ResendEmailSender> logger) : IAppEmailSender
 {
+    private static readonly System.Text.Json.JsonSerializerOptions SkipNulls = new(System.Text.Json.JsonSerializerDefaults.Web)
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
+
     public async Task SendAsync(string to, EmailMessage message, CancellationToken ct = default)
     {
         var settings = options.Value;
         using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", settings.ResendApiKey);
+        // Optional emails carry one-click unsubscribe headers (RFC 8058), which Gmail and Yahoo require of bulk senders.
+        var headers = message.OneClickUnsubscribeUrl is { } oneClick
+            ? new Dictionary<string, string> { ["List-Unsubscribe"] = $"<{oneClick}>", ["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click" }
+            : null;
         request.Content = JsonContent.Create(new
         {
             from = settings.From,
@@ -56,13 +67,14 @@ public class ResendEmailSender(
             subject = message.Subject,
             text = message.Text,
             html = message.Html,
-        });
+            headers,
+        }, options: SkipNulls);
 
         using var response = await http.SendAsync(request, ct);
         if (!response.IsSuccessStatusCode)
         {
             var detail = await response.Content.ReadAsStringAsync(ct);
-            logger.LogError("Resend rejected an email to {To} ({Status}): {Detail}", to, (int)response.StatusCode, detail);
+            logger.LogError("Resend rejected an email to {To} ({Status}): {Detail}", LogMask.Email(to), (int)response.StatusCode, LogMask.Emails(detail));
             throw new InvalidOperationException($"Email provider returned {(int)response.StatusCode}.");
         }
     }

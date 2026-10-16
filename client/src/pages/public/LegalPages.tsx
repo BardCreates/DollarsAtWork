@@ -145,7 +145,7 @@ export function PrivacyPage() {
         <li><strong>Money note sign-ups:</strong> if you leave your email in a "money note" box (new articles and launch deals), we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one. If you ask for an affiliate link, we also keep the name and the place you share that you give us, so we can set up and pay your link.</li>
         <li><strong>Subscription status:</strong> whether you are on trial, subscribed, past due or canceled, and identifiers that link your account to Stripe. Your card details go to Stripe and never reach us.</li>
         <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. These are kept for no more than 30 days.</li>
-        <li><strong>Usage counts:</strong> when someone opens the home, tools, demo, pricing or blog page, changes a number in a calculator, or first sees a projection, we record an anonymous event: its name, the time, and the referral tag in the address if there is one (such as the blog post that linked there). We also count sign-ups, trial starts and subscriptions the same way. These events hold no user id, no IP address, no cookie and no browser details, so they cannot be traced back to you, and no third party is involved.</li>
+        <li><strong>Usage counts:</strong> when someone opens the home, tools, demo, pricing or blog page, changes a number in a calculator, or first sees a projection, we record an anonymous event: its name, the time, and the referral tag in the address if there is one (such as the blog post that linked there). We also count sign-ups, trial starts and subscriptions the same way. These events hold no user id, no IP address, no cookie and no browser details, so they cannot be traced back to you, and no third party is involved. They are deleted after 13 months.</li>
       </ul>
 
       <H>How we use it</H>
@@ -155,7 +155,8 @@ export function PrivacyPage() {
           To send account emails: confirming your address, password resets, billing notices, and a few during your trial: a welcome in your first
           hour that repeats the projection numbers from your own plan (or, if you haven't set one up yet, a reminder that it's waiting), one
           suggestion around day 3 to try a what-if scenario, and reminders a week and two days before the trial ends. We record when each of
-          these went out so you never get one twice.
+          these went out so you never get one twice. The welcome and the day-3 suggestion have an unsubscribe link; if you use it, we record
+          that and send no more of them.
         </li>
         <li>To email the occasional money note (new articles and launch deals). Only addresses left in a money note box get these.</li>
         <li>To take payment, through Stripe.</li>

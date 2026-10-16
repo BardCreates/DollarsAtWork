@@ -27,6 +27,12 @@ public class AppUser : IdentityUser<Guid>
 
     /// <summary>When the day-3 "try one what-if" nudge went out. Null until then.</summary>
     public DateTimeOffset? NudgeEmailSentAt { get; set; }
+
+    /// <summary>
+    /// True once the person used an unsubscribe link: no more onboarding emails (welcome, plan waiting, what-if nudge).
+    /// Account, trial-ending and billing emails still go out; those are about the account itself.
+    /// </summary>
+    public bool OnboardingEmailsOff { get; set; }
 }
 
 /// <summary>

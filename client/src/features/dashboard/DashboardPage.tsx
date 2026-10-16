@@ -9,6 +9,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { project } from '../../lib/projection';
+import { ConfirmEmailNotice } from '../account/ConfirmEmailNotice';
 import { useSendWelcomeEmail } from '../account/welcomeEmail';
 import { formatMoney } from '../../lib/money';
 import { recordUsage } from '../../lib/usage';
@@ -100,6 +101,7 @@ function Dashboard({ data }: { data: DashboardData }) {
     return (
       <>
         <PageHeader title="Dashboard" subtitle={me ? `Welcome, ${me.email}` : undefined} />
+        <ConfirmEmailNotice me={me} />
         <TourHint />
         <Card>
           <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 4, p: { xs: 3, md: 5 } }}>
@@ -157,6 +159,7 @@ function Dashboard({ data }: { data: DashboardData }) {
           </Box>
         }
       />
+      <ConfirmEmailNotice me={me} />
       <TourHint />
       <DashboardHint />
 

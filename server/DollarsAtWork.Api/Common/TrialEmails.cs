@@ -60,13 +60,14 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
     {
         var baseUrl = appUrl.TrimEnd('/');
         var link = $"{baseUrl}/profile";
-        var ends = trialEndsAt.ToString("dddd, MMMM d", System.Globalization.CultureInfo.InvariantCulture);
+        // A moment with a time and a named zone, never a bare UTC day: a 9 pm Central sign-up must not be told the next day.
+        var ends = EmailDates.Moment(trialEndsAt);
         var layout = new EmailLayout(baseUrl)
             .FooterNote("You're getting this because your Dollars at Work free trial is ending.");
         return stage switch
         {
             TrialEmailStage.SevenDaysLeft => layout
-                .Preheader($"Your trial ends {ends}. Keep your plan moving.")
+                .Preheader($"Your trial ends on {ends}. Keep your plan moving.")
                 .Heading("One week left in your free trial")
                 .Paragraph($"Your free trial ends on {ends}. We hope your plan is already showing you where your money can go.")
                 .Paragraph("Subscribe before then and everything keeps working: your plan, your money timeline, what-if scenarios and monthly check-ins.")
@@ -74,9 +75,9 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
                 .Small("Not ready yet? That's okay. Your numbers stay safe either way.")
                 .Build("7 days left in your Dollars at Work trial"),
             TrialEmailStage.TwoDaysLeft => layout
-                .Preheader($"On {ends} your plan becomes view-only.")
+                .Preheader($"Your plan becomes view-only on {ends}.")
                 .Heading("Your trial ends in 2 days")
-                .Paragraph($"On {ends} your plan switches to view-only. You'll still see every number, but you won't be able to change them.")
+                .Paragraph($"Your plan switches to view-only on {ends}. You'll still see every number, but you won't be able to change them.")
                 .Paragraph("Subscribe now and nothing changes. Keep moving dollars, checking in and trying what-ifs.")
                 .Button("Keep my plan going", link)
                 .Build("2 days left in your Dollars at Work trial"),
@@ -91,7 +92,10 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
     }
 }
 
-/// <summary>Runs the trial and onboarding emails and the lapsing-subscription re-sync shortly after start-up, then hourly.</summary>
+/// <summary>
+/// Runs the trial and onboarding emails, the lapsing-subscription re-sync and the retention clean-up shortly after
+/// start-up, then hourly. Each in its own try, so one failing never holds up the others.
+/// </summary>
 public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, ILogger<TrialEmailWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan FirstRun = TimeSpan.FromSeconds(20);
@@ -123,6 +127,16 @@ public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, I
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     logger.LogError(ex, "Re-syncing lapsing subscriptions failed");
+                }
+                try
+                {
+                    using var scope = scopes.CreateScope();
+                    await scope.ServiceProvider.GetRequiredService<RetentionService>().DeleteExpiredAsync(stoppingToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // Separate from the emails, so a clean-up failure never holds them up (or the other way round).
+                    logger.LogError(ex, "Retention clean-up failed");
                 }
                 await Task.Delay(Interval, clock, stoppingToken);
             }

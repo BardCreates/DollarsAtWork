@@ -11,9 +11,10 @@ public record BalanceUpdate(Guid Id, decimal? Balance);
 
 /// <summary>
 /// The monthly check-in: the balances the user has just confirmed. Anything left out keeps its balance.
-/// Saving it also records this month's net-worth snapshot.
+/// Saving it also records this month's net-worth snapshot. Today is the browser's own calendar date, so a check-in
+/// on the evening of the 31st belongs to that month, not to UTC's next one.
 /// </summary>
-public record CheckInRequest(BalanceUpdate[]? Goals, BalanceUpdate[]? Debts, BalanceUpdate[]? Accounts, BalanceUpdate[]? Items);
+public record CheckInRequest(BalanceUpdate[]? Goals, BalanceUpdate[]? Debts, BalanceUpdate[]? Accounts, BalanceUpdate[]? Items, DateOnly? Today = null);
 
 public record OtherItemResponse(Guid Id, string Name, string Kind, string Type, decimal Value, int SortOrder)
 {

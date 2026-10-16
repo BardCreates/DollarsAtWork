@@ -11,5 +11,6 @@ Disallow: /profile
 Disallow: /numbers
 Disallow: /reset-password
 Disallow: /confirm-email
+Disallow: /unsubscribe
 
 Sitemap: https://dollarsatwork.app/sitemap.xml
