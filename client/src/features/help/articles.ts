@@ -394,6 +394,7 @@ The installed app is the same site: your plan is always loaded fresh from your a
 
 - Your password is stored scrambled (hashed), so nobody can read it.
 - One cookie keeps you signed in. There are no advertising or tracking cookies.
+- We count visits to the public pages and calculator use with an anonymous event (what happened and when, plus the referral tag if the address had one). No cookie, no IP address, no user id, no third-party scripts.
 - Card payments are handled by Stripe; your card never reaches us.
 - We don't sell your data or share it for advertising.
 - You can download or delete everything from [Profile & billing](/profile).

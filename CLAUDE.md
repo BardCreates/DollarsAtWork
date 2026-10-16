@@ -34,7 +34,7 @@ and decisions already made. Don't re-ask decided questions.
 - Fonts are self-hosted via `@fontsource/inter` and `@fontsource/coiny` (main.tsx); the Google Fonts links and the
   Security page's "One honest note" are gone.
 - Still open for launch, all waiting on the owner: Azure resources + domain, a Resend account (verify the domain,
-  set `Email__ResendApiKey` and `Email__From` on the host), legal review of `LegalPages.tsx` (filled in Oct 15:
+  set `Email__ResendApiKey` and `Email__From` on the host), `App__OwnerEmail` on the host (optional; it unlocks /numbers), legal review of `LegalPages.tsx` (filled in Oct 15:
   Dollars at Work, dollarsatworkapp@gmail.com, Arkansas law, 30-day first-payment refund; not lawyer-reviewed), live Stripe prices ($7 monthly, $59 annual, $49 founding x200),
   registering the production webhook endpoint.
 
@@ -91,6 +91,14 @@ and decisions already made. Don't re-ask decided questions.
   Checkout allows Stripe promotion codes and only asks for a card when something is owed (a 100% code needs none).
 - Error tracking (Oct 15): Sentry.AspNetCore, on only when Sentry:Dsn is set (Program.cs). No PII, no request bodies, no
   tracing. The Privacy Policy names Sentry; if the settings change, change that line too.
+- Usage numbers (Oct 16): anonymous event counts in a UsageEvents table (name, time, cleaned ?from tag; no user id, IP or
+  browser details; Common/UsageEvents holds the allow-list). The browser sends visits to home/tools/demo/pricing/blog,
+  calculator use (first changed input) and first_projection through `lib/usage.ts` (fire and forget) to POST /api/usage
+  (anonymous, rate-limited per IP). The server records signup, trial_started (register) and subscribed (BillingService.Apply,
+  first time a Stripe subscription turns up live) itself. GET /api/usage/summary?days=7|30 and the /numbers page (linked
+  from Profile) are owner-only: `App:OwnerEmail` (host setting `App__OwnerEmail`, optional: empty = nobody, and production
+  still starts without it) names the account; `.RequireOwner()` answers 404 to anyone else and /auth/me carries `isOwner`.
+  The Privacy, Security and help pages describe this counting; change them together with the code.
 
 ## What we compete on
 
@@ -164,6 +172,8 @@ client/src/
   features/blog/          the blog: posts.ts (reads content/blog/*.md), markdown.ts, MarkdownContent, BlogPage, BlogPostPage
   content/blog/           one Markdown file per post (see posts.ts for the format)
   layout/VisitorShell.tsx the frame for pages open to everyone (/tools, /demo): AppShell when signed in, public frame when not
+  features/numbers/       the owner-only Numbers page: numbers.ts (useUsageSummary) + NumbersPage (/numbers)
+  lib/usage.ts            recordUsage / useRecordVisit / useRecordOnce: the anonymous usage counts; describeChange for the table
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
   features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration; ReportDialog: the check-in recap

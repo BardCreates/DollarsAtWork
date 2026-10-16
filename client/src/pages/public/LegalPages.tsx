@@ -142,6 +142,7 @@ export function PrivacyPage() {
         <li><strong>Waitlist sign-ups:</strong> if you leave your email in a "tell me when you launch" box, we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one.</li>
         <li><strong>Subscription status:</strong> whether you are on trial, subscribed, past due or canceled, and identifiers that link your account to Stripe. Your card details go to Stripe and never reach us.</li>
         <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. These are kept for no more than 30 days.</li>
+        <li><strong>Usage counts:</strong> when someone opens the home, tools, demo, pricing or blog page, changes a number in a calculator, or first sees a projection, we record an anonymous event: its name, the time, and the referral tag in the address if there is one (such as the blog post that linked there). We also count sign-ups, trial starts and subscriptions the same way. These events hold no user id, no IP address, no cookie and no browser details, so they cannot be traced back to you, and no third party is involved.</li>
       </ul>
 
       <H>How we use it</H>
@@ -157,7 +158,7 @@ export function PrivacyPage() {
       <H>Cookies</H>
       <P>
         We use one cookie, which keeps you signed in. It is essential for the service to work and is not used to track you. We do not use advertising or
-        analytics cookies. Stripe sets its own cookies on its checkout and billing pages.
+        analytics cookies, and our usage counts (above) set no cookie. Stripe sets its own cookies on its checkout and billing pages.
       </P>
 
       <H>Who else handles your data</H>
