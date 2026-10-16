@@ -47,19 +47,19 @@ public static class UsageEndpoints
             return check.ToResult();
         }
 
-        var to = clock.GetUtcNow();
-        var from = to.AddDays(-window);
-        var previousFrom = from.AddDays(-window);
+        var end = clock.GetUtcNow();
+        var start = end.AddDays(-window);
+        var previousStart = start.AddDays(-window);
 
-        var current = await CountByNameAsync(db, from, to, ct);
-        var previous = await CountByNameAsync(db, previousFrom, from, ct);
+        var current = await CountByNameAsync(db, start, end, ct);
+        var previous = await CountByNameAsync(db, previousStart, start, ct);
 
         var events = UsageEvents.All
             .Select(name => new UsageCount(name, current.GetValueOrDefault(name), previous.GetValueOrDefault(name)))
             .ToList();
 
         var sources = await db.UsageEvents.AsNoTracking()
-            .Where(u => u.Name == UsageEvents.Signup && u.At >= from && u.At < to)
+            .Where(u => u.Name == UsageEvents.Signup && u.At >= start && u.At < end)
             .GroupBy(u => u.Source)
             .Select(g => new { Source = g.Key, Count = g.Count() })
             .ToListAsync(ct);
@@ -70,13 +70,13 @@ public static class UsageEndpoints
             .Select(s => new SourceCount(s.Source, s.Count))
             .ToList();
 
-        return Results.Ok(new UsageSummaryResponse(window, from, to, events, signupSources));
+        return Results.Ok(new UsageSummaryResponse(window, start, end, events, signupSources));
     }
 
-    private static async Task<Dictionary<string, int>> CountByNameAsync(AppDbContext db, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    private static async Task<Dictionary<string, int>> CountByNameAsync(AppDbContext db, DateTimeOffset start, DateTimeOffset end, CancellationToken ct)
     {
         var rows = await db.UsageEvents.AsNoTracking()
-            .Where(u => u.At >= from && u.At < to)
+            .Where(u => u.At >= start && u.At < end)
             .GroupBy(u => u.Name)
             .Select(g => new { Name = g.Key, Count = g.Count() })
             .ToListAsync(ct);

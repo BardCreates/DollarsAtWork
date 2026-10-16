@@ -314,7 +314,7 @@ public class BillingService(
         // An anonymous count for the owner's Numbers page, the first time each Stripe subscription turns up live.
         // A side effect of copying Stripe's state, never an input to it.
         if (newSubscription && theirs.Status is ("active" or "trialing"))
-            UsageEvents.Record(db, clock, UsageEvents.Subscribed);
+            Common.UsageEvents.Record(db, clock, Common.UsageEvents.Subscribed);
     }
 }
 
