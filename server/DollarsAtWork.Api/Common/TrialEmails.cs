@@ -91,7 +91,7 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
     }
 }
 
-/// <summary>Runs the trial and onboarding emails shortly after start-up and then once an hour.</summary>
+/// <summary>Runs the trial and onboarding emails and the lapsing-subscription re-sync shortly after start-up, then hourly.</summary>
 public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, ILogger<TrialEmailWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan FirstRun = TimeSpan.FromSeconds(20);
@@ -114,6 +114,15 @@ public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, I
                 {
                     // A failed run must not stop the next one.
                     logger.LogError(ex, "Sending trial emails failed");
+                }
+                try
+                {
+                    using var scope = scopes.CreateScope();
+                    await scope.ServiceProvider.GetRequiredService<DollarsAtWork.Api.Features.Billing.BillingService>().SyncLapsingAsync(stoppingToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.LogError(ex, "Re-syncing lapsing subscriptions failed");
                 }
                 await Task.Delay(Interval, clock, stoppingToken);
             }

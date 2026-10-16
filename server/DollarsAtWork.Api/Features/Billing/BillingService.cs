@@ -111,12 +111,46 @@ public class BillingService(
 
         var all = await new SubscriptionService(Client).ListAsync(
             new SubscriptionListOptions { Customer = customerId, Status = "all", Limit = 20 }, cancellationToken: ct);
-        return all.Data.Any(s => IsLive(s.Status));
+        // "paused" counts here too: resuming it in the portal is the way back, and a second checkout would bill twice.
+        return all.Data.Any(s => IsLive(s.Status) || s.Status == "paused");
+    }
+
+    /// <summary>
+    /// Asks Stripe about every Active row whose paid period has ended, before ActiveGrace runs out. A renewal normally
+    /// arrives by webhook; this catches one that didn't (a failed delivery, a misconfigured endpoint), so a paying
+    /// subscriber is never made read-only by our missing a message. Run hourly by TrialEmailWorker.
+    /// </summary>
+    public async Task<int> SyncLapsingAsync(CancellationToken ct)
+    {
+        if (!IsConfigured)
+            return 0;
+
+        var now = clock.GetUtcNow();
+        var userIds = await db.Subscriptions
+            .Where(s => s.Status == SubscriptionStatus.Active && s.StripeCustomerId != null && s.CurrentPeriodEnd != null && s.CurrentPeriodEnd < now)
+            .OrderBy(s => s.CurrentPeriodEnd)
+            .Select(s => s.UserId)
+            .Take(50)
+            .ToListAsync(ct);
+
+        foreach (var userId in userIds)
+        {
+            try
+            {
+                await SyncFromStripeAsync(userId, ct);
+            }
+            catch (StripeException ex)
+            {
+                logger.LogWarning(ex, "Couldn't re-sync a lapsing subscription for user {UserId}", userId);
+            }
+        }
+        return userIds.Count;
     }
 
     /// <summary>
     /// Starts Stripe Checkout for the monthly, annual or founding plan and returns its address. Any checkout this
-    /// customer left open is expired first, so a double-click or a second tab can never complete two subscriptions.
+    /// customer left open is expired first, so an earlier tab or click can't be paid as well. (Two requests in the very
+    /// same instant could still each make one; the button disables itself on the first click, which covers that in practice.)
     /// </summary>
     public async Task<string> CreateCheckoutUrlAsync(AppUser user, BillingPlan plan, CancellationToken ct)
     {

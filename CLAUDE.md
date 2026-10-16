@@ -122,7 +122,8 @@ and decisions already made. Don't re-ask decided questions.
   and sitemap.xml is written at build time by the plugin in vite.config.ts from lib/sitemap.ts (public pages + published
   posts, tested). Visitor header on phones: "Start free" plus a menu (Calculators, Pricing, Blog, Help, Sign in under 600px).
   Pricing shows Annual first and the 30-day refund line. Billing: an Active row lapses to Expired 3 days after its
-  CurrentPeriodEnd if Stripe never renews it (Subscription.ActiveGrace); Stripe "paused" maps to Expired; checkout expires
+  CurrentPeriodEnd if Stripe never renews it (Subscription.ActiveGrace), but the hourly worker first asks Stripe about every
+  Active row past its period (BillingService.SyncLapsingAsync), so a missed webhook can't lock out a payer; Stripe "paused" maps to Expired; checkout expires
   the customer's open sessions first and sends anyone with a live Stripe subscription to the portal instead. The owner
   (App:OwnerEmail) must also have a confirmed email.
 
