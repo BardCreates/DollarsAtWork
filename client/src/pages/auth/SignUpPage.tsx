@@ -9,6 +9,7 @@ import { useSignUp } from '../../auth/auth';
 import { passwordRule } from '../../auth/passwordRule';
 import { ApiError, errorMessage } from '../../api/client';
 import { cleanSignupSource, currentReferral } from '../../lib/signUp';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const schema = z
   .object({
@@ -23,6 +24,7 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export function SignUpPage() {
+  usePageMeta('Start your free trial', '30 days of full access, no card needed. Build your plan and see your own 10-year number in about three minutes.');
   const navigate = useNavigate();
   const signUp = useSignUp();
   const [params] = useSearchParams();

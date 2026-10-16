@@ -114,6 +114,17 @@ and decisions already made. Don't re-ask decided questions.
   "Your dollars clocked in" with them. The hourly worker (Common/OnboardingEmails.cs, run by TrialEmailWorker) sends "Your plan
   is waiting" to confirmed accounts 1 hour to 3 days old that never got the welcome, and "Try one what-if" to trialing accounts
   3 to 10 days old. /auth/me carries welcomeEmailSent. The help trial article and the Privacy Policy list these emails.
+- Release 1 fixes (Oct 16 audit, R1–R8): the Debt and Savings pages project from the whole plan (buildProjectionInput with
+  the page's own debts or goals swapped in), so their dates always match the dashboard; they fall back to the module alone
+  only if the rest fails to load. The waitlist box is now "Not ready yet? Get the occasional money note" (new articles and
+  launch deals), quieter than the trial button. index.html carries site-wide Open Graph / Twitter tags with
+  public/og-image.png (1200x630); lib/usePageMeta gives every public page its own title and description; public/robots.txt,
+  and sitemap.xml is written at build time by the plugin in vite.config.ts from lib/sitemap.ts (public pages + published
+  posts, tested). Visitor header on phones: "Start free" plus a menu (Calculators, Pricing, Blog, Help, Sign in under 600px).
+  Pricing shows Annual first and the 30-day refund line. Billing: an Active row lapses to Expired 3 days after its
+  CurrentPeriodEnd if Stripe never renews it (Subscription.ActiveGrace); Stripe "paused" maps to Expired; checkout expires
+  the customer's open sessions first and sends anyone with a live Stripe subscription to the portal instead. The owner
+  (App:OwnerEmail) must also have a confirmed email.
 
 ## What we compete on
 

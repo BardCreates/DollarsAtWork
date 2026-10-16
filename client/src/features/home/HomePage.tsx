@@ -18,6 +18,7 @@ import { PublicLayout } from '../../pages/public/PublicLayout';
 import { SampleImpactCard, useSampleImpact } from '../demo/SampleImpactCard';
 import { WaitlistForm } from '../waitlist/WaitlistForm';
 import { useRecordVisit } from '../../lib/usage';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const steps = [
   { title: 'Give every dollar a job', body: 'Enter your take-home pay and split it into categories, including Savings, Debt and Investments.' },
@@ -39,6 +40,7 @@ const features: { icon: ReactNode; title: string; body: string }[] = [
  * sample plan, and the ways in (trial, sign in, calculators, help, or the waitlist).
  */
 export function HomePage() {
+  usePageMeta('Dollars at Work', 'A monthly money plan that shows your debt-free date, savings goals and net worth 10 years out. No bank login.');
   useRecordVisit('visit_home');
   const { extra, setExtra, result, impact } = useSampleImpact();
   const { data: prices } = usePrices();

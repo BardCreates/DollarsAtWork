@@ -5,6 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { PageHeader } from '../../components/PageHeader';
 import { HELP_ARTICLES, HELP_SECTIONS, type HelpArticle } from './articles';
 import { searchHelp } from './helpSearch';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 function ArticleLink({ article, text }: { article: HelpArticle; text: string }) {
   return (
@@ -27,6 +28,7 @@ const grid = { display: 'grid', gap: 2, gridTemplateColumns: { xs: 'minmax(0, 1f
 
 /** The help guide: search box on top, then every article grouped by section, or the search results. Open to everyone. */
 export function HelpPage() {
+  usePageMeta('Help', 'How Dollars at Work works: the plan, debt payoff, savings goals, investing, the dashboard and your subscription.');
   const [params, setParams] = useSearchParams();
   const query = params.get('q') ?? '';
   const hits = useMemo(() => (query.trim() ? searchHelp(query) : null), [query]);

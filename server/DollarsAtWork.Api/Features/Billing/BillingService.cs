@@ -96,11 +96,47 @@ public class BillingService(
         });
     }
 
-    /// <summary>Starts Stripe Checkout for the monthly, annual or founding plan and returns its address.</summary>
+    /// <summary>Stripe statuses that mean the customer is already being billed (or owes money), so a second checkout would double-bill.</summary>
+    private static bool IsLive(string status) => status is "active" or "trialing" or "past_due" or "unpaid";
+
+    /// <summary>
+    /// True when Stripe already has a live subscription for this user. Asks Stripe rather than trusting our copy,
+    /// which can lag behind a webhook.
+    /// </summary>
+    public async Task<bool> HasLiveSubscriptionAsync(Guid userId, CancellationToken ct)
+    {
+        var customerId = await db.Subscriptions.Where(s => s.UserId == userId).Select(s => s.StripeCustomerId).SingleAsync(ct);
+        if (customerId is null)
+            return false;
+
+        var all = await new SubscriptionService(Client).ListAsync(
+            new SubscriptionListOptions { Customer = customerId, Status = "all", Limit = 20 }, cancellationToken: ct);
+        return all.Data.Any(s => IsLive(s.Status));
+    }
+
+    /// <summary>
+    /// Starts Stripe Checkout for the monthly, annual or founding plan and returns its address. Any checkout this
+    /// customer left open is expired first, so a double-click or a second tab can never complete two subscriptions.
+    /// </summary>
     public async Task<string> CreateCheckoutUrlAsync(AppUser user, BillingPlan plan, CancellationToken ct)
     {
         var subscription = await db.Subscriptions.SingleAsync(s => s.UserId == user.Id, ct);
         var customerId = await EnsureCustomerAsync(user, subscription, ct);
+
+        var sessions = new Stripe.Checkout.SessionService(Client);
+        var open = await sessions.ListAsync(new Stripe.Checkout.SessionListOptions { Customer = customerId, Status = "open", Limit = 10 }, cancellationToken: ct);
+        foreach (var stale in open.Data)
+        {
+            try
+            {
+                await sessions.ExpireAsync(stale.Id, cancellationToken: ct);
+            }
+            catch (StripeException ex)
+            {
+                // Completed or expired in the meantime; the live-subscription check covers the completed case.
+                logger.LogInformation(ex, "Couldn't expire checkout session {SessionId}", stale.Id);
+            }
+        }
 
         var options = new Stripe.Checkout.SessionCreateOptions
         {
@@ -120,7 +156,7 @@ public class BillingService(
         if (!_stripe.ManagedPayments)
             options.AddExtraParam("managed_payments[enabled]", false);
 
-        var session = await new Stripe.Checkout.SessionService(Client).CreateAsync(options, cancellationToken: ct);
+        var session = await sessions.CreateAsync(options, cancellationToken: ct);
 
         return session.Url;
     }
@@ -160,7 +196,7 @@ public class BillingService(
 
         // A live subscription wins over an ended one; otherwise take the newest.
         var current = all.Data
-            .OrderByDescending(s => s.Status is "active" or "trialing" or "past_due" or "unpaid")
+            .OrderByDescending(s => IsLive(s.Status))
             .ThenByDescending(s => s.Created)
             .FirstOrDefault();
         if (current is null)
@@ -308,7 +344,15 @@ public class BillingService(
                 ours.PastDueSince = null;
                 break;
 
-            // "incomplete" and "paused": the first payment hasn't settled, so nothing changes yet.
+            case "paused":
+                // Stripe stops a subscription this way when a trial ends with no payment method. Nothing is being
+                // paid for, so access ends now (read-only, like an expired trial); "active" again restores it.
+                ours.Status = SubscriptionStatus.Expired;
+                ours.CurrentPeriodEnd = periodEnd;
+                ours.PastDueSince = null;
+                break;
+
+            // "incomplete": the first payment hasn't settled, so nothing changes yet.
         }
 
         // An anonymous count for the owner's Numbers page, the first time each Stripe subscription turns up live.

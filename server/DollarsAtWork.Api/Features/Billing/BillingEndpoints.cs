@@ -55,6 +55,16 @@ public static class BillingEndpoints
 
         return await CallStripe(async () =>
         {
+            // Already subscribed (a double-click, a second tab, or a stale page): never start a second subscription.
+            // Bring our copy up to date and send them to the portal, where the plan can be changed instead.
+            if (await billing.HasLiveSubscriptionAsync(user.Id, ct))
+            {
+                await billing.SyncFromStripeAsync(user.Id, ct);
+                return await billing.CreatePortalUrlAsync(user.Id, ct) is { } portalUrl
+                    ? Results.Ok(new RedirectResponse(portalUrl))
+                    : Results.Problem(title: "You already have a subscription.", detail: "Manage it from your profile.", statusCode: StatusCodes.Status409Conflict);
+            }
+
             if (plan == BillingPlan.Founding)
             {
                 if (!billing.HasFoundingOffer)

@@ -7,11 +7,13 @@ import { AuthLayout } from './AuthLayout';
 import { muiField } from '../../components/formHelpers';
 import { useForgotPassword } from '../../auth/auth';
 import { errorMessage } from '../../api/client';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const schema = z.object({ email: z.string().trim().email('Enter a valid email address.') });
 type FormValues = z.infer<typeof schema>;
 
 export function ForgotPasswordPage() {
+  usePageMeta('Reset your password');
   const forgot = useForgotPassword();
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),

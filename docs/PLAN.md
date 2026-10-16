@@ -146,10 +146,10 @@ Projection note on screen: "Estimates based on your plan and assumed returns, no
 | Status | Access | Starts when | User sees |
 | --- | --- | --- | --- |
 | Trialing | Full | Sign-up; ends 30 days later; **no card** | "X days left" banner; emails day 23, 28, expiry |
-| Active | Full | Stripe confirms payment | Settings → Billing opens Stripe portal |
+| Active | Full until 3 days past the paid period, unless Stripe renews it | Stripe confirms payment | Settings → Billing opens Stripe portal |
 | PastDue | Full for 7 days | Payment fails | "Update your card" banner |
 | Canceled | Full until period end | User cancels | "Ends on [date]" + resubscribe |
-| Expired | Read-only | Trial/period ends unpaid | Data visible, editing blocked, Subscribe everywhere |
+| Expired | Read-only | Trial/period ends unpaid, or Stripe pauses the subscription | Data visible, editing blocked, Subscribe everywhere |
 
 Rules: access checked on the server for every write; read-only not locked out; monthly + annual prices set in Stripe (placeholders in test mode for now); one trial per email.
 

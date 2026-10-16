@@ -1,0 +1,15 @@
+# Dollars at Work: the public pages are open to search engines; the app itself is behind sign-in.
+User-agent: *
+Disallow: /api/
+Disallow: /welcome
+Disallow: /plan
+Disallow: /savings
+Disallow: /debt
+Disallow: /invest
+Disallow: /what-if
+Disallow: /profile
+Disallow: /numbers
+Disallow: /reset-password
+Disallow: /confirm-email
+
+Sitemap: https://dollarsatwork.app/sitemap.xml

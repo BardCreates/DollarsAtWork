@@ -11,10 +11,11 @@ const schema = z.object({ email: z.string().trim().email('Enter a valid email ad
 type FormValues = z.infer<typeof schema>;
 
 /**
- * "Not ready yet? Get launch news": an email box for visitors who aren't ready to start a trial.
- * No account is made. Shown to signed-out visitors only.
+ * "Not ready yet? Get the occasional money note": an email box for visitors who aren't ready to start a trial.
+ * Deliberately quieter than the trial button beside it (small heading, text button). No account is made.
+ * Shown to signed-out visitors only. Addresses land in the WaitlistEntries table.
  */
-export function WaitlistForm({ source, title = 'Not ready to start?', body }: { source: WaitlistSource; title?: string; body?: string }) {
+export function WaitlistForm({ source, title = 'Not ready yet?', body }: { source: WaitlistSource; title?: string; body?: string }) {
   const join = useJoinWaitlist();
   const {
     register,
@@ -24,15 +25,15 @@ export function WaitlistForm({ source, title = 'Not ready to start?', body }: { 
 
   return (
     <Box>
-      <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 700 }}>
+      <Typography variant="body2" component="h2" sx={{ fontWeight: 700 }}>
         {title}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        {body ?? "Leave your email and we'll tell you when Dollars at Work launches. No account needed."}
+        {body ?? 'Get the occasional money note: new articles and launch deals. No account needed.'}
       </Typography>
 
       {join.isSuccess ? (
-        <Alert severity="success">You're on the list. We'll be in touch.</Alert>
+        <Alert severity="success">You're in. Expect a note now and then, never a flood.</Alert>
       ) : (
         <Box
           component="form"
@@ -50,13 +51,13 @@ export function WaitlistForm({ source, title = 'Not ready to start?', body }: { 
             helperText={errors.email?.message ?? (join.isError ? errorMessage(join.error) : undefined)}
             sx={{ flex: 1, minWidth: 0 }}
           />
-          <Button type="submit" variant="outlined" disabled={join.isPending} sx={{ flexShrink: 0, height: 40 }}>
-            {join.isPending ? 'Adding…' : 'Keep me posted'}
+          <Button type="submit" variant="text" disabled={join.isPending} sx={{ flexShrink: 0, height: 40 }}>
+            {join.isPending ? 'Adding…' : 'Send me notes'}
           </Button>
         </Box>
       )}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-        We only use it for launch news. See the{' '}
+        We only use it for these notes, and remove it whenever you ask. See the{' '}
         <Link component={RouterLink} to="/privacy" underline="hover" color="inherit">
           Privacy Policy
         </Link>

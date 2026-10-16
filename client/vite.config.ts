@@ -1,5 +1,26 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { buildSitemap, publishedPosts } from './src/lib/sitemap';
+
+/**
+ * Writes sitemap.xml into the build from the blog's Markdown files, so a newly published post is listed the
+ * moment it deploys. (Node's fs is loaded by name because this project has no Node type definitions.)
+ */
+function sitemap(): Plugin {
+  return {
+    name: 'daw-sitemap',
+    apply: 'build',
+    async generateBundle() {
+      const fs = await import(/* @vite-ignore */ 'node:' + 'fs');
+      const dir = 'src/content/blog';
+      const files: Record<string, string> = {};
+      for (const name of fs.readdirSync(dir) as string[]) {
+        if (name.endsWith('.md')) files[name] = fs.readFileSync(`${dir}/${name}`, 'utf8') as string;
+      }
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap(publishedPosts(files)) });
+    },
+  };
+}
 
 // Dev: the React app runs on http://localhost:5173 and forwards /api to the .NET API,
 // so the browser sees one address and the sign-in cookie just works.
@@ -10,7 +31,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'DAW_');
 
   return {
-    plugins: [react()],
+    plugins: [react(), sitemap()],
     server: {
       port: Number(env.DAW_PORT) || 5173,
       strictPort: true,

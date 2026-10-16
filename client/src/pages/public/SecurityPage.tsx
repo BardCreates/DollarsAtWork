@@ -8,6 +8,7 @@ import { useMe } from '../../auth/auth';
 import { PublicLayout } from './PublicLayout';
 import { signUpPath } from '../../lib/signUp';
 import { SITE } from './siteInfo';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /**
  * Every statement on this page describes something the code does today. Keep it that way: if a claim stops being
@@ -45,6 +46,7 @@ const List = ({ children }: { children: ReactNode }) => (
 );
 
 export function SecurityPage() {
+  usePageMeta('Private by design', 'No bank login, no ad trackers. What Dollars at Work keeps, how it is protected, and how to take it with you.');
   const { data: me } = useMe();
 
   return (

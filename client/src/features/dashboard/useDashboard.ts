@@ -31,10 +31,14 @@ export function useDashboardData() {
   const [plan, debts, savings, investments, netWorth] = queries;
 
   const failed = queries.find((query) => query.isError);
-  const data: DashboardData | undefined =
-    plan.data && debts.data && savings.data && investments.data && netWorth.data
-      ? { plan: plan.data, debts: debts.data, savings: savings.data, investments: investments.data, netWorth: netWorth.data }
-      : undefined;
+  // Kept as the same object until one of the five changes, so pages can memoize what they build from it.
+  const data: DashboardData | undefined = useMemo(
+    () =>
+      plan.data && debts.data && savings.data && investments.data && netWorth.data
+        ? { plan: plan.data, debts: debts.data, savings: savings.data, investments: investments.data, netWorth: netWorth.data }
+        : undefined,
+    [plan.data, debts.data, savings.data, investments.data, netWorth.data],
+  );
 
   return {
     data,
