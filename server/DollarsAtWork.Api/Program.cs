@@ -19,6 +19,21 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------- Error tracking (Sentry) ----------
+// On only when Sentry:Dsn is set (Sentry__Dsn on the host). Reports server errors without personal data:
+// no request bodies (what people typed), no cookies or user IPs, and no performance tracing.
+if (builder.Configuration["Sentry:Dsn"] is { Length: > 0 } sentryDsn)
+{
+    builder.WebHost.UseSentry(options =>
+    {
+        options.Dsn = sentryDsn;
+        options.Environment = builder.Environment.EnvironmentName;
+        options.SendDefaultPii = false;
+        options.MaxRequestBodySize = Sentry.Extensibility.RequestSize.None;
+        options.TracesSampleRate = 0;
+    });
+}
+
 // ---------- Data ----------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));

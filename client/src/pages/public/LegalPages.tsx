@@ -165,6 +165,7 @@ export function PrivacyPage() {
         <li><strong>Stripe</strong> — payments and billing.</li>
         <li><strong>Resend</strong> — delivering account emails.</li>
         <li><strong>Microsoft Azure</strong> — running the app and storing the database, in the United States.</li>
+        <li><strong>Sentry</strong> — telling us when something in the app breaks, so we can fix it. Error reports leave out what you typed into forms, your sign-in cookie and your IP address.</li>
       </ul>
       <P>They act on our instructions and may not use your data for their own purposes. We may also disclose data if the law requires it.</P>
 
