@@ -41,6 +41,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.Property(w => w.Email).HasMaxLength(254);
             e.Property(w => w.Source).HasMaxLength(20);
+            e.Property(w => w.Note).HasMaxLength(200);
             e.HasIndex(w => w.Email).IsUnique();
         });
 
