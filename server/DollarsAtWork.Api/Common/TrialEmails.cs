@@ -91,7 +91,7 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
     }
 }
 
-/// <summary>Runs the trial emails shortly after start-up and then once an hour.</summary>
+/// <summary>Runs the trial and onboarding emails shortly after start-up and then once an hour.</summary>
 public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, ILogger<TrialEmailWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan FirstRun = TimeSpan.FromSeconds(20);
@@ -108,6 +108,7 @@ public class TrialEmailWorker(IServiceScopeFactory scopes, TimeProvider clock, I
                 {
                     using var scope = scopes.CreateScope();
                     await scope.ServiceProvider.GetRequiredService<TrialEmailService>().SendDueAsync(stoppingToken);
+                    await scope.ServiceProvider.GetRequiredService<OnboardingEmailService>().SendDueAsync(stoppingToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {

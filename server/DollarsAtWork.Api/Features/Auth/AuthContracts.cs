@@ -37,4 +37,5 @@ public record AccessResponse(
     }
 }
 
-public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints);
+/// <summary>WelcomeEmailSent tells the browser whether the hour-1 welcome (with the person's own numbers) is still to be sent.</summary>
+public record MeResponse(Guid Id, string Email, bool EmailConfirmed, AccessResponse Access, HintsResponse Hints, bool WelcomeEmailSent);

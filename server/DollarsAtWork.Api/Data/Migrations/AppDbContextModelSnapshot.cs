@@ -69,6 +69,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<DateTimeOffset?>("NudgeEmailSentAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -91,6 +94,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset?>("WelcomeEmailSentAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 

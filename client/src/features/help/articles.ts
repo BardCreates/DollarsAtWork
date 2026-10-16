@@ -328,7 +328,9 @@ Every result is an estimate based on the numbers you enter, not financial advice
     summary: 'Your 30-day trial needs no card. Subscribe, change plans or cancel from Profile & billing.',
     keywords: 'price cost subscription pay card cancel refund trial expired read-only past due resubscribe manage billing stripe monthly annual founding coupon promo promotion code discount',
     body: `## Your free trial
-Every new account gets 30 days of full access, and no card is needed. The banner at the top of each page counts down the days. You'll also get an email a week before the trial ends and again two days before.
+Every new account gets 30 days of full access, and no card is needed. The banner at the top of each page counts down the days.
+
+A few emails come with the trial, each at most once: a welcome in your first hour with your own numbers (your net worth in 10 years and your debt-free date, if you have debt) or, if you haven't built a plan yet, a note that it's waiting; a suggestion around day 3 to try one what-if scenario; and a reminder a week before the trial ends and again two days before. You can reply to any of them.
 
 ## Subscribing
 Go to [Profile & billing](/profile), choose a plan, and press **Subscribe**. You'll enter your card on Stripe's secure checkout page; Dollars at Work never sees or stores your card. Current prices are on the [Pricing](/pricing) page.

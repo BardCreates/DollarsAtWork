@@ -52,6 +52,7 @@ public class ResendEmailSender(
         {
             from = settings.From,
             to = new[] { to },
+            reply_to = EmailLayout.SupportAddress, // replies reach a person even if From is a no-inbox address
             subject = message.Subject,
             text = message.Text,
             html = message.Html,

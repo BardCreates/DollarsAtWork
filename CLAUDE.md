@@ -93,6 +93,12 @@ and decisions already made. Don't re-ask decided questions.
   Checkout allows Stripe promotion codes and only asks for a card when something is owed (a 100% code needs none).
 - Error tracking (Oct 15): Sentry.AspNetCore, on only when Sentry:Dsn is set (Program.cs). No PII, no request bodies, no
   tracing. The Privacy Policy names Sentry; if the settings change, change that line too.
+- Onboarding emails (Oct 16): two more trial emails, each sent once (AppUser.WelcomeEmailSentAt / NudgeEmailSentAt). Hour 1:
+  the dashboard POSTs its first projection's 10-year net worth and debt-free month to /api/account/welcome-email
+  (features/account/welcomeEmail.ts; the numbers come from the browser, like the check-in report email) and the server sends
+  "Your dollars clocked in" with them. The hourly worker (Common/OnboardingEmails.cs, run by TrialEmailWorker) sends "Your plan
+  is waiting" to confirmed accounts 1 hour to 3 days old that never got the welcome, and "Try one what-if" to trialing accounts
+  3 to 10 days old. /auth/me carries welcomeEmailSent. The help trial article and the Privacy Policy list these emails.
 
 ## What we compete on
 
