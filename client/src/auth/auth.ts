@@ -27,6 +27,8 @@ export interface Me {
   emailConfirmed: boolean;
   access: Access;
   hints: HintSettings;
+  /** True for the account named in the server's App:OwnerEmail setting: the only one that can open /numbers. */
+  isOwner: boolean;
 }
 
 export const meQueryKey = ['me'] as const;

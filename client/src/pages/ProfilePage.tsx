@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, Stack } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 import { PageHeader } from '../components/PageHeader';
 import { useMe, useSignOut } from '../auth/auth';
 import { AccountCard, DataCard } from '../features/account/AccountCards';
@@ -23,6 +23,21 @@ export function ProfilePage() {
         <HintsCard hints={me.hints} />
         <InstallCard />
         <DataCard />
+        {me.isOwner && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Numbers
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 1.5 }}>
+                Only you see this: anonymous counts of visits, calculator use, sign-ups, trials and subscriptions.
+              </Typography>
+              <Button component={RouterLink} to="/numbers" variant="outlined" size="small">
+                Open the numbers
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         <Box>
           <Button variant="outlined" onClick={() => signOut.mutate(undefined, { onSettled: () => navigate('/sign-in', { replace: true }) })}>
             Sign out
