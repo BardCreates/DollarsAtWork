@@ -11,6 +11,7 @@ import { ConfirmEmailChangePage } from './pages/auth/ConfirmEmailChangePage';
 import { PricingPage } from './pages/public/PricingPage';
 import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
 import { SecurityPage } from './pages/public/SecurityPage';
+import { AffiliatesPage } from './pages/public/AffiliatesPage';
 import { WelcomePage } from './features/setup/WelcomePage';
 import { DemoPage } from './features/demo/DemoPage';
 import { ToolsPage } from './features/tools/ToolsPage';
@@ -47,6 +48,7 @@ export default function App() {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/security" element={<SecurityPage />} />
+      <Route path="/affiliates" element={<AffiliatesPage />} />
 
       {/* Open to everyone, in the app frame when signed in and the public frame when not */}
       <Route element={<VisitorShell />}>

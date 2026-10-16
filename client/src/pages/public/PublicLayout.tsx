@@ -16,6 +16,7 @@ export function FooterLinks() {
         { to: '/blog', label: 'Blog' },
         { to: '/help', label: 'Help' },
         { to: '/security', label: 'Security' },
+        { to: '/affiliates', label: 'Affiliates' },
         { to: '/terms', label: 'Terms' },
         { to: '/privacy', label: 'Privacy' },
       ].map((link) => (
