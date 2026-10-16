@@ -1,0 +1,42 @@
+# Publishes blog posts without a human click.
+#
+# The blog scheduled task opens a pull request from a branch named blog/<date>-<slug> that adds one post file.
+# When CI finishes green on such a pull request, this workflow squash-merges it, and the deploy workflow puts the
+# post live. It only ever merges a pull request that (1) comes from a blog/ branch and (2) touches nothing outside
+# client/src/content/blog/, so it can never publish a code change on its own.
+
+name: Publish blog post
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'blog/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge the blog pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          number=$(gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$BRANCH" --jq '.[0].number // empty')
+          if [ -z "$number" ]; then echo "No open pull request for $BRANCH"; exit 0; fi
+          files=$(gh api "repos/$REPO/pulls/$number/files" --paginate --jq '.[].filename')
+          if echo "$files" | grep -v '^client/src/content/blog/' | grep -q .; then
+            echo "Pull request #$number changes files outside the blog folder; leaving it for a person."
+            gh api -X POST "repos/$REPO/issues/$number/comments" -f body="Not auto-merged: this pull request changes files outside client/src/content/blog/. A person needs to review it."
+            exit 0
+          fi
+          gh api -X PUT "repos/$REPO/pulls/$number/merge" -f merge_method=squash -f sha="$SHA"
+          gh api -X DELETE "repos/$REPO/git/refs/heads/$BRANCH" || true
+          echo "Merged #$number"
