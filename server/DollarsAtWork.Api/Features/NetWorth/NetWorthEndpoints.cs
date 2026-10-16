@@ -230,8 +230,8 @@ public static class NetWorthEndpoints
         if (latestTwo.Count == 0)
             return Results.Problem(title: "Do a check-in first.", detail: "There's nothing to send until you've done a check-in.", statusCode: StatusCodes.Status409Conflict);
 
-        var (subject, body) = ReportEmail.Compose(latestTwo[0], latestTwo.Count > 1 ? latestTwo[1] : null, request, clock.GetUtcNow(), options.Value.PublicUrl.TrimEnd('/'));
-        await sender.SendAsync(user.Email, subject, body, ct);
+        var message = ReportEmail.Compose(latestTwo[0], latestTwo.Count > 1 ? latestTwo[1] : null, request, clock.GetUtcNow(), options.Value.PublicUrl.TrimEnd('/'));
+        await sender.SendAsync(user.Email, message, ct);
         return Results.NoContent();
     }
 
