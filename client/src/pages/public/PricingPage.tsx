@@ -7,6 +7,7 @@ import { usePrices } from '../../features/billing/billing';
 import { formatMoney } from '../../lib/money';
 import { PublicLayout } from './PublicLayout';
 import { signUpPath } from '../../lib/signUp';
+import { useRecordVisit } from '../../lib/usage';
 
 const features = [
   'A monthly plan that gives every dollar a job',
@@ -26,6 +27,7 @@ const questions = [
 ];
 
 export function PricingPage() {
+  useRecordVisit('visit_pricing');
   const { data: me } = useMe();
   const { data: prices } = usePrices();
   const monthly = prices?.enabled ? prices.monthly : null;

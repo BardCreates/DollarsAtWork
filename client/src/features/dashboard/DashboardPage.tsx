@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControlLabel, Switch, Tooltip, Typography } from '@mui/material';
@@ -9,6 +9,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
+import { recordUsage } from '../../lib/usage';
 import { brand } from '../../theme';
 import { DashboardHint, TourHint } from '../hints/PageHints';
 import { planTotals } from '../plan/plan';
@@ -24,6 +25,9 @@ import { TimelineCard } from './TimelineCard';
 import { useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
 const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financial advice.';
+
+/** Once per page load (not per visit to the dashboard): the anonymous "someone reached a projection" count. */
+let projectionCounted = false;
 
 export function DashboardPage() {
   const { data, isPending, error, refetch } = useDashboardData();
@@ -75,8 +79,16 @@ function Dashboard({ data }: { data: DashboardData }) {
 
   const { result, timeline } = useDashboardProjection(data, todaysDollars);
   const { remaining } = planTotals(data.plan);
+  const blank = isBlank(data);
 
-  if (isBlank(data)) {
+  useEffect(() => {
+    // A projection of a blank plan is all zeros; count the first real one in this session.
+    if (blank || projectionCounted) return;
+    projectionCounted = true;
+    recordUsage('first_projection');
+  }, [blank]);
+
+  if (blank) {
     return (
       <>
         <PageHeader title="Dashboard" subtitle={me ? `Welcome, ${me.email}` : undefined} />

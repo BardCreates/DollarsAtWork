@@ -5,10 +5,25 @@ import { Figure } from '../../components/Figure';
 import { compoundGrowth, drip, loanCost, loanPayoff, type GrowthYear } from '../../lib/calculators';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney, formatMoneyCompact } from '../../lib/money';
+import { useRecordOnce } from '../../lib/usage';
 import { brand } from '../../theme';
 import { NumberField } from './NumberField';
 
 const whole = (value: number) => formatMoney(Math.round(value));
+
+/**
+ * Counts "a calculator was used" (anonymously) the first time a visitor changes a number, once per calculator per
+ * visit. The defaults show a result on their own, so a change is what tells us someone actually tried it.
+ */
+function useCountedInputs() {
+  const countUse = useRecordOnce('calculator_used');
+  return function counted<T>(set: (value: T) => void) {
+    return (value: T) => {
+      countUse();
+      set(value);
+    };
+  };
+}
 
 /** Inputs on the left (top on phones), results on the right. */
 function Calculator({ inputs, children }: { inputs: ReactNode; children: ReactNode }) {
@@ -72,6 +87,7 @@ export function CompoundCalculator() {
   const [monthly, setMonthly] = useState(300);
   const [annualRate, setAnnualRate] = useState(7);
   const [years, setYears] = useState(20);
+  const counted = useCountedInputs();
 
   const rows = useMemo(() => compoundGrowth({ initial, monthly, annualRate, years }), [initial, monthly, annualRate, years]);
   const last = rows[rows.length - 1];
@@ -80,10 +96,10 @@ export function CompoundCalculator() {
     <Calculator
       inputs={
         <>
-          <NumberField label="Starting amount" prefix="$" value={initial} onChange={setInitial} />
-          <NumberField label="Added each month" prefix="$" value={monthly} onChange={setMonthly} />
-          <NumberField label="Yearly return" suffix="%" max={50} value={annualRate} onChange={setAnnualRate} />
-          <NumberField label="For" suffix="years" max={60} value={years} onChange={setYears} />
+          <NumberField label="Starting amount" prefix="$" value={initial} onChange={counted(setInitial)} />
+          <NumberField label="Added each month" prefix="$" value={monthly} onChange={counted(setMonthly)} />
+          <NumberField label="Yearly return" suffix="%" max={50} value={annualRate} onChange={counted(setAnnualRate)} />
+          <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }
     >
@@ -102,6 +118,7 @@ export function PayoffCalculator() {
   const [apr, setApr] = useState(7);
   const [payment, setPayment] = useState(300);
   const [extra, setExtra] = useState(100);
+  const counted = useCountedInputs();
 
   const base = useMemo(() => loanPayoff({ balance, apr, payment }), [balance, apr, payment]);
   const faster = useMemo(() => loanPayoff({ balance, apr, payment: payment + extra }), [balance, apr, payment, extra]);
@@ -110,10 +127,10 @@ export function PayoffCalculator() {
     <Calculator
       inputs={
         <>
-          <NumberField label="Loan balance" prefix="$" value={balance} onChange={setBalance} />
-          <NumberField label="APR" suffix="%" max={100} value={apr} onChange={setApr} />
-          <NumberField label="Monthly payment" prefix="$" value={payment} onChange={setPayment} />
-          <NumberField label="Extra each month" prefix="$" value={extra} onChange={setExtra} helperText="What you could add on top." />
+          <NumberField label="Loan balance" prefix="$" value={balance} onChange={counted(setBalance)} />
+          <NumberField label="APR" suffix="%" max={100} value={apr} onChange={counted(setApr)} />
+          <NumberField label="Monthly payment" prefix="$" value={payment} onChange={counted(setPayment)} />
+          <NumberField label="Extra each month" prefix="$" value={extra} onChange={counted(setExtra)} helperText="What you could add on top." />
         </>
       }
     >
@@ -152,6 +169,7 @@ export function LoanCompareCalculator() {
   const [yearsA, setYearsA] = useState(4);
   const [aprB, setAprB] = useState(7.5);
   const [yearsB, setYearsB] = useState(6);
+  const counted = useCountedInputs();
 
   const a = useMemo(() => loanCost({ amount, apr: aprA, years: yearsA }), [amount, aprA, yearsA]);
   const b = useMemo(() => loanCost({ amount, apr: aprB, years: yearsB }), [amount, aprB, yearsB]);
@@ -181,13 +199,13 @@ export function LoanCompareCalculator() {
     <Calculator
       inputs={
         <>
-          <NumberField label="Loan amount" prefix="$" value={amount} onChange={setAmount} />
+          <NumberField label="Loan amount" prefix="$" value={amount} onChange={counted(setAmount)} />
           <Typography variant="subtitle2">Loan A</Typography>
-          <NumberField label="APR" suffix="%" max={100} value={aprA} onChange={setAprA} />
-          <NumberField label="Term" suffix="years" max={50} value={yearsA} onChange={setYearsA} />
+          <NumberField label="APR" suffix="%" max={100} value={aprA} onChange={counted(setAprA)} />
+          <NumberField label="Term" suffix="years" max={50} value={yearsA} onChange={counted(setYearsA)} />
           <Typography variant="subtitle2">Loan B</Typography>
-          <NumberField label="APR" suffix="%" max={100} value={aprB} onChange={setAprB} />
-          <NumberField label="Term" suffix="years" max={50} value={yearsB} onChange={setYearsB} />
+          <NumberField label="APR" suffix="%" max={100} value={aprB} onChange={counted(setAprB)} />
+          <NumberField label="Term" suffix="years" max={50} value={yearsB} onChange={counted(setYearsB)} />
         </>
       }
     >
@@ -209,6 +227,7 @@ export function DripCalculator() {
   const [priceGrowth, setPriceGrowth] = useState(5);
   const [dividendYield, setDividendYield] = useState(3);
   const [years, setYears] = useState(20);
+  const counted = useCountedInputs();
   const style = useChartStyle();
 
   const rows = useMemo(
@@ -221,11 +240,11 @@ export function DripCalculator() {
     <Calculator
       inputs={
         <>
-          <NumberField label="Starting investment" prefix="$" value={initial} onChange={setInitial} />
-          <NumberField label="Added each year" prefix="$" value={yearlyContribution} onChange={setYearlyContribution} />
-          <NumberField label="Share price growth" suffix="% a year" max={50} value={priceGrowth} onChange={setPriceGrowth} />
-          <NumberField label="Dividend yield" suffix="% a year" max={50} value={dividendYield} onChange={setDividendYield} />
-          <NumberField label="For" suffix="years" max={60} value={years} onChange={setYears} />
+          <NumberField label="Starting investment" prefix="$" value={initial} onChange={counted(setInitial)} />
+          <NumberField label="Added each year" prefix="$" value={yearlyContribution} onChange={counted(setYearlyContribution)} />
+          <NumberField label="Share price growth" suffix="% a year" max={50} value={priceGrowth} onChange={counted(setPriceGrowth)} />
+          <NumberField label="Dividend yield" suffix="% a year" max={50} value={dividendYield} onChange={counted(setDividendYield)} />
+          <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }
     >
@@ -260,6 +279,7 @@ export function HabitCalculator() {
   const [monthly, setMonthly] = useState(250);
   const [annualRate, setAnnualRate] = useState(7);
   const [years, setYears] = useState(10);
+  const counted = useCountedInputs();
 
   const rows = useMemo(() => compoundGrowth({ initial: 0, monthly, annualRate, years }), [monthly, annualRate, years]);
   const last = rows[rows.length - 1];
@@ -268,9 +288,9 @@ export function HabitCalculator() {
     <Calculator
       inputs={
         <>
-          <NumberField label="Spent each month" prefix="$" value={monthly} onChange={setMonthly} helperText="Dining out, subscriptions, a daily coffee." />
-          <NumberField label="Yearly return if invested" suffix="%" max={50} value={annualRate} onChange={setAnnualRate} helperText="7% is a common long-run figure for stocks. It's an assumption, not a promise." />
-          <NumberField label="For" suffix="years" max={60} value={years} onChange={setYears} />
+          <NumberField label="Spent each month" prefix="$" value={monthly} onChange={counted(setMonthly)} helperText="Dining out, subscriptions, a daily coffee." />
+          <NumberField label="Yearly return if invested" suffix="%" max={50} value={annualRate} onChange={counted(setAnnualRate)} helperText="7% is a common long-run figure for stocks. It's an assumption, not a promise." />
+          <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }
     >

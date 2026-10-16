@@ -5,6 +5,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { useMe } from '../../auth/auth';
 import { SAMPLE_NAMES, SAMPLE_PERSON } from '../../lib/sampleData';
 import { signUpPath } from '../../lib/signUp';
+import { useRecordVisit } from '../../lib/usage';
 import { buildTimeline } from '../../lib/timeline';
 import { NetWorthCard } from '../dashboard/NetWorthCard';
 import { ProjectionChart } from '../dashboard/ProjectionChart';
@@ -17,6 +18,7 @@ import { SampleImpactCard, useSampleImpact } from './SampleImpactCard';
  * it runs the same projection engine as the real app on a fixed example person.
  */
 export function DemoPage() {
+  useRecordVisit('visit_demo');
   const { data: me } = useMe();
   const [year, setYear] = useState(10);
   const { extra, setExtra, result, impact } = useSampleImpact();

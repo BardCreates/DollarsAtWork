@@ -3,6 +3,7 @@ import { Tab, Tabs, Typography } from '@mui/material';
 import { PageHeader } from '../../components/PageHeader';
 import { ToolsHint } from '../hints/PageHints';
 import { useMe } from '../../auth/auth';
+import { useRecordVisit } from '../../lib/usage';
 import { CompoundCalculator, DripCalculator, HabitCalculator, LoanCompareCalculator, PayoffCalculator } from './calculators';
 import { TrialCta } from './TrialCta';
 
@@ -51,6 +52,7 @@ type ToolId = (typeof tools)[number]['id'];
  * /tools?tool=payoff. Visitors who aren't signed in get an invitation to try the real thing under each one.
  */
 export function ToolsPage() {
+  useRecordVisit('visit_tools');
   const { data: me } = useMe();
   const [params, setParams] = useSearchParams();
 

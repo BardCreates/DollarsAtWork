@@ -1,6 +1,7 @@
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Alert, Box, Breadcrumbs, Button, Card, CardContent, Chip, Link, Typography } from '@mui/material';
 import { useMe } from '../../auth/auth';
+import { useRecordVisit } from '../../lib/usage';
 import { TrialCta } from '../tools/TrialCta';
 import { POST_CTAS } from './ctas';
 import { MarkdownContent } from './MarkdownContent';
@@ -13,6 +14,7 @@ export function BlogPostPage() {
   const { slug } = useParams();
   const { data: me } = useMe();
   const post = findPost(slug);
+  useRecordVisit('visit_blog', { source: post ? `blog/${post.slug}` : undefined, enabled: post !== undefined });
   usePageMeta(post ? `${post.title} · Dollars at Work` : 'Blog · Dollars at Work', post?.summary);
 
   if (!post) {
