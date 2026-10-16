@@ -5,13 +5,13 @@ import { PublicLayout } from './PublicLayout';
 import { SITE } from './siteInfo';
 
 /**
- * DRAFTS. These pages describe what the app actually does, but they have not been reviewed by a lawyer.
- * Before launch: have them reviewed, fill in the placeholders in siteInfo.ts and below, and set `draft` to false.
+ * These pages describe what the app actually does. They are written for the launch but have not been reviewed by a
+ * lawyer (planned once there is revenue). If the behavior changes, change the page in the same commit.
  */
 const DRAFT = SITE.draft;
 const COMPANY = SITE.company;
 const CONTACT = SITE.contact;
-const UPDATED = '[date]';
+const UPDATED = 'October 15, 2026';
 
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -64,7 +64,7 @@ export function TermsPage() {
       <ul>
         <li>You must give a real email address and keep your password to yourself.</li>
         <li>You are responsible for what happens under your account.</li>
-        <li>You must be at least [18] years old to use the service.</li>
+        <li>You must be at least 18 years old to use the service.</li>
         <li>One free trial per person.</li>
       </ul>
 
@@ -74,10 +74,10 @@ export function TermsPage() {
         <li>After the trial, a paid subscription (monthly or annual) is needed to keep editing. Without one, your account becomes read-only: you can still see and export your data.</li>
         <li>Subscriptions renew automatically at the end of each period until you cancel. Prices are shown on the <Link component={RouterLink} to="/pricing">pricing page</Link> and at checkout.</li>
         <li>You can cancel any time from your profile. You keep full access until the end of the period you have paid for.</li>
-        <li>[Refund policy: to be decided. For example: payments are not refunded for unused time, except where the law requires.]</li>
+        <li>If you're not happy, email {CONTACT} within 30 days of your first payment and we'll refund it in full. After that, payments aren't refunded for unused time, except where the law requires.</li>
         <li>If a payment fails, you keep full access for 7 days while you update your card. After that the account becomes read-only.</li>
         <li>Payments are handled by Stripe. We never see or store your card number.</li>
-        <li>We may change prices. We will tell you by email at least [30] days before a change applies to you.</li>
+        <li>We may change prices. We will tell you by email at least 30 days before a change applies to you.</li>
       </ul>
 
       <H>Your data</H>
@@ -98,7 +98,7 @@ export function TermsPage() {
       <H>Ending your account</H>
       <P>
         You can delete your account at any time. We may suspend or close an account that breaks these terms. If we close the service altogether, we will give
-        you at least [30] days' notice so you can export your data.
+        you at least 30 days' notice so you can export your data.
       </P>
 
       <H>No warranty</H>
@@ -110,14 +110,14 @@ export function TermsPage() {
       <H>Limit of liability</H>
       <P>
         To the extent the law allows, we are not liable for indirect or consequential losses, or for financial decisions you make using the service, and our
-        total liability to you is limited to the amount you paid us in the [12] months before the claim.
+        total liability to you is limited to the amount you paid us in the 12 months before the claim.
       </P>
 
       <H>Changes to these terms</H>
       <P>If we make a change that matters, we will tell you by email or in the app before it takes effect. Using the service after that means you accept the change.</P>
 
       <H>Governing law</H>
-      <P>These terms are governed by the laws of [state / country]. [Dispute resolution: to be decided.]</P>
+      <P>These terms are governed by the laws of the State of Arkansas, USA. If a dispute comes up, please contact us first; most things can be sorted out by email. Any dispute we can't resolve that way will be handled in the courts of Arkansas.</P>
 
       <H>Contact</H>
       <P>Questions about these terms: {CONTACT}.</P>
@@ -141,7 +141,7 @@ export function PrivacyPage() {
         <li><strong>Your settings:</strong> small preferences such as whether the app's first-time hints are on and which ones you've closed.</li>
         <li><strong>Waitlist sign-ups:</strong> if you leave your email in a "tell me when you launch" box, we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one.</li>
         <li><strong>Subscription status:</strong> whether you are on trial, subscribed, past due or canceled, and identifiers that link your account to Stripe. Your card details go to Stripe and never reach us.</li>
-        <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. [Retention period: to be decided, e.g. 30 days.]</li>
+        <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. These are kept for no more than 30 days.</li>
       </ul>
 
       <H>How we use it</H>
@@ -163,9 +163,8 @@ export function PrivacyPage() {
       <H>Who else handles your data</H>
       <ul>
         <li><strong>Stripe</strong> — payments and billing.</li>
-        <li><strong>[Email provider]</strong> — delivering account emails.</li>
-        <li><strong>[Hosting provider]</strong> — running the app and storing the database, in [region].</li>
-        <li><strong>[Error-tracking provider, if used]</strong> — diagnosing errors.</li>
+        <li><strong>Resend</strong> — delivering account emails.</li>
+        <li><strong>Microsoft Azure</strong> — running the app and storing the database, in the United States.</li>
       </ul>
       <P>They act on our instructions and may not use your data for their own purposes. We may also disclose data if the law requires it.</P>
 
@@ -174,7 +173,7 @@ export function PrivacyPage() {
         We keep your data for as long as you have an account. When you delete your account, your account details and everything you entered are deleted from our
         database straight away, and your Stripe customer record is removed, which cancels any subscription. Two things outlast the account: Stripe keeps payment
         records as the law requires, and we keep a one-way fingerprint (hash) of your email address so the same address cannot start a second free trial. The
-        fingerprint cannot be turned back into your email. Waitlist addresses are kept until you ask us to remove yours. Backups are overwritten within [number] days.
+        fingerprint cannot be turned back into your email. Waitlist addresses are kept until you ask us to remove yours. Database backups are overwritten within 7 days.
       </P>
 
       <H>Your choices</H>
@@ -192,7 +191,7 @@ export function PrivacyPage() {
       </P>
 
       <H>Children</H>
-      <P>The service is not meant for anyone under [18], and we do not knowingly collect their data.</P>
+      <P>The service is not meant for anyone under 18, and we do not knowingly collect their data.</P>
 
       <H>Changes</H>
       <P>If we change this policy in a way that matters, we will tell you by email or in the app before the change takes effect.</P>

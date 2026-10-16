@@ -35,8 +35,8 @@ and decisions already made. Don't re-ask decided questions.
   Security page's "One honest note" are gone.
 - Still open for launch, all waiting on the owner: Azure resources + domain, a Resend account (verify the domain,
   set `Email__ResendApiKey` and `Email__From` on the host), error tracking (Sentry: `dotnet add package Sentry.AspNetCore`,
-  `builder.WebHost.UseSentry()`, DSN in `Sentry__Dsn`), `client/src/pages/public/siteInfo.ts` (company, contact,
-  draft=false), legal review of `LegalPages.tsx`, live Stripe prices ($7 monthly, $59 annual, $49 founding x200),
+  `builder.WebHost.UseSentry()`, DSN in `Sentry__Dsn`), legal review of `LegalPages.tsx` (filled in Oct 15:
+  Dollars at Work, dollarsatworkapp@gmail.com, Arkansas law, 30-day first-payment refund; not lawyer-reviewed), live Stripe prices ($7 monthly, $59 annual, $49 founding x200),
   registering the production webhook endpoint.
 
 - Stand-out step 1 (Move a dollar) is built and verified: live impact panel on the Plan page (debt-free date and
