@@ -13,7 +13,8 @@ namespace DollarsAtWork.Api.Features.Waitlist;
 public static class WaitlistEndpoints
 {
     /// <summary>The pages that show the form. Anything else is stored as "other".</summary>
-    private static readonly HashSet<string> Sources = ["home", "tools", "demo", "pricing", "help", "blog", "other"];
+    private static readonly HashSet<string> Sources = ["home", "tools", "demo", "pricing", "help", "blog", "affiliates", "other"];
+    private const int MaxNoteLength = 200;
 
     public static RouteGroupBuilder MapWaitlistEndpoints(this RouteGroupBuilder api)
     {
@@ -23,13 +24,19 @@ public static class WaitlistEndpoints
 
     private static async Task<IResult> Join(JoinWaitlistRequest request, AppDbContext db, TimeProvider clock, CancellationToken ct)
     {
+        var check = new Validation();
         var email = NormalizeEmail(request.Email);
         if (email is null)
-        {
-            var check = new Validation();
             check.Add("email", "Enter a valid email address.");
+
+        var note = request.Note?.Trim();
+        if (string.IsNullOrEmpty(note))
+            note = null;
+        else if (note.Length > MaxNoteLength)
+            check.Add("note", $"Keep it to {MaxNoteLength} characters or fewer.");
+
+        if (check.Failed)
             return check.ToResult();
-        }
 
         var source = request.Source?.Trim().ToLowerInvariant() ?? "";
         if (!Sources.Contains(source))
@@ -37,7 +44,7 @@ public static class WaitlistEndpoints
 
         if (!await db.WaitlistEntries.AnyAsync(w => w.Email == email, ct))
         {
-            db.WaitlistEntries.Add(new WaitlistEntry { Id = Guid.NewGuid(), Email = email, Source = source, CreatedAt = clock.GetUtcNow() });
+            db.WaitlistEntries.Add(new WaitlistEntry { Id = Guid.NewGuid(), Email = email!, Source = source, Note = note, CreatedAt = clock.GetUtcNow() });
             try
             {
                 await db.SaveChangesAsync(ct);

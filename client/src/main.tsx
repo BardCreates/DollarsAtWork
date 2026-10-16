@@ -6,6 +6,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { theme } from './theme';
 import App from './App';
 import './lib/installPrompt';
+import { rememberReferral } from './lib/signUp';
 // Self-hosted typefaces (both OFL). Served from our own origin, so loading a page tells no third party about the visitor.
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
@@ -18,6 +19,9 @@ const queryClient = new QueryClient({
     queries: { refetchOnWindowFocus: true, retry: 1 },
   },
 });
+
+// A shared link (/?from=some-creator) credits that creator when the visitor signs up, from whichever page they do it.
+rememberReferral(window.location.search);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

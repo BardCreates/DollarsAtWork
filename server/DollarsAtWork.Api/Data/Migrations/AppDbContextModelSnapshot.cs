@@ -608,6 +608,10 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasMaxLength(254)
                         .HasColumnType("nvarchar(254)");
 
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(20)

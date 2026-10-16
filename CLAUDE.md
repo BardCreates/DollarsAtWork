@@ -91,6 +91,13 @@ and decisions already made. Don't re-ask decided questions.
   are counted from Stripe (subscriptions on that price past "incomplete"), cached a minute, so the cap is soft. /billing/prices
   returns founding {price, taken, limit, open}; checkout takes plan monthly|annual|founding and refuses founding once full.
   Checkout allows Stripe promotion codes and only asks for a card when something is owed (a 100% code needs none).
+- Affiliates (Oct 16): a public /affiliates page (pages/public/AffiliatesPage.tsx) states the creator offer (free account,
+  30% for 12 months, 30-day trial for the audience), how it works, what we ask, example numbers, a short FAQ and an
+  "Ask for my link" box. Requests reuse POST /api/waitlist with source "affiliates" and a new optional `note`
+  ("<name> — <where they share>", WaitlistEntry.Note, max 200, migration AddWaitlistNote); Hannah sends links by hand.
+  Referral: lib/signUp.ts rememberReferral() runs once at start-up (main.tsx); an incoming ?from=<tag> on any page is
+  kept in memory and mirrored in sessionStorage (the tag only, named in the Privacy Policy), and signUpPath() and the
+  sign-up page prefer it over the page name, so a creator's tag survives browsing to pricing or the demo first.
 - Error tracking (Oct 15): Sentry.AspNetCore, on only when Sentry:Dsn is set (Program.cs). No PII, no request bodies, no
   tracing. The Privacy Policy names Sentry; if the settings change, change that line too.
 - Onboarding emails (Oct 16): two more trial emails, each sent once (AppUser.WelcomeEmailSentAt / NudgeEmailSentAt). Hour 1:

@@ -39,6 +39,8 @@ public class WaitlistEntry
     public string Email { get; set; } = "";
     /// <summary>Which page the address came from (home, tools, demo…), to see which pages bring people in.</summary>
     public string Source { get; set; } = "";
+    /// <summary>What the person wrote with their address, when the form asks for it (the affiliates page: name and where they share).</summary>
+    public string? Note { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }
 

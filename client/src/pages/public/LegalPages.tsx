@@ -137,9 +137,9 @@ export function PrivacyPage() {
       <ul>
         <li><strong>Account details:</strong> your email address and a scrambled (hashed) version of your password. We cannot read your password.</li>
         <li><strong>What you enter:</strong> your income, budget categories, savings goals, debts, investment accounts, other assets and liabilities, and the net-worth snapshots from your check-ins. These are numbers and names you type; we never see bank logins, account numbers or transactions.</li>
-        <li><strong>Where you signed up:</strong> the page whose "start your free trial" button you used, such as a blog post or a calculator, so we can see which pages are useful.</li>
+        <li><strong>Where you signed up:</strong> the page whose "start your free trial" button you used, such as a blog post or a calculator, or the name of the affiliate whose link brought you here, so we can see which pages are useful and pay affiliates their share. If you arrive through an affiliate's link, your browser keeps that short tag (and nothing else) in the tab's session storage until the tab closes, so it isn't lost before you sign up.</li>
         <li><strong>Your settings:</strong> small preferences such as whether the app's first-time hints are on and which ones you've closed.</li>
-        <li><strong>Waitlist sign-ups:</strong> if you leave your email in a "tell me when you launch" box, we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one.</li>
+        <li><strong>Waitlist sign-ups:</strong> if you leave your email in a "tell me when you launch" box, we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one. If you ask for an affiliate link, we also keep the name and the place you share that you give us, so we can set up and pay your link.</li>
         <li><strong>Subscription status:</strong> whether you are on trial, subscribed, past due or canceled, and identifiers that link your account to Stripe. Your card details go to Stripe and never reach us.</li>
         <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. These are kept for no more than 30 days.</li>
       </ul>
