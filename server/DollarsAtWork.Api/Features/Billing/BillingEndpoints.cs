@@ -39,14 +39,32 @@ public static class BillingEndpoints
     {
         if (!billing.IsConfigured)
             return NotConfigured();
-        if (request.Interval is not ("month" or "year"))
-            return Results.ValidationProblem(new Dictionary<string, string[]> { ["interval"] = ["Pick monthly or annual."] });
+        BillingPlan? plan = (request.Plan ?? request.Interval) switch
+        {
+            "monthly" or "month" => BillingPlan.Monthly,
+            "annual" or "year" => BillingPlan.Annual,
+            "founding" => BillingPlan.Founding,
+            _ => null,
+        };
+        if (plan is null)
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["plan"] = ["Pick a plan."] });
 
         var user = await users.FindByIdAsync(principal.GetUserId().ToString());
         if (user is null)
             return Results.Unauthorized();
 
-        return await CallStripe(async () => Results.Ok(new RedirectResponse(await billing.CreateCheckoutUrlAsync(user, request.Interval == "year", ct))));
+        return await CallStripe(async () =>
+        {
+            if (plan == BillingPlan.Founding)
+            {
+                if (!billing.HasFoundingOffer)
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["plan"] = ["The founding price isn't offered right now."] });
+                var prices = await billing.GetPricesAsync(ct);
+                if (prices.Founding is not { Open: true })
+                    return Results.Problem(title: "The founding spots are all taken.", detail: "Pick the annual or monthly plan instead.", statusCode: StatusCodes.Status409Conflict);
+            }
+            return Results.Ok(new RedirectResponse(await billing.CreateCheckoutUrlAsync(user, plan.Value, ct)));
+        });
     }
 
     private static async Task<IResult> OpenPortal(ClaimsPrincipal principal, BillingService billing, CancellationToken ct)

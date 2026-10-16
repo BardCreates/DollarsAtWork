@@ -6,7 +6,7 @@ import { errorMessage } from '../../api/client';
 import type { Access, SubscriptionStatus } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
 import { brand } from '../../theme';
-import { useOpenPortal, usePrices, useStartCheckout, useSyncBilling, type BillingInterval, type Prices } from './billing';
+import { useOpenPortal, usePrices, useStartCheckout, useSyncBilling, type BillingPlan, type Prices } from './billing';
 
 const statusLabel: Record<SubscriptionStatus, { label: string; color: 'success' | 'info' | 'warning' | 'error' | 'default' }> = {
   Trialing: { label: 'Free trial', color: 'info' },
@@ -117,7 +117,7 @@ export function BillingCard({ access }: { access: Access }) {
                 ? `Your free trial ends on ${longDate(access.trialEndsAt)} (${access.trialDaysLeft === 1 ? '1 day' : `${access.trialDaysLeft} days`} left). Subscribe any time; no card is needed until you do.`
                 : "Your access has ended, but nothing's lost. Everything is still here to look at, and subscribing turns editing back on."}
             </Typography>
-            <PlanPicker prices={prices.data} loading={prices.isPending} failed={prices.isError} disabled={leaving} onSubscribe={(interval) => checkout.mutate(interval)} />
+            <PlanPicker prices={prices.data} loading={prices.isPending} failed={prices.isError} disabled={leaving} onSubscribe={(plan) => checkout.mutate(plan)} />
           </>
         )}
       </CardContent>
@@ -136,9 +136,12 @@ function PlanPicker({
   loading: boolean;
   failed: boolean;
   disabled: boolean;
-  onSubscribe: (interval: BillingInterval) => void;
+  onSubscribe: (plan: BillingPlan) => void;
 }) {
-  const [interval, setInterval] = useState<BillingInterval>('year');
+  const foundingOpen = !!prices?.founding?.open;
+  const [chosen, setChosen] = useState<BillingPlan | null>(null);
+  // The founding offer is the best deal while it lasts, so it's picked unless the person picks something else.
+  const plan: BillingPlan = chosen ?? (foundingOpen ? 'founding' : 'annual');
 
   if (loading) return <CircularProgress size={20} />;
   if (failed) return <Alert severity="warning">We couldn't load the prices. Refresh to try again.</Alert>;
@@ -146,14 +149,25 @@ function PlanPicker({
     return <Alert severity="info">Subscribing isn't available yet. Your trial gives you full access until it is.</Alert>;
   }
 
-  const { monthly, annual } = prices;
+  const { monthly, annual, founding } = prices;
   const yearOfMonthly = monthly.amount * 12;
   const saving = yearOfMonthly - annual.amount;
+  const spotsLeft = founding ? founding.limit - founding.taken : 0;
 
   return (
     <>
-      <ToggleButtonGroup exclusive color="primary" value={interval} onChange={(_, value: BillingInterval | null) => value && setInterval(value)} aria-label="Billing period" sx={{ mb: 2, flexWrap: 'wrap' }}>
-        <ToggleButton value="year" sx={{ px: 2.5, textAlign: 'left', display: 'block' }}>
+      <ToggleButtonGroup exclusive color="primary" value={plan} onChange={(_, value: BillingPlan | null) => value && setChosen(value)} aria-label="Plan" sx={{ mb: 2, flexWrap: 'wrap' }}>
+        {founding && foundingOpen && (
+          <ToggleButton value="founding" sx={{ px: 2.5, textAlign: 'left', display: 'block' }}>
+            <Typography component="span" sx={{ display: 'block', fontWeight: 600 }}>
+              Founding · {formatMoney(founding.price.amount)}/year
+            </Typography>
+            <Typography component="span" variant="caption" sx={{ display: 'block' }}>
+              {spotsLeft === 1 ? 'Last spot left' : `${spotsLeft} of ${founding.limit} spots left`}
+            </Typography>
+          </ToggleButton>
+        )}
+        <ToggleButton value="annual" sx={{ px: 2.5, textAlign: 'left', display: 'block' }}>
           <Typography component="span" sx={{ display: 'block', fontWeight: 600 }}>
             Annual · {formatMoney(annual.amount)}/year
           </Typography>
@@ -161,7 +175,7 @@ function PlanPicker({
             {saving > 0 ? `Save ${formatMoney(saving)} a year` : `${formatMoney(annual.amount / 12, { cents: true })}/month`}
           </Typography>
         </ToggleButton>
-        <ToggleButton value="month" sx={{ px: 2.5, textAlign: 'left', display: 'block' }}>
+        <ToggleButton value="monthly" sx={{ px: 2.5, textAlign: 'left', display: 'block' }}>
           <Typography component="span" sx={{ display: 'block', fontWeight: 600 }}>
             Monthly · {formatMoney(monthly.amount)}/month
           </Typography>
@@ -171,11 +185,11 @@ function PlanPicker({
         </ToggleButton>
       </ToggleButtonGroup>
       <Box>
-        <Button variant="contained" size="large" disabled={disabled} onClick={() => onSubscribe(interval)}>
+        <Button variant="contained" size="large" disabled={disabled} onClick={() => onSubscribe(plan)}>
           {disabled ? 'Opening checkout…' : 'Subscribe'}
         </Button>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-          You'll enter your card on Stripe's secure page. We never see or store it.
+          You'll enter your card on Stripe's secure page. We never see or store it. Have a promotion code? You can add it there.
         </Typography>
       </Box>
     </>

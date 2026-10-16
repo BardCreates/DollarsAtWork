@@ -86,6 +86,10 @@ and decisions already made. Don't re-ask decided questions.
   Every sign-up link carries ?from=<page> (lib/signUp.ts: signUpPath); the sign-up page sends it and the server keeps
   it on AppUser.SignupSource (cleaned by Common/SignupSources). Which pages bring trials:
   SELECT SignupSource, COUNT(*) FROM AspNetUsers GROUP BY SignupSource ORDER BY COUNT(*) DESC;
+- Founding price (Oct 15): Stripe:FoundingPriceId (optional; empty = no offer) and Stripe:FoundingLimit (200). Spots taken
+  are counted from Stripe (subscriptions on that price past "incomplete"), cached a minute, so the cap is soft. /billing/prices
+  returns founding {price, taken, limit, open}; checkout takes plan monthly|annual|founding and refuses founding once full.
+  Checkout allows Stripe promotion codes and only asks for a card when something is owed (a 100% code needs none).
 
 ## What we compete on
 

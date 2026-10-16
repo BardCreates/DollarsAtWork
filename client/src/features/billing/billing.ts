@@ -4,6 +4,9 @@ import { meQueryKey, type Access, type Me } from '../../auth/auth';
 
 export type BillingInterval = 'month' | 'year';
 
+/** What someone can subscribe to. Founding is the limited $49-a-year offer, while spots last. */
+export type BillingPlan = 'monthly' | 'annual' | 'founding';
+
 export interface Price {
   amount: number;
   currency: string;
@@ -14,6 +17,8 @@ export interface Prices {
   enabled: boolean;
   monthly: Price | null;
   annual: Price | null;
+  /** The founding offer, when there is one: its price and how many of its spots are taken. */
+  founding?: { price: Price; taken: number; limit: number; open: boolean } | null;
 }
 
 export const pricesQueryKey = ['billing', 'prices'] as const;
@@ -27,7 +32,7 @@ const leaveFor = ({ url }: { url: string }) => window.location.assign(url);
 
 export function useStartCheckout() {
   return useMutation({
-    mutationFn: (interval: BillingInterval) => api.post<{ url: string }>('/billing/checkout', { interval }),
+    mutationFn: (plan: BillingPlan) => api.post<{ url: string }>('/billing/checkout', { plan }),
     onSuccess: leaveFor,
   });
 }

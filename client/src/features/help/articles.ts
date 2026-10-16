@@ -326,12 +326,18 @@ Every result is an estimate based on the numbers you enter, not financial advice
     title: 'Free trial, subscribing and canceling',
     section: 'Account and billing',
     summary: 'Your 30-day trial needs no card. Subscribe, change plans or cancel from Profile & billing.',
-    keywords: 'price cost subscription pay card cancel refund trial expired read-only past due resubscribe manage billing stripe monthly annual',
+    keywords: 'price cost subscription pay card cancel refund trial expired read-only past due resubscribe manage billing stripe monthly annual founding coupon promo promotion code discount',
     body: `## Your free trial
 Every new account gets 30 days of full access, and no card is needed. The banner at the top of each page counts down the days. You'll also get an email a week before the trial ends and again two days before.
 
 ## Subscribing
-Go to [Profile & billing](/profile), choose **Annual** or **Monthly**, and press **Subscribe**. You'll enter your card on Stripe's secure checkout page; Dollars at Work never sees or stores your card. Current prices are on the [Pricing](/pricing) page.
+Go to [Profile & billing](/profile), choose a plan, and press **Subscribe**. You'll enter your card on Stripe's secure checkout page; Dollars at Work never sees or stores your card. Current prices are on the [Pricing](/pricing) page.
+
+## Founding price
+While spots last, the first 200 members can choose **Founding**: the annual plan at a lower launch price that stays the same each year for as long as you keep your subscription. The pricing page shows how many spots are left.
+
+## Promotion codes
+Got a code? Enter it on Stripe's checkout page after you press Subscribe. If the code covers the whole price, you won't be asked for a card.
 
 ## Managing or canceling
 Press **Manage billing** on [Profile & billing](/profile) to update your card, see your invoices, or cancel. When you cancel, you keep full access until the end of the period you've paid for.

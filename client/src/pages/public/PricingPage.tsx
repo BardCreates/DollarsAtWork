@@ -31,6 +31,7 @@ export function PricingPage() {
   const monthly = prices?.enabled ? prices.monthly : null;
   const annual = prices?.enabled ? prices.annual : null;
   const saving = monthly && annual ? monthly.amount * 12 - annual.amount : 0;
+  const founding = prices?.enabled && prices.founding?.open ? prices.founding : null;
 
   const cta = me ? { to: '/profile', label: 'Go to your subscription' } : { to: signUpPath('pricing'), label: 'Start your free 30-day trial' };
 
@@ -58,6 +59,32 @@ export function PricingPage() {
           </Typography>
         )}
       </Box>
+
+      {founding && (
+        <Card sx={{ mb: 3, outline: 2, outlineStyle: 'solid', outlineColor: 'warning.main' }}>
+          <CardContent sx={{ p: 3, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <Typography variant="h6">Founding member</Typography>
+                <Chip size="small" color="warning" label={`${founding.limit - founding.taken} of ${founding.limit} spots left`} />
+              </Box>
+              <Typography variant="h4" component="p" sx={{ my: 1 }}>
+                {formatMoney(founding.price.amount)}
+                <Typography component="span" color="text.secondary">
+                  {' '}
+                  / year
+                </Typography>
+              </Typography>
+              <Typography color="text.secondary">
+                Our launch price for the first {founding.limit} members, the same plan as Annual for less. It renews at this price for as long as you stay subscribed.
+              </Typography>
+            </Box>
+            <Button component={RouterLink} to={cta.to} variant="contained" size="large" sx={{ flexShrink: 0 }}>
+              {me ? 'Claim a founding spot' : 'Start free, then claim it'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, mb: { xs: 4, md: 6 } }}>
         <Card>
@@ -99,7 +126,7 @@ export function PricingPage() {
       <Card sx={{ mb: { xs: 4, md: 6 } }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Both plans include everything
+            Every plan includes everything
           </Typography>
           <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
             {features.map((feature) => (
