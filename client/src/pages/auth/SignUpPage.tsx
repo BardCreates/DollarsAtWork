@@ -8,7 +8,7 @@ import { muiField } from '../../components/formHelpers';
 import { useSignUp } from '../../auth/auth';
 import { passwordRule } from '../../auth/passwordRule';
 import { ApiError, errorMessage } from '../../api/client';
-import { cleanSignupSource } from '../../lib/signUp';
+import { cleanSignupSource, currentReferral } from '../../lib/signUp';
 
 const schema = z
   .object({
@@ -26,7 +26,8 @@ export function SignUpPage() {
   const navigate = useNavigate();
   const signUp = useSignUp();
   const [params] = useSearchParams();
-  const source = cleanSignupSource(params.get('from'));
+  // The link they arrived through wins over the page they clicked from, so a creator's share is credited.
+  const source = currentReferral() ?? cleanSignupSource(params.get('from'));
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
