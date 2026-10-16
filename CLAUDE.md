@@ -34,8 +34,7 @@ and decisions already made. Don't re-ask decided questions.
 - Fonts are self-hosted via `@fontsource/inter` and `@fontsource/coiny` (main.tsx); the Google Fonts links and the
   Security page's "One honest note" are gone.
 - Still open for launch, all waiting on the owner: Azure resources + domain, a Resend account (verify the domain,
-  set `Email__ResendApiKey` and `Email__From` on the host), error tracking (Sentry: `dotnet add package Sentry.AspNetCore`,
-  `builder.WebHost.UseSentry()`, DSN in `Sentry__Dsn`), legal review of `LegalPages.tsx` (filled in Oct 15:
+  set `Email__ResendApiKey` and `Email__From` on the host), legal review of `LegalPages.tsx` (filled in Oct 15:
   Dollars at Work, dollarsatworkapp@gmail.com, Arkansas law, 30-day first-payment refund; not lawyer-reviewed), live Stripe prices ($7 monthly, $59 annual, $49 founding x200),
   registering the production webhook endpoint.
 
@@ -90,6 +89,8 @@ and decisions already made. Don't re-ask decided questions.
   are counted from Stripe (subscriptions on that price past "incomplete"), cached a minute, so the cap is soft. /billing/prices
   returns founding {price, taken, limit, open}; checkout takes plan monthly|annual|founding and refuses founding once full.
   Checkout allows Stripe promotion codes and only asks for a card when something is owed (a 100% code needs none).
+- Error tracking (Oct 15): Sentry.AspNetCore, on only when Sentry:Dsn is set (Program.cs). No PII, no request bodies, no
+  tracing. The Privacy Policy names Sentry; if the settings change, change that line too.
 
 ## What we compete on
 
