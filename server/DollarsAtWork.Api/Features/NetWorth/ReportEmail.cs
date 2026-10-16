@@ -4,8 +4,11 @@ using DollarsAtWork.Api.Domain;
 
 namespace DollarsAtWork.Api.Features.NetWorth;
 
-/// <summary>The few forward-looking numbers only the browser can work out (the projection engine lives there).</summary>
-public record ReportEmailRequest(int? DebtFreeMonth, decimal? NetWorthIn10Years);
+/// <summary>
+/// The few forward-looking numbers only the browser can work out (the projection engine lives there).
+/// DebtFreeOn is the month the browser showed ("2027-11"), so the email names the same month.
+/// </summary>
+public record ReportEmailRequest(int? DebtFreeMonth, decimal? NetWorthIn10Years, string? DebtFreeOn = null);
 
 /// <summary>Writes the monthly check-in recap as a plain-text email, from the snapshots on record.</summary>
 public static class ReportEmail
@@ -59,7 +62,7 @@ public static class ReportEmail
 
         var ahead = new List<EmailLayout.Row>();
         if (request.DebtFreeMonth is { } months and > 0)
-            ahead.Add(new EmailLayout.Row("Debt-free", Month(DateOnly.FromDateTime(now.UtcDateTime.AddMonths(months)))));
+            ahead.Add(new EmailLayout.Row("Debt-free", EmailDates.MonthFromNow(months, request.DebtFreeOn, now)));
         if (request.NetWorthIn10Years is { } ten)
             ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)}"));
 

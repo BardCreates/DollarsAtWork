@@ -12,12 +12,14 @@ import { ProjectionChart } from '../dashboard/ProjectionChart';
 import { TimelineCard } from '../dashboard/TimelineCard';
 import { TrialCta } from '../tools/TrialCta';
 import { SampleImpactCard, useSampleImpact } from './SampleImpactCard';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /**
  * A sample plan anyone can play with, no account needed. All numbers are made up and nothing is saved:
  * it runs the same projection engine as the real app on a fixed example person.
  */
 export function DemoPage() {
+  usePageMeta('Try a sample plan', 'Play with a made-up monthly plan and watch the debt-free date and 10-year net worth move. No account needed.');
   useRecordVisit('visit_demo');
   const { data: me } = useMe();
   const [year, setYear] = useState(10);

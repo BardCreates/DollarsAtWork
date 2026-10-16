@@ -28,10 +28,11 @@ import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
-import type { FreedMoneyDestination } from '../../lib/projection';
+import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
 import { debtRollovers } from '../../lib/rollover';
 import { RolloverList } from '../../components/RolloverList';
 import { useNetWorth } from '../dashboard/networth';
+import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import { DebtBalanceChart } from './DebtBalanceChart';
 import { DebtDialog } from './DebtDialog';
 import { DebtList } from './DebtList';
@@ -53,8 +54,15 @@ const SUBTITLE = 'Use your Debt allocation to pay everything off faster.';
 
 export function DebtPage() {
   const { data, isPending, isError, error, refetch } = useDebts();
+  // The rest of the plan, so this page projects exactly what the dashboard does. If it fails to load,
+  // the page still works, projecting this module alone.
+  const whole = useDashboardData();
+  const wholeInput = useMemo(
+    () => (whole.data && data ? buildProjectionInput({ ...whole.data, debts: data }, false) : undefined),
+    [whole.data, data],
+  );
 
-  if (isPending) {
+  if (isPending || whole.isPending) {
     return (
       <>
         <PageHeader title="Debt" subtitle={SUBTITLE} />
@@ -76,13 +84,13 @@ export function DebtPage() {
     );
   }
 
-  return <DebtModule data={data} />;
+  return <DebtModule data={data} whole={wholeInput} />;
 }
 
-function DebtModule({ data }: { data: DebtsData }) {
+function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput }) {
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
-  const projection = useDebtProjection(data);
+  const projection = useDebtProjection(data, whole);
 
   // Where the money goes once every debt is gone is the user's own setting (Dashboard > Assumptions).
   const { data: netWorth } = useNetWorth();
@@ -136,6 +144,12 @@ function DebtModule({ data }: { data: DebtsData }) {
             <Alert severity="warning" sx={{ mb: 3 }}>
               Your plan gives Debt {formatMoney(data.monthlyBudget)} a month, but your minimum payments add up to {formatMoney(projection.minimumsDue)}.
               Raise the Debt amount in Plan to cover them.
+            </Alert>
+          )}
+          {projection.planned.warnings.debtGrowing && (
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              At least one debt is getting less each month than the interest it charges, so it grows instead of shrinking. Check its minimum
+              payment, or give Debt more in Plan.
             </Alert>
           )}
 

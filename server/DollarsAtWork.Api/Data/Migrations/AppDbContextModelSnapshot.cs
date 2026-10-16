@@ -72,6 +72,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<DateTimeOffset?>("NudgeEmailSentAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<bool>("OnboardingEmailsOff")
+                        .HasColumnType("bit");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 

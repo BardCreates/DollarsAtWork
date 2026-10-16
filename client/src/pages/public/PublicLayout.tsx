@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { signUpPath, sourceFromPath } from '../../lib/signUp';
-import { Box, Button, Container, Link } from '@mui/material';
+import { Box, Button, Container, Divider, IconButton, Link, Menu, MenuItem } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { Wordmark } from '../../components/Wordmark';
 import { useMe } from '../../auth/auth';
 
@@ -35,6 +36,41 @@ const visitorLinks = [
   { to: '/help', label: 'Help' },
 ];
 
+/**
+ * The visitor's way around on a phone or tablet, where the links don't fit in the header: one small menu
+ * with the same links (and Sign in on the narrowest screens, so "Start free" always has room).
+ */
+function VisitorMenu() {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const close = () => setAnchor(null);
+  return (
+    <>
+      <IconButton
+        color="inherit"
+        aria-label="Menu"
+        aria-haspopup="true"
+        aria-expanded={anchor ? 'true' : undefined}
+        aria-controls={anchor ? 'visitor-menu' : undefined}
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{ display: { xs: 'inline-flex', md: 'none' } }}
+      >
+        <MenuIcon />
+      </IconButton>
+      <Menu id="visitor-menu" anchorEl={anchor} open={!!anchor} onClose={close} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        {visitorLinks.map((link) => (
+          <MenuItem key={link.to} component={RouterLink} to={link.to} onClick={close}>
+            {link.label}
+          </MenuItem>
+        ))}
+        <Divider sx={{ display: { sm: 'none' } }} />
+        <MenuItem component={RouterLink} to="/sign-in" onClick={close} sx={{ display: { sm: 'none' } }}>
+          Sign in
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
 /** Frame for pages anyone can read: home, pricing, terms, privacy, help. */
 export function PublicLayout({ children, maxWidth = 'md' }: { children: ReactNode; maxWidth?: 'sm' | 'md' | 'lg' }) {
   const { data: me } = useMe();
@@ -42,9 +78,9 @@ export function PublicLayout({ children, maxWidth = 'md' }: { children: ReactNod
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 0%, rgba(25,195,125,0.12) 0%, rgba(24,26,32,0) 55%)' }}>
-      <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 2 }}>
+      <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: { xs: 1, sm: 2 }, py: 2 }}>
         <Box component={RouterLink} to="/" sx={{ textDecoration: 'none', display: 'flex', minWidth: 0 }} aria-label="Dollars at Work home">
-          <Wordmark />
+          <Wordmark roomy={!!me} />
         </Box>
         <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, flexShrink: 0 }}>
           {!me &&
@@ -59,12 +95,13 @@ export function PublicLayout({ children, maxWidth = 'md' }: { children: ReactNod
             </Button>
           ) : (
             <>
-              <Button component={RouterLink} to="/sign-in" variant="outlined" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 } }}>
+              <Button component={RouterLink} to="/sign-in" variant="outlined" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 }, display: { xs: 'none', sm: 'inline-flex' } }}>
                 Sign in
               </Button>
-              <Button component={RouterLink} to={signUpPath(sourceFromPath(pathname))} variant="contained" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 }, display: { xs: 'none', sm: 'inline-flex' } }}>
+              <Button component={RouterLink} to={signUpPath(sourceFromPath(pathname))} variant="contained" size="medium" sx={{ minWidth: 0, px: { xs: 1.25, sm: 2.5 }, whiteSpace: 'nowrap' }}>
                 Start free
               </Button>
+              <VisitorMenu />
             </>
           )}
         </Box>

@@ -13,6 +13,7 @@ import { muiField } from '../../components/formHelpers';
 import { affiliateNote, useJoinWaitlist } from '../../features/waitlist/waitlist';
 import { PublicLayout } from './PublicLayout';
 import { SITE } from './siteInfo';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /**
  * The page outreach emails point creators and coaches to: the offer, how it works, what we ask, and a box to ask
@@ -27,7 +28,7 @@ const offer: { icon: ReactNode; title: string; body: string }[] = [
 
 const steps = [
   { title: 'Ask for a link', body: 'Fill in the box at the bottom of this page. Hannah emails your link within two days.' },
-  { title: 'Share it', body: 'Your link carries ?from=your-name. When someone signs up after arriving through it, we record that on their account.' },
+  { title: 'Share it', body: 'Your link carries ?from=your-name. When someone arrives through it and signs up during that visit, we record that on their account.' },
   {
     title: 'Get paid monthly',
     body: 'Each month we pay out your share of the previous month’s active subscriptions, by PayPal or bank transfer, once your balance reaches $20.',
@@ -44,9 +45,12 @@ const questions = [
   { q: 'When do I get paid?', a: 'Once a month, for the previous month’s active subscriptions, as soon as your balance reaches $20. By PayPal or bank transfer, whichever you prefer.' },
   {
     q: 'What counts as "from my link"?',
-    a: 'A sign-up whose first visit used your link. We read the from tag on the address and keep it on the new account. There are no tracking cookies and no pixels.',
+    a: 'A sign-up that happens in the same visit as a click on your link. The from tag is held in that browser tab until it closes, then saved on the new account. It is not a cookie, so a person who leaves and comes back later without your link does not count. No pixels either.',
   },
-  { q: 'Can my audience get a discount?', a: 'There are no public discount codes. The offer is the 30-day free trial, and the founding price while spots last.' },
+  {
+    q: 'Can my audience get a discount?',
+    a: 'Not a code of their own. Checkout accepts codes, but we use them only for partner accounts like yours, and there are no public discounts. What your audience gets is the 30-day free trial, no card needed, and the founding price while spots last.',
+  },
   { q: 'How do I stop?', a: `Email ${SITE.contact} any time. We take your link down and pay out whatever you’re owed.` },
 ];
 
@@ -121,6 +125,7 @@ function AskForLink() {
 }
 
 export function AffiliatesPage() {
+  usePageMeta('Affiliates: earn 30%', 'For creators and coaches: a free account and 30% of every subscription from your link for 12 months.');
   return (
     <PublicLayout>
       <Box sx={{ textAlign: 'center', mb: { xs: 5, md: 7 } }}>

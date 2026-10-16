@@ -114,6 +114,31 @@ and decisions already made. Don't re-ask decided questions.
   "Your dollars clocked in" with them. The hourly worker (Common/OnboardingEmails.cs, run by TrialEmailWorker) sends "Your plan
   is waiting" to confirmed accounts 1 hour to 3 days old that never got the welcome, and "Try one what-if" to trialing accounts
   3 to 10 days old. /auth/me carries welcomeEmailSent. The help trial article and the Privacy Policy list these emails.
+- Release 1 fixes (Oct 16 audit, R1–R8): the Debt and Savings pages project from the whole plan (buildProjectionInput with
+  the page's own debts or goals swapped in), so their dates always match the dashboard; they fall back to the module alone
+  only if the rest fails to load. The waitlist box is now "Not ready yet? Get the occasional money note" (new articles and
+  launch deals), quieter than the trial button. index.html carries site-wide Open Graph / Twitter tags with
+  public/og-image.png (1200x630); lib/usePageMeta gives every public page its own title and description; public/robots.txt,
+  and sitemap.xml is written at build time by the plugin in vite.config.ts from lib/sitemap.ts (public pages + published
+  posts, tested). Visitor header on phones: "Start free" plus a menu (Calculators, Pricing, Blog, Help, Sign in under 600px).
+  Pricing shows Annual first and the 30-day refund line. Billing: an Active row lapses to Expired 3 days after its
+  CurrentPeriodEnd if Stripe never renews it (Subscription.ActiveGrace), but the hourly worker first asks Stripe about every
+  Active row past its period (BillingService.SyncLapsingAsync), so a missed webhook can't lock out a payer; Stripe "paused" maps to Expired; checkout expires
+  the customer's open sessions first and sends anyone with a live Stripe subscription to the portal instead. The owner
+  (App:OwnerEmail) must also have a confirmed email.
+- Release 2 fixes (Oct 16 audit, R9–R15): emails never name a bare UTC day. Common/EmailDates: trial-end emails give a
+  time in US Central ("Tuesday, November 17 at 9:12 pm Central"); debt-free months in the welcome and report emails reuse
+  the month the browser showed (debtFreeOn, "2027-11"); check-ins send the browser's own date (CheckInRequest.Today). The
+  billing card and trial banner say when the trial ends in the browser's time (lib/dates formatMomentFromNow). The dashboard
+  shows a "check your inbox" line with Resend while the email is unconfirmed (features/account/ConfirmEmailNotice). Unknown
+  addresses show NotFoundPage in the visitor frame (route `*` lives under VisitorShell), not a bounce to sign-in. Program.cs
+  adds nosniff, frame-ancestors 'none' + X-Frame-Options DENY, Referrer-Policy same-origin and a Permissions-Policy to every
+  response. Onboarding emails (welcome, plan waiting, what-if nudge) carry an unsubscribe link and List-Unsubscribe headers
+  (Common/EmailUnsubscribe: a Data Protection-sealed user id; /unsubscribe page asks first; POST /api/email/unsubscribe sets
+  AppUser.OnboardingEmailsOff, migration AddOnboardingEmailsOff). Engine: the yearly raise is first paid in month 13; a
+  debtGrowing warning when a payment misses the interest (shown on the Debt page). The Invest page passes the raise.
+  formatMoney never prints -$0. Production refuses an Email:ResendApiKey without "re_"; RetentionService (hourly, via
+  TrialEmailWorker) deletes UsageEvents after 400 days and ProcessedStripeEvents after 90; LogMask hides email addresses in logs.
 
 ## What we compete on
 

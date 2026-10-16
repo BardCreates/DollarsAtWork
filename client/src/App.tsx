@@ -12,6 +12,7 @@ import { PricingPage } from './pages/public/PricingPage';
 import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
 import { SecurityPage } from './pages/public/SecurityPage';
 import { AffiliatesPage } from './pages/public/AffiliatesPage';
+import { UnsubscribePage } from './pages/public/UnsubscribePage';
 import { WelcomePage } from './features/setup/WelcomePage';
 import { DemoPage } from './features/demo/DemoPage';
 import { ToolsPage } from './features/tools/ToolsPage';
@@ -50,6 +51,7 @@ export default function App() {
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/security" element={<SecurityPage />} />
       <Route path="/affiliates" element={<AffiliatesPage />} />
+      <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
       {/* Open to everyone, in the app frame when signed in and the public frame when not */}
       <Route element={<VisitorShell />}>
@@ -59,6 +61,8 @@ export default function App() {
         <Route path="/help/:slug" element={<HelpArticlePage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
+        {/* Unknown addresses: the visitor frame for visitors (not a bounce to sign-in), the app frame when signed in */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       {/* The home page for visitors, the dashboard once signed in */}
@@ -75,7 +79,6 @@ export default function App() {
           <Route path="/what-if" element={<ScenariosPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/numbers" element={<NumbersPage />} />
-          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
     </Routes>

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { monthlyNeededForGoal, project, type ProjectionResult, type SavingsSplitMode as EngineSplitMode } from '../../lib/projection';
+import { monthlyNeededForGoal, project, type ProjectionInput, type ProjectionResult, type SavingsSplitMode as EngineSplitMode } from '../../lib/projection';
 
 export type SavingsSplitMode = 'Priority' | 'Percent';
 
@@ -128,11 +128,15 @@ export interface SavingsProjection {
   sharesTotal: number;
 }
 
-/** Runs the shared projection engine for the goals alone. */
-export function useSavingsProjection(data: SavingsData): SavingsProjection {
+/**
+ * Runs the shared projection engine. `whole` is the dashboard's input for the whole plan (built with this
+ * page's goals), so goal dates here match the dashboard's: money freed by paid-off debts can reach the goals
+ * there, and must here too. Without it (the rest of the plan failed to load) the goals are projected alone.
+ */
+export function useSavingsProjection(data: SavingsData, whole?: ProjectionInput): SavingsProjection {
   return useMemo(() => {
     const goals = data.goals.map((g) => ({ id: g.id, target: g.targetAmount, balance: g.currentBalance, apy: g.apy, sharePercent: g.sharePercent }));
-    const result = project({
+    const result = whole ? project({ ...whole, months: SAVINGS_HORIZON_MONTHS, todaysDollars: false }) : project({
       months: SAVINGS_HORIZON_MONTHS,
       monthlyIncome: 0,
       savingsMonthly: data.monthlyAmount,
@@ -142,7 +146,7 @@ export function useSavingsProjection(data: SavingsData): SavingsProjection {
       savingsSplitMode: data.splitMode.toLowerCase() as EngineSplitMode,
       debts: [],
       accounts: [],
-      // Only the goals matter on this page; what happens to the money afterwards is the dashboard's job.
+      // Fallback only (the rest of the plan failed to load): the goals alone.
       savingsDoneDestination: 'remaining',
     });
 
@@ -166,5 +170,5 @@ export function useSavingsProjection(data: SavingsData): SavingsProjection {
       allFullMonth: fullMonths.every((m) => m !== null) ? Math.max(0, ...(fullMonths as number[])) : null,
       sharesTotal: data.goals.filter((g) => g.currentBalance < g.targetAmount).reduce((sum, g) => sum + g.sharePercent, 0),
     };
-  }, [data]);
+  }, [data, whole]);
 }

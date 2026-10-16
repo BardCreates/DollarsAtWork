@@ -6,6 +6,7 @@ import { useMe } from '../../auth/auth';
 import { useRecordVisit } from '../../lib/usage';
 import { CompoundCalculator, DripCalculator, HabitCalculator, LoanCompareCalculator, PayoffCalculator } from './calculators';
 import { TrialCta } from './TrialCta';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const tools = [
   {
@@ -52,6 +53,7 @@ type ToolId = (typeof tools)[number]['id'];
  * /tools?tool=payoff. Visitors who aren't signed in get an invitation to try the real thing under each one.
  */
 export function ToolsPage() {
+  usePageMeta('Free money calculators', 'Free calculators for compound interest, early loan payoff, comparing loans, dividend reinvesting and the cost of a habit. No account needed.');
   useRecordVisit('visit_tools');
   const { data: me } = useMe();
   const [params, setParams] = useSearchParams();

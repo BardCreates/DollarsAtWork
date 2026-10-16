@@ -2,8 +2,11 @@ import { Box, Typography } from '@mui/material';
 import mascot from '../assets/mascot.png';
 import { brand } from '../theme';
 
-/** Mascot + "Dollars at Work" in the brand font. */
-export function Wordmark({ size = 'medium' }: { size?: 'medium' | 'large' }) {
+/**
+ * Mascot + "Dollars at Work" in the brand font. `roomy={false}` is for headers that also carry buttons on a
+ * phone: the name gets smaller there and, on the narrowest phones, only the mascot shows.
+ */
+export function Wordmark({ size = 'medium', roomy = true }: { size?: 'medium' | 'large'; roomy?: boolean }) {
   const large = size === 'large';
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: large ? 1.5 : 1.25, userSelect: 'none' }}>
@@ -24,6 +27,7 @@ export function Wordmark({ size = 'medium' }: { size?: 'medium' | 'large' }) {
           fontSize: large ? { xs: '1.5rem', sm: '2.1rem' } : { xs: '1.25rem', sm: '1.6rem', md: '1.8rem' },
           textShadow: '0 2px 8px rgba(25,195,125,0.12)',
           whiteSpace: 'nowrap',
+          ...(!roomy && { fontSize: { xs: '0.95rem', sm: '1.6rem', md: '1.8rem' }, letterSpacing: { xs: 1, sm: 1.5 }, '@media (max-width: 379.95px)': { display: 'none' } }),
         }}
       >
         Dollars at Work

@@ -47,12 +47,12 @@ describe('shouldSendWelcome', () => {
 
 describe('outlookForEmail', () => {
   it('rounds the 10-year figure to whole dollars and keeps the debt-free month when there is debt', () => {
-    // 52,300.6 rounds to 52,301; 14 months stays 14.
-    expect(outlookForEmail(outlook)).toEqual({ debtFreeMonth: 14, netWorthIn10Years: 52_301 });
+    // 52,300.6 rounds to 52,301; 14 months stays 14. Seen on Oct 31, 2026 (local time), 14 months on is December 2027.
+    expect(outlookForEmail(outlook, new Date(2026, 9, 31, 21, 0))).toEqual({ debtFreeMonth: 14, debtFreeOn: '2027-12', netWorthIn10Years: 52_301 });
   });
 
   it('leaves the debt-free month out when there is no debt, even though the engine says month 0', () => {
-    expect(outlookForEmail({ hasDebt: false, debtFreeMonth: 0, netWorthIn10Years: 1_000 })).toEqual({ debtFreeMonth: null, netWorthIn10Years: 1_000 });
+    expect(outlookForEmail({ hasDebt: false, debtFreeMonth: 0, netWorthIn10Years: 1_000 })).toEqual({ debtFreeMonth: null, debtFreeOn: null, netWorthIn10Years: 1_000 });
   });
 });
 

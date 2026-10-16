@@ -13,7 +13,9 @@ export function roundCents(value: number): number {
 export function formatMoney(value: number, options?: { cents?: boolean }): string {
   const rounded = roundCents(value);
   const showCents = options?.cents ?? !Number.isInteger(rounded);
-  return (showCents ? withCents : wholeDollars).format(rounded);
+  // Anything that shows as zero is zero: never "-$0" (or "-$0.00") from a tiny negative left over by the maths.
+  const shown = showCents ? rounded : Math.round(rounded);
+  return (showCents ? withCents : wholeDollars).format(shown === 0 ? 0 : rounded);
 }
 
 /** Share of a total as "12.5%", or a dash when there is no total to divide by. */

@@ -7,6 +7,7 @@ import { AuthLayout } from './AuthLayout';
 import { muiField } from '../../components/formHelpers';
 import { useSignIn } from '../../auth/auth';
 import { errorMessage } from '../../api/client';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const schema = z.object({
   email: z.string().trim().email('Enter a valid email address.'),
@@ -16,6 +17,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function SignInPage() {
+  usePageMeta('Sign in');
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/';

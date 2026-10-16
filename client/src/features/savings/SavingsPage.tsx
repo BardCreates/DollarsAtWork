@@ -30,10 +30,11 @@ import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney, formatPercent } from '../../lib/money';
-import type { FreedMoneyDestination } from '../../lib/projection';
+import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
 import { goalRollovers } from '../../lib/rollover';
 import { RolloverList } from '../../components/RolloverList';
 import { useNetWorth } from '../dashboard/networth';
+import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import { GoalDialog } from './GoalDialog';
 import { GoalList } from './GoalList';
 import { SavingsTimeline } from './SavingsTimeline';
@@ -54,8 +55,15 @@ const SUBTITLE = 'Turn your Savings allocation into finished goals.';
 
 export function SavingsPage() {
   const { data, isPending, isError, error, refetch } = useSavings();
+  // The rest of the plan, so this page projects exactly what the dashboard does. If it fails to load,
+  // the page still works, projecting this module alone.
+  const whole = useDashboardData();
+  const wholeInput = useMemo(
+    () => (whole.data && data ? buildProjectionInput({ ...whole.data, savings: data }, false) : undefined),
+    [whole.data, data],
+  );
 
-  if (isPending) {
+  if (isPending || whole.isPending) {
     return (
       <>
         <PageHeader title="Savings" subtitle={SUBTITLE} />
@@ -77,15 +85,15 @@ export function SavingsPage() {
     );
   }
 
-  return <SavingsModule data={data} />;
+  return <SavingsModule data={data} whole={wholeInput} />;
 }
 
 type Editing = { goal?: Goal; starter?: Partial<GoalFields> } | null;
 
-function SavingsModule({ data }: { data: SavingsData }) {
+function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionInput }) {
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
-  const projection = useSavingsProjection(data);
+  const projection = useSavingsProjection(data, whole);
 
   // Where the money goes once every goal is full is the user's own setting (Dashboard > Assumptions).
   const { data: netWorth } = useNetWorth();

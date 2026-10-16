@@ -173,6 +173,19 @@ describe('rule 2: debts accrue interest and get minimums plus extra', () => {
   it('does not warn when the budget covers the minimums', () => {
     expect(project(oneLoan).warnings.debtBudgetBelowMinimums).toBe(false);
   });
+
+  it('warns when a payment is less than the interest, so the balance grows', () => {
+    // 10,000 at 24% APR charges 10,000 × 0.24 / 12 = 200 a month. Paying 150 leaves it at 10,050 after month 1.
+    const result = project(plan({ months: 2, debtMonthly: 150, debts: [{ id: 'card', balance: 10_000, apr: 24, minPayment: 150 }] }));
+    expect(result.warnings.debtGrowing).toBe(true);
+    expect(result.points[1].debt).toBeCloseTo(10_050, 6);
+  });
+
+  it('does not warn when payments cover the interest', () => {
+    // Same card, 250 a month: 50 more than the 200 interest, so it shrinks.
+    const result = project(plan({ months: 2, debtMonthly: 250, debts: [{ id: 'card', balance: 10_000, apr: 24, minPayment: 150 }] }));
+    expect(result.warnings.debtGrowing).toBe(false);
+  });
 });
 
 describe('rule 2: goals get their share and earn APY', () => {
@@ -386,33 +399,36 @@ describe("rule 5: today's dollars", () => {
 });
 
 describe('rule 5: yearly income raise', () => {
-  const raise = plan({ months: 24, monthlyIncome: 5_000, remaining: 200, incomeGrowthRate: 4 });
+  const raise = plan({ months: 25, monthlyIncome: 5_000, remaining: 200, incomeGrowthRate: 4 });
 
-  it('raises income on each anniversary and adds the extra to Remaining', () => {
+  it('pays a full first year at today\'s income, then raises it from month 13 and adds the extra to Remaining', () => {
     const { points } = project(raise);
-    expect(points[11].income).toBe(5_000);
-    expect(points[11].remaining).toBe(200);
-    expect(points[12].income).toBeCloseTo(5_200, 6); // 5,000 × 1.04
-    expect(points[12].remaining).toBeCloseTo(400, 6); // 200 + the 200 raise
-    expect(points[24].income).toBeCloseTo(5_408, 6); // 5,000 × 1.04²
+    // Months 1–12 are year one: all twelve at 5,000.
+    expect(points[12].income).toBe(5_000);
+    expect(points[12].remaining).toBe(200);
+    expect(points[13].income).toBeCloseTo(5_200, 6); // 5,000 × 1.04
+    expect(points[13].remaining).toBeCloseTo(400, 6); // 200 + the 200 raise
+    expect(points[24].income).toBeCloseTo(5_200, 6); // still year two
+    expect(points[25].income).toBeCloseTo(5_408, 6); // 5,000 × 1.04²
   });
 
   it('with no raise, income and Remaining stay put', () => {
     const { points } = project({ ...raise, incomeGrowthRate: 0 });
-    expect(points[24].income).toBe(5_000);
-    expect(points[24].remaining).toBe(200);
+    expect(points[25].income).toBe(5_000);
+    expect(points[25].remaining).toBe(200);
   });
 
   it('a higher income lifts the employer-match cap', () => {
     // Cap is 6% of income: 300 in year one, 312 after the 4% raise. Match is 50% of the capped amount.
     const { points } = project({
       ...raise,
-      months: 12,
+      months: 13,
       investmentsMonthly: 400,
       accounts: [{ id: '401k', balance: 0, expectedReturn: 0, sharePercent: 100, matchPercent: 50, matchLimitPercent: 6 }],
     });
-    // 11 months × 150, then one month × 156.
-    expect(points[12].matchedToDate).toBeCloseTo(11 * 150 + 156, 6);
+    // Year one: 12 months × 150. Month 13, after the raise: 156.
+    expect(points[12].matchedToDate).toBeCloseTo(12 * 150, 6);
+    expect(points[13].matchedToDate).toBeCloseTo(12 * 150 + 156, 6);
   });
 });
 

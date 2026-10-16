@@ -27,6 +27,12 @@ public class AppUser : IdentityUser<Guid>
 
     /// <summary>When the day-3 "try one what-if" nudge went out. Null until then.</summary>
     public DateTimeOffset? NudgeEmailSentAt { get; set; }
+
+    /// <summary>
+    /// True once the person used an unsubscribe link: no more onboarding emails (welcome, plan waiting, what-if nudge).
+    /// Account, trial-ending and billing emails still go out; those are about the account itself.
+    /// </summary>
+    public bool OnboardingEmailsOff { get; set; }
 }
 
 /// <summary>
@@ -317,6 +323,12 @@ public class Subscription
 {
     public const int TrialDays = 30;
     public static readonly TimeSpan PastDueGrace = TimeSpan.FromDays(7);
+    /// <summary>
+    /// How long an Active row outlives its paid period with no word from Stripe. A renewal normally arrives by
+    /// webhook (new period end) well inside this; if none ever does, the account lapses on its own instead of
+    /// staying Active for ever.
+    /// </summary>
+    public static readonly TimeSpan ActiveGrace = TimeSpan.FromDays(3);
 
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
@@ -336,6 +348,7 @@ public class Subscription
     public SubscriptionStatus EffectiveStatus(DateTimeOffset now) => Status switch
     {
         SubscriptionStatus.Trialing when now >= TrialEndsAt => SubscriptionStatus.Expired,
+        SubscriptionStatus.Active when CurrentPeriodEnd is { } paidTo && now >= paidTo + ActiveGrace => SubscriptionStatus.Expired,
         SubscriptionStatus.PastDue when PastDueSince is { } since && now >= since + PastDueGrace => SubscriptionStatus.Expired,
         SubscriptionStatus.Canceled when CurrentPeriodEnd is not { } end || now >= end => SubscriptionStatus.Expired,
         _ => Status,

@@ -8,6 +8,7 @@ import { useMe } from '../../auth/auth';
 import { PublicLayout } from './PublicLayout';
 import { signUpPath } from '../../lib/signUp';
 import { SITE } from './siteInfo';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /**
  * Every statement on this page describes something the code does today. Keep it that way: if a claim stops being
@@ -45,6 +46,7 @@ const List = ({ children }: { children: ReactNode }) => (
 );
 
 export function SecurityPage() {
+  usePageMeta('Private by design', 'No bank login, no ad trackers. What Dollars at Work keeps, how it is protected, and how to take it with you.');
   const { data: me } = useMe();
 
   return (
@@ -81,7 +83,8 @@ export function SecurityPage() {
           <Point>You stay signed in with a cookie that scripts on a page can't read, and that is only ever sent to us.</Point>
           <Point>Five wrong passwords lock sign-in for 15 minutes, and sign-in attempts are rate-limited.</Point>
           <Point>Every request is tied to your signed-in account. Nothing you can type into the address bar will show you someone else's numbers.</Point>
-          <Point>Password-reset and email-change links expire and work once.</Point>
+          <Point>Password-reset and email-change links expire and work once, and our pages never pass their address on to another site.</Point>
+          <Point>Other sites can't load our pages inside a frame of their own, so nobody can dress up a fake screen around your account.</Point>
           <Point>Our typefaces are served from our own site. Opening a page here tells no third party you visited.</Point>
           <Point>
             We count how many people open our public pages and use the calculators with an anonymous event of our own: its name, the time and the referral

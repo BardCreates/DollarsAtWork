@@ -1,5 +1,6 @@
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Box, Breadcrumbs, Button, Card, CardContent, Link, Typography } from '@mui/material';
+import { usePageMeta } from '../../lib/usePageMeta';
 import { HELP_ARTICLES, findArticle } from './articles';
 import { HelpContent } from './HelpContent';
 
@@ -7,6 +8,7 @@ import { HelpContent } from './HelpContent';
 export function HelpArticlePage() {
   const { slug } = useParams();
   const article = findArticle(slug);
+  usePageMeta(article ? `${article.title} · Help` : 'Help', article?.summary);
 
   if (!article) {
     return (

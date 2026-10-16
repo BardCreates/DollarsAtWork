@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { project, type DebtStrategy as EngineStrategy, type ProjectionResult } from '../../lib/projection';
+import { project, type DebtStrategy as EngineStrategy, type ProjectionInput, type ProjectionResult } from '../../lib/projection';
 
 export type DebtType = 'CreditCard' | 'Auto' | 'Student' | 'Mortgage' | 'Medical' | 'Other';
 export type DebtStrategy = 'Snowball' | 'Avalanche' | 'Custom';
@@ -117,8 +117,13 @@ export interface DebtProjection {
   minimumsDue: number;
 }
 
-/** Runs the shared projection engine for the debts alone. */
-export function useDebtProjection(data: DebtsData): DebtProjection {
+/**
+ * Runs the shared projection engine. `whole` is the dashboard's input for the whole plan (built with this
+ * page's debts), so the debt-free date here matches the dashboard's: money freed by full savings goals can
+ * reach the debts there, and must here too. Without it (the rest of the plan failed to load) the debts are
+ * projected alone.
+ */
+export function useDebtProjection(data: DebtsData, whole?: ProjectionInput): DebtProjection {
   return useMemo(() => {
     const input = {
       months: DEBT_HORIZON_MONTHS,
@@ -130,14 +135,14 @@ export function useDebtProjection(data: DebtsData): DebtProjection {
       accounts: [],
       debts: data.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment })),
       debtStrategy: data.strategy.toLowerCase() as EngineStrategy,
-      // Only the debts matter on this page; what happens to the money afterwards is the dashboard's job.
+      // Fallback only (the rest of the plan failed to load): the debts alone.
       debtDoneDestination: 'remaining' as const,
     };
     return {
-      planned: project(input),
+      planned: project(whole ? { ...whole, months: DEBT_HORIZON_MONTHS, todaysDollars: false } : input),
       minimumsOnly: project({ ...input, minimumsOnly: true }),
       totalDebt: data.debts.reduce((sum, d) => sum + d.balance, 0),
       minimumsDue: data.debts.reduce((sum, d) => sum + Math.min(d.minPayment, d.balance), 0),
     };
-  }, [data]);
+  }, [data, whole]);
 }

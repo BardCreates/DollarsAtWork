@@ -14,4 +14,5 @@ public record DeleteAccountRequest(string? Password);
 /// The person's own forward-looking numbers for the hour-1 welcome email, worked out by the browser
 /// (the projection engine lives there). Either may be missing.
 /// </summary>
-public record WelcomeEmailRequest(int? DebtFreeMonth, decimal? NetWorthIn10Years);
+/// <summary>DebtFreeOn is the month the browser showed ("2027-11"), so the email names the same month.</summary>
+public record WelcomeEmailRequest(int? DebtFreeMonth, decimal? NetWorthIn10Years, string? DebtFreeOn = null);

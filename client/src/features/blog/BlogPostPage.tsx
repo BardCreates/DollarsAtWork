@@ -7,7 +7,7 @@ import { POST_CTAS } from './ctas';
 import { MarkdownContent } from './MarkdownContent';
 import { PostCtaCard } from './PostCtaCard';
 import { findPost, formatPostDate, visiblePosts } from './posts';
-import { usePageMeta } from './usePageMeta';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /** One post, with a way into the app for visitors and links to the newest other posts. */
 export function BlogPostPage() {

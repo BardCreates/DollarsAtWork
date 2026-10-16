@@ -4,7 +4,8 @@ using System.Text;
 namespace DollarsAtWork.Api.Common;
 
 /// <summary>An email ready to send: the same message as plain text and as branded HTML.</summary>
-public record EmailMessage(string Subject, string Text, string Html);
+/// <summary>An email ready to send. OneClickUnsubscribeUrl, when set, goes in the List-Unsubscribe headers.</summary>
+public record EmailMessage(string Subject, string Text, string Html, string? OneClickUnsubscribeUrl = null);
 
 /// <summary>
 /// Builds every app email in the Dollars at Work look: dark card, mascot and wordmark, one green button,
@@ -36,6 +37,7 @@ public sealed class EmailLayout(string appUrl)
     private readonly StringBuilder _html = new();
     private string _preheader = "";
     private string _footerNote = "";
+    private (string Page, string OneClick)? _unsubscribe;
 
     private static string E(string value) => WebUtility.HtmlEncode(value);
 
@@ -129,6 +131,12 @@ public sealed class EmailLayout(string appUrl)
     /// <summary>Why this person is getting the email, shown in the footer.</summary>
     public EmailLayout FooterNote(string text) { _footerNote = text; return this; }
 
+    /// <summary>
+    /// For optional emails (onboarding tips): an unsubscribe link in the footer, and the one-click address mail apps use
+    /// (List-Unsubscribe). Account and billing emails don't get one.
+    /// </summary>
+    public EmailLayout Unsubscribe(string pageUrl, string oneClickUrl) { _unsubscribe = (pageUrl, oneClickUrl); return this; }
+
     public EmailMessage Build(string subject)
     {
         var text = new StringBuilder();
@@ -138,6 +146,7 @@ public sealed class EmailLayout(string appUrl)
         text.AppendLine("Dollars at Work: put every dollar to work. Private by design, no bank login.");
         text.AppendLine($"Questions? Write to {SupportAddress}.");
         if (_footerNote.Length > 0) text.AppendLine(_footerNote);
+        if (_unsubscribe is { } off) text.AppendLine($"Don't want these tips? Unsubscribe: {off.Page}");
         text.AppendLine(_appUrl);
 
         var mascot = $"{_appUrl}/email/mascot.png";
@@ -175,9 +184,10 @@ public sealed class EmailLayout(string appUrl)
             $"<strong style=\"color:{Ink};\">Dollars at Work</strong> &middot; Private by design, no bank login.<br>" +
             $"Questions? Write to <a href=\"mailto:{SupportAddress}\" style=\"color:{Green};text-decoration:none;\">{SupportAddress}</a>." +
             (_footerNote.Length > 0 ? $"<br>{E(_footerNote)}" : "") +
+            (_unsubscribe is { } link ? $"<br>Don't want these tips? <a href=\"{E(link.Page)}\" target=\"_blank\" style=\"color:{Muted};text-decoration:underline;\">Unsubscribe</a>." : "") +
             "</td></tr>");
 
         html.Append("</table></td></tr></table></body></html>");
-        return new EmailMessage(subject, text.ToString(), html.ToString());
+        return new EmailMessage(subject, text.ToString(), html.ToString(), _unsubscribe?.OneClick);
     }
 }

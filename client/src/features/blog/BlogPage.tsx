@@ -5,7 +5,7 @@ import { useMe } from '../../auth/auth';
 import { useRecordVisit } from '../../lib/usage';
 import { WaitlistForm } from '../waitlist/WaitlistForm';
 import { formatPostDate, visiblePosts } from './posts';
-import { usePageMeta } from './usePageMeta';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /** The list of posts, newest first. Open to everyone. */
 export function BlogPage() {
@@ -26,7 +26,7 @@ export function BlogPage() {
             <Typography color="text.secondary" sx={{ mb: me ? 0 : 3 }}>
               Short, practical articles about paying off debt, saving and investing, written around the news that affects your money.
             </Typography>
-            {!me && <WaitlistForm source="blog" title="Want to hear when they're up?" body="Leave your email and we'll tell you when Dollars at Work launches." />}
+            {!me && <WaitlistForm source="blog" title="Want the first one?" body="Get the occasional money note: new articles as they go up, and launch deals. No account needed." />}
           </CardContent>
         </Card>
       ) : (

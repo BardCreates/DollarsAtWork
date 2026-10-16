@@ -8,6 +8,7 @@ import { formatMoney } from '../../lib/money';
 import { PublicLayout } from './PublicLayout';
 import { signUpPath } from '../../lib/signUp';
 import { useRecordVisit } from '../../lib/usage';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const features = [
   'A monthly plan that gives every dollar a job',
@@ -27,6 +28,7 @@ const questions = [
 ];
 
 export function PricingPage() {
+  usePageMeta('Pricing', 'One plan with everything: monthly or annual, after a 30-day free trial with no card.');
   useRecordVisit('visit_pricing');
   const { data: me } = useMe();
   const { data: prices } = usePrices();
@@ -89,19 +91,6 @@ export function PricingPage() {
       )}
 
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, mb: { xs: 4, md: 6 } }}>
-        <Card>
-          <CardContent sx={{ p: 3 }}>
-            <Typography variant="h6">Monthly</Typography>
-            <Typography variant="h4" component="p" sx={{ my: 1 }}>
-              {monthly ? formatMoney(monthly.amount) : '—'}
-              <Typography component="span" color="text.secondary">
-                {' '}
-                / month
-              </Typography>
-            </Typography>
-            <Typography color="text.secondary">Pay as you go. Cancel any time.</Typography>
-          </CardContent>
-        </Card>
         <Card sx={{ outline: 2, outlineStyle: 'solid', outlineColor: 'primary.main' }}>
           <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -118,7 +107,23 @@ export function PricingPage() {
             <Typography color="text.secondary">{annual ? `Works out to ${formatMoney(annual.amount / 12, { cents: true })} a month.` : 'One payment a year.'}</Typography>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6">Monthly</Typography>
+            <Typography variant="h4" component="p" sx={{ my: 1 }}>
+              {monthly ? formatMoney(monthly.amount) : '—'}
+              <Typography component="span" color="text.secondary">
+                {' '}
+                / month
+              </Typography>
+            </Typography>
+            <Typography color="text.secondary">Pay as you go. Cancel any time.</Typography>
+          </CardContent>
+        </Card>
       </Box>
+      <Typography color="text.secondary" sx={{ textAlign: 'center', mt: { xs: -2, md: -4 }, mb: { xs: 4, md: 6 } }}>
+        Not for you? Email us within 30 days of your first payment for a full refund.
+      </Typography>
       {prices && !prices.enabled && (
         <Typography color="text.secondary" sx={{ textAlign: 'center', mt: -2, mb: 4 }}>
           Prices are being finalized. The 30-day trial is open now.

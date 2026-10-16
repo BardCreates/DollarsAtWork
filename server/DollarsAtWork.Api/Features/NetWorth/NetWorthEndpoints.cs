@@ -177,7 +177,7 @@ public static class NetWorthEndpoints
         var liabilities = debts.Sum(d => d.Balance) + items.Where(i => i.Kind == OtherItemKind.Liability).Sum(i => i.Value);
 
         // One snapshot per calendar month: checking in again replaces it.
-        var today = DateOnly.FromDateTime(now.UtcDateTime);
+        var today = EmailDates.Today(request.Today, now);
         var monthStart = new DateOnly(today.Year, today.Month, 1);
         var snapshot = await db.NetWorthSnapshots.SingleOrDefaultAsync(s => s.UserId == userId && s.Date >= monthStart && s.Date < monthStart.AddMonths(1), ct);
         if (snapshot is null)
@@ -210,6 +210,8 @@ public static class NetWorthEndpoints
         CancellationToken ct)
     {
         var check = new Validation();
+        if (request.DebtFreeOn is { Length: > 7 })
+            check.Add("debtFreeOn", "That date isn't valid.");
         if (request.DebtFreeMonth is < 0 or > ReportEmail.MaxMonths)
             check.Add("debtFreeMonth", "That date isn't valid.");
         if (request.NetWorthIn10Years is { } ten && Math.Abs(ten) > ReportEmail.MaxNetWorth)

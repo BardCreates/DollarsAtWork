@@ -3,6 +3,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Link, Typography } from '@mui/material';
 import { PublicLayout } from './PublicLayout';
 import { SITE } from './siteInfo';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 /**
  * These pages describe what the app actually does. They are written for the launch but have not been reviewed by a
@@ -11,7 +12,7 @@ import { SITE } from './siteInfo';
 const DRAFT = SITE.draft;
 const COMPANY = SITE.company;
 const CONTACT = SITE.contact;
-const UPDATED = 'October 15, 2026';
+const UPDATED = 'October 16, 2026';
 
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -40,6 +41,7 @@ const H = ({ children }: { children: ReactNode }) => (
 const P = ({ children }: { children: ReactNode }) => <Typography component="p">{children}</Typography>;
 
 export function TermsPage() {
+  usePageMeta('Terms of Service');
   return (
     <LegalPage title="Terms of Service">
       <P>
@@ -126,6 +128,7 @@ export function TermsPage() {
 }
 
 export function PrivacyPage() {
+  usePageMeta('Privacy Policy', 'What Dollars at Work collects, why, who processes it and how to delete it.');
   return (
     <LegalPage title="Privacy Policy">
       <P>
@@ -139,10 +142,10 @@ export function PrivacyPage() {
         <li><strong>What you enter:</strong> your income, budget categories, savings goals, debts, investment accounts, other assets and liabilities, and the net-worth snapshots from your check-ins. These are numbers and names you type; we never see bank logins, account numbers or transactions.</li>
         <li><strong>Where you signed up:</strong> the page whose "start your free trial" button you used, such as a blog post or a calculator, or the name of the affiliate whose link brought you here, so we can see which pages are useful and pay affiliates their share. If you arrive through an affiliate's link, your browser keeps that short tag (and nothing else) in the tab's session storage until the tab closes, so it isn't lost before you sign up.</li>
         <li><strong>Your settings:</strong> small preferences such as whether the app's first-time hints are on and which ones you've closed.</li>
-        <li><strong>Waitlist sign-ups:</strong> if you leave your email in a "tell me when you launch" box, we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one. If you ask for an affiliate link, we also keep the name and the place you share that you give us, so we can set up and pay your link.</li>
+        <li><strong>Money note sign-ups:</strong> if you leave your email in a "money note" box (new articles and launch deals), we keep that address, the page you used and the date. You don't need an account for this, and it isn't linked to one. If you ask for an affiliate link, we also keep the name and the place you share that you give us, so we can set up and pay your link.</li>
         <li><strong>Subscription status:</strong> whether you are on trial, subscribed, past due or canceled, and identifiers that link your account to Stripe. Your card details go to Stripe and never reach us.</li>
         <li><strong>Technical records:</strong> standard server logs (such as IP address, time and the page requested), used for security and fixing problems. These are kept for no more than 30 days.</li>
-        <li><strong>Usage counts:</strong> when someone opens the home, tools, demo, pricing or blog page, changes a number in a calculator, or first sees a projection, we record an anonymous event: its name, the time, and the referral tag in the address if there is one (such as the blog post that linked there). We also count sign-ups, trial starts and subscriptions the same way. These events hold no user id, no IP address, no cookie and no browser details, so they cannot be traced back to you, and no third party is involved.</li>
+        <li><strong>Usage counts:</strong> when someone opens the home, tools, demo, pricing or blog page, changes a number in a calculator, or first sees a projection, we record an anonymous event: its name, the time, and the referral tag in the address if there is one (such as the blog post that linked there). We also count sign-ups, trial starts and subscriptions the same way. These events hold no user id, no IP address, no cookie and no browser details, so they cannot be traced back to you, and no third party is involved. They are deleted after 13 months.</li>
       </ul>
 
       <H>How we use it</H>
@@ -152,9 +155,10 @@ export function PrivacyPage() {
           To send account emails: confirming your address, password resets, billing notices, and a few during your trial: a welcome in your first
           hour that repeats the projection numbers from your own plan (or, if you haven't set one up yet, a reminder that it's waiting), one
           suggestion around day 3 to try a what-if scenario, and reminders a week and two days before the trial ends. We record when each of
-          these went out so you never get one twice.
+          these went out so you never get one twice. The getting-started emails (the welcome or "your plan is waiting", and the day-3 suggestion) have an unsubscribe link; if you use it, we record
+          that and send no more of them.
         </li>
-        <li>To email waitlist sign-ups news about the launch. Only addresses left in a waitlist box get these.</li>
+        <li>To email the occasional money note (new articles and launch deals). Only addresses left in a money note box get these.</li>
         <li>To take payment, through Stripe.</li>
         <li>To keep the service secure and to fix errors.</li>
       </ul>

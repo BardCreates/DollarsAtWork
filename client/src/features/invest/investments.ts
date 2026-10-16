@@ -109,12 +109,17 @@ export interface InvestmentProjection {
   matchNextMonth: number;
 }
 
-/** Runs the shared projection engine for the investment accounts alone. */
-export function useInvestmentProjection(data: InvestmentsData): InvestmentProjection {
+/**
+ * Runs the shared projection engine for the investment accounts alone. `incomeGrowthRate` is the yearly raise
+ * from Assumptions: the employer match is capped at a share of income, so without it the match figures here would
+ * fall behind the dashboard's from year two on.
+ */
+export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate = 0): InvestmentProjection {
   return useMemo(() => {
     const result = project({
       months: INVEST_HORIZON_YEARS * 12,
       monthlyIncome: data.monthlyIncome,
+      incomeGrowthRate,
       savingsMonthly: 0,
       debtMonthly: 0,
       investmentsMonthly: data.monthlyAmount,
@@ -149,5 +154,5 @@ export function useInvestmentProjection(data: InvestmentsData): InvestmentProjec
       sharesTotal: data.accounts.reduce((sum, a) => sum + a.sharePercent, 0),
       matchNextMonth: result.points[1]?.matchedToDate ?? 0,
     };
-  }, [data]);
+  }, [data, incomeGrowthRate]);
 }

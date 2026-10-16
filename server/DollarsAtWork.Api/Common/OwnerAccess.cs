@@ -5,14 +5,16 @@ using Microsoft.Extensions.Options;
 namespace DollarsAtWork.Api.Common;
 
 /// <summary>
-/// The owner is whoever signs in with the email in App:OwnerEmail. With the setting empty, nobody is.
+/// The owner is whoever signs in with the email in App:OwnerEmail, once that address is confirmed. With the
+/// setting empty, nobody is. The confirmation matters: sign-in doesn't require a confirmed email, so without it
+/// anyone could register the owner's address first (or change theirs to it) and be treated as the owner.
 /// </summary>
 public static class OwnerAccess
 {
     public static bool IsOwner(AppUser user, AppOptions options)
     {
         var owner = options.OwnerEmail.Trim();
-        return owner.Length > 0 && string.Equals(user.Email, owner, StringComparison.OrdinalIgnoreCase);
+        return owner.Length > 0 && user.EmailConfirmed && string.Equals(user.Email, owner, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
