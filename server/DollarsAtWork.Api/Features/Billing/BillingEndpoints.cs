@@ -70,6 +70,8 @@ public static class BillingEndpoints
                 if (!billing.HasFoundingOffer)
                     return Results.ValidationProblem(new Dictionary<string, string[]> { ["plan"] = ["The founding price isn't offered right now."] });
                 var prices = await billing.GetPricesAsync(ct);
+                if (prices.Founding is null)
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["plan"] = ["The founding price isn't offered right now."] });
                 if (prices.Founding is not { Open: true })
                     return Results.Problem(title: "The founding spots are all taken.", detail: "Pick the annual or monthly plan instead.", statusCode: StatusCodes.Status409Conflict);
             }
