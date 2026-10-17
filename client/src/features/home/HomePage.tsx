@@ -32,7 +32,7 @@ const features: { icon: ReactNode; title: string; body: string }[] = [
   { icon: <TaskAltIcon />, title: 'Move a dollar', body: 'Change any amount in your plan and watch your debt-free date and future net worth move as you type.' },
   { icon: <AccountBalanceIcon />, title: 'Debt-free date', body: 'Snowball, avalanche or your own order, 0% balance transfers included, with every payment scheduled and the interest you save.' },
   { icon: <SavingsIcon />, title: 'Savings goals', body: 'Goals that fill in order and tell you whether you are on track for the date you want.' },
-  { icon: <ReceiptLongIcon />, title: 'Bills that come back', body: 'Sinking funds save a little each month for insurance, gifts and other yearly bills, so they don't land all at once.' },
+  { icon: <ReceiptLongIcon />, title: 'Bills that come back', body: 'Sinking funds save a little each month for insurance, gifts and other yearly bills, so they don’t land all at once.' },
   { icon: <CardGiftcardIcon />, title: 'One-time money', body: 'Give a tax refund or bonus a job ahead of time and see how much sooner it makes you debt-free.' },
   { icon: <ShowChartIcon />, title: 'Investing and match', body: 'Your 401(k), IRA and brokerage accounts projected forward, paycheck contributions and employer match included.' },
   { icon: <BeachAccessIcon />, title: 'Retirement number', body: 'What you would need to retire, when your plan gets there, and what would close the gap.' },
