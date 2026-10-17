@@ -28,6 +28,7 @@ public static class NetWorthEndpoints
 
         netWorth.MapGet("", GetNetWorth);
         netWorth.MapPut("/settings", SaveSettings).RequireFullAccess();
+        netWorth.MapPut("/retirement", SaveRetirement).RequireFullAccess();
         netWorth.MapPost("/items", AddItem).RequireFullAccess();
         netWorth.MapPut("/items/{id:guid}", ReplaceItem).RequireFullAccess();
         netWorth.MapDelete("/items/{id:guid}", DeleteItem).RequireFullAccess();
@@ -87,6 +88,35 @@ public static class NetWorthEndpoints
         // Left out by an older client: keep what was there.
         plan.RaiseToInvestments = request.RaiseToInvestments ?? plan.RaiseToInvestments;
         plan.UpdatedAt = clock.GetUtcNow();
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(SettingsResponse.From(plan));
+    }
+
+    private static async Task<IResult> SaveRetirement(SaveRetirementRequest request, ClaimsPrincipal principal, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    {
+        var now = clock.GetUtcNow();
+        var check = new Validation();
+        if (request.BirthYear is { } born && (born < now.Year - 110 || born > now.Year - 14))
+            check.Add("birthYear", $"Enter a year between {now.Year - 110} and {now.Year - 14}.");
+        if (request.RetirementAge is { } age && (age < 30 || age > 90))
+            check.Add("retirementAge", "Enter an age between 30 and 90.");
+        if (request.SpendingMonthly is not null)
+            check.Amount("spendingMonthly", request.SpendingMonthly, "a monthly amount");
+        if (request.OtherIncomeMonthly is not null)
+            check.Amount("otherIncomeMonthly", request.OtherIncomeMonthly, "a monthly amount");
+        if (check.Failed)
+            return check.ToResult();
+
+        var userId = principal.GetUserId();
+        var plan = await db.Plans.SingleOrDefaultAsync(p => p.UserId == userId, ct);
+        if (plan is null)
+            return PlanMissing();
+
+        plan.BirthYear = request.BirthYear;
+        plan.RetirementAge = request.RetirementAge;
+        plan.RetirementSpendingMonthly = request.SpendingMonthly;
+        plan.RetirementIncomeMonthly = request.OtherIncomeMonthly;
+        plan.UpdatedAt = now;
         await db.SaveChangesAsync(ct);
         return Results.Ok(SettingsResponse.From(plan));
     }

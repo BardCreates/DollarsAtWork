@@ -14,6 +14,7 @@ const kindColor: Record<TimelineKind, string> = {
   goal: brand.green,
   'net-worth': brand.yellow,
   windfall: brand.blue,
+  retirement: brand.pink,
 };
 
 const kindLink: Partial<Record<TimelineKind, { to: string; label: string }>> = {

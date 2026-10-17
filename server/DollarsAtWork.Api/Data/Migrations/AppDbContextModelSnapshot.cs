@@ -386,6 +386,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("BirthYear")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -424,6 +427,17 @@ namespace DollarsAtWork.Api.Data.Migrations
 
                     b.Property<bool>("RaiseToInvestments")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("RetirementAge")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RetirementIncomeMonthly")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal?>("RetirementSpendingMonthly")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
 
                     b.Property<string>("SavingsDoneDestination")
                         .IsRequired()

@@ -6,7 +6,7 @@ import { firstMonthNetWorthReaches, type ProjectionResult } from './projection';
  * Pure: the same projection always gives the same roadmap.
  */
 
-export type TimelineKind = 'debt-free' | 'debt' | 'goal' | 'net-worth' | 'windfall';
+export type TimelineKind = 'debt-free' | 'debt' | 'goal' | 'net-worth' | 'windfall' | 'retirement';
 
 export interface TimelineItem {
   key: string;
@@ -27,7 +27,7 @@ const NET_WORTH_ON_ROADMAP = 3;
 /** A milestone this many months away or fewer counts as "nearing". */
 export const NEAR_MONTHS = 3;
 
-const kindOrder: Record<TimelineKind, number> = { windfall: 0, debt: 1, 'debt-free': 2, goal: 3, 'net-worth': 4 };
+const kindOrder: Record<TimelineKind, number> = { windfall: 0, debt: 1, 'debt-free': 2, goal: 3, 'net-worth': 4, retirement: 5 };
 
 export interface TimelineNames {
   debts: string[];
@@ -36,6 +36,8 @@ export interface TimelineNames {
   minimumOnly?: boolean[];
   /** Upcoming one-time money, with the projection month it lands in. */
   windfalls?: { id: string; name: string; amount: number; month: number }[];
+  /** The retirement number and the month invested money reaches it (worked out in today's dollars by the caller). */
+  retirement?: { amount: number; month: number | null };
 }
 
 /**
@@ -44,7 +46,8 @@ export interface TimelineNames {
  *   debt still open at that point is named: "Debt-free (except Mortgage)";
  * - each savings goal, including ones already full and ones that never fill;
  * - the next few net-worth steps that haven't been reached yet and are reached within the projection;
- * - each upcoming one-time amount, in the month it arrives.
+ * - each upcoming one-time amount, in the month it arrives;
+ * - the retirement number, when one is set and not yet reached.
  * Earliest first, with anything that never happens at the end.
  */
 export function buildTimeline(result: ProjectionResult, names: TimelineNames): TimelineItem[] {
@@ -71,6 +74,10 @@ export function buildTimeline(result: ProjectionResult, names: TimelineNames): T
   for (const windfall of names.windfalls ?? []) {
     if (windfall.month < 1 || windfall.month >= result.points.length) continue;
     items.push({ key: `windfall-${windfall.id}`, kind: 'windfall', label: `${windfall.name} arrives (${formatMoney(windfall.amount)})`, month: windfall.month });
+  }
+
+  if (names.retirement && names.retirement.amount > 0 && names.retirement.month !== 0) {
+    items.push({ key: 'retirement', kind: 'retirement', label: `Retirement number (${formatMoney(Math.round(names.retirement.amount))})`, month: names.retirement.month });
   }
 
   let added = 0;

@@ -34,6 +34,17 @@ export interface Settings {
   incomeGrowthRate: number;
   /** True: each raise is added to the Investments amount. False: it lands in Remaining and isn't projected. */
   raiseToInvestments: boolean;
+  retirement: RetirementSettings;
+}
+
+/** The retirement number's inputs; null means not set. Amounts are monthly, in today's dollars. */
+export interface RetirementSettings {
+  birthYear: number | null;
+  retirementAge: number | null;
+  /** Null means the plan's everyday categories. */
+  spendingMonthly: number | null;
+  /** Social Security, a pension. */
+  otherIncomeMonthly: number | null;
 }
 
 export interface OtherItem {
@@ -115,7 +126,15 @@ function useNetWorthCache() {
 export function useSaveSettings() {
   const change = useNetWorthCache();
   return useMutation({
-    mutationFn: (settings: Settings) => api.put<Settings>('/networth/settings', settings),
+    mutationFn: (settings: Omit<Settings, 'retirement'>) => api.put<Settings>('/networth/settings', settings),
+    onSuccess: (settings) => change((data) => ({ ...data, settings })),
+  });
+}
+
+export function useSaveRetirement() {
+  const change = useNetWorthCache();
+  return useMutation({
+    mutationFn: (retirement: RetirementSettings) => api.put<Settings>('/networth/retirement', retirement),
     onSuccess: (settings) => change((data) => ({ ...data, settings })),
   });
 }
