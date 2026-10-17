@@ -173,6 +173,12 @@ and decisions already made. Don't re-ask decided questions.
   (NumberField min/max/positive); DRIP takes negative price growth; the loan comparison needs a real term. Goal target dates
   can't be in the past (an old goal keeps its own). Help is in the phone header; Profile & billing is in the drawer.
   Deferred to the features round: light theme, windfalls, 0% promo APRs, retirement number, sinking funds, two incomes.
+- Windfalls (Oct 17): one-time money on a month (Windfall table, migration AddWindfalls; CRUD at /networth/windfalls,
+  returned with /networth as `windfalls`, month "YYYY-MM", destination Debt/Savings/Investments, up to 50). Engine
+  `windfalls` input: a windfall joins its month's debt budget, savings amount or investing, so leftovers follow the
+  finished-money settings. networth.ts toWindfallInputs maps months (this month counts as month 1; passed ones drop
+  out). Plan page "One-time money" card (WindfallsCard, WindfallDialog) shows each one's effect against the plan
+  without it; the timeline lists them (kind 'windfall'). Export adds one-time-amounts.csv.
 
 ## What we compete on
 

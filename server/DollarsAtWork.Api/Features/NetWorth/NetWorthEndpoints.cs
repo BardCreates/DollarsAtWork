@@ -15,6 +15,9 @@ namespace DollarsAtWork.Api.Features.NetWorth;
 public static class NetWorthEndpoints
 {
     public const int MaxItems = 50;
+    public const int MaxWindfalls = 50;
+    /// <summary>The dashboard looks 40 years ahead; a windfall further out would never show.</summary>
+    private const int MaxWindfallYears = 40;
     private const decimal MaxRate = 20m;
     /// <summary>A home or car can't gain or lose more than this a year; wilder guesses say more about the guess than the asset.</summary>
     private const decimal MaxYearlyChange = 50m;
@@ -29,6 +32,9 @@ public static class NetWorthEndpoints
         netWorth.MapPut("/items/{id:guid}", ReplaceItem).RequireFullAccess();
         netWorth.MapDelete("/items/{id:guid}", DeleteItem).RequireFullAccess();
         netWorth.MapPost("/check-in", CheckIn).RequireFullAccess();
+        netWorth.MapPost("/windfalls", AddWindfall).RequireFullAccess();
+        netWorth.MapPut("/windfalls/{id:guid}", ReplaceWindfall).RequireFullAccess();
+        netWorth.MapDelete("/windfalls/{id:guid}", DeleteWindfall).RequireFullAccess();
         // Reading your own recap by email changes nothing, so it stays open to expired accounts.
         netWorth.MapPost("/report/email", EmailReport).RequireRateLimiting(RateLimits.Auth);
 
@@ -46,7 +52,12 @@ public static class NetWorthEndpoints
     {
         var items = await db.OtherItems.AsNoTracking().Where(i => i.UserId == userId).OrderBy(i => i.SortOrder).ToListAsync(ct);
         var snapshots = await db.NetWorthSnapshots.AsNoTracking().Where(s => s.UserId == userId).OrderBy(s => s.Date).ToListAsync(ct);
-        return new NetWorthResponse(SettingsResponse.From(plan), items.Select(OtherItemResponse.From).ToList(), snapshots.Select(SnapshotResponse.From).ToList());
+        var windfalls = await db.Windfalls.AsNoTracking().Where(w => w.UserId == userId).OrderBy(w => w.Month).ThenBy(w => w.CreatedAt).ToListAsync(ct);
+        return new NetWorthResponse(
+            SettingsResponse.From(plan),
+            items.Select(OtherItemResponse.From).ToList(),
+            snapshots.Select(SnapshotResponse.From).ToList(),
+            windfalls.Select(WindfallResponse.From).ToList());
     }
 
     private static async Task<IResult> SaveSettings(SaveSettingsRequest request, ClaimsPrincipal principal, AppDbContext db, TimeProvider clock, CancellationToken ct)
@@ -142,6 +153,84 @@ public static class NetWorthEndpoints
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
+
+    private static async Task<IResult> AddWindfall(SaveWindfallRequest request, ClaimsPrincipal principal, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    {
+        var userId = principal.GetUserId();
+        var now = clock.GetUtcNow();
+        var windfall = new Windfall { Id = Guid.NewGuid(), UserId = userId, CreatedAt = now };
+
+        var check = Apply(windfall, request, now);
+        if (check.Failed)
+            return check.ToResult();
+
+        if (await db.Windfalls.CountAsync(w => w.UserId == userId, ct) >= MaxWindfalls)
+        {
+            check.Add("name", $"You can plan up to {MaxWindfalls} one-time amounts.");
+            return check.ToResult();
+        }
+
+        db.Windfalls.Add(windfall);
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(WindfallResponse.From(windfall));
+    }
+
+    private static async Task<IResult> ReplaceWindfall(Guid id, SaveWindfallRequest request, ClaimsPrincipal principal, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    {
+        var userId = principal.GetUserId();
+        var windfall = await db.Windfalls.SingleOrDefaultAsync(w => w.Id == id && w.UserId == userId, ct);
+        if (windfall is null)
+            return WindfallMissing();
+
+        var check = Apply(windfall, request, clock.GetUtcNow());
+        if (check.Failed)
+            return check.ToResult();
+
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(WindfallResponse.From(windfall));
+    }
+
+    private static async Task<IResult> DeleteWindfall(Guid id, ClaimsPrincipal principal, AppDbContext db, CancellationToken ct)
+    {
+        var userId = principal.GetUserId();
+        var windfall = await db.Windfalls.SingleOrDefaultAsync(w => w.Id == id && w.UserId == userId, ct);
+        if (windfall is null)
+            return WindfallMissing();
+
+        db.Windfalls.Remove(windfall);
+        await db.SaveChangesAsync(ct);
+        return Results.NoContent();
+    }
+
+    /// <summary>
+    /// Copies a request onto a windfall. The month may be this month or later (a month back is allowed too, since the
+    /// browser's calendar can be a day behind UTC's), up to the end of the projection.
+    /// </summary>
+    private static Validation Apply(Windfall windfall, SaveWindfallRequest request, DateTimeOffset now)
+    {
+        var check = new Validation();
+        windfall.Name = check.Name("name", request.Name);
+        windfall.Amount = check.Amount("amount", request.Amount, "an amount");
+        if (request.Amount == 0m)
+            check.Add("amount", "Enter an amount above $0.");
+        windfall.Destination = check.Enum<WindfallDestination>("destination", request.Destination, "Pick where the money goes.");
+
+        var thisMonth = new DateOnly(now.Year, now.Month, 1);
+        if (!DateOnly.TryParseExact((request.Month ?? "") + "-01", "yyyy-MM-dd", out var month))
+            check.Add("month", "Pick the month the money arrives.");
+        else if (month < thisMonth.AddMonths(-1))
+            check.Add("month", "That month has passed. Pick this month or a later one.");
+        else if (month > thisMonth.AddYears(MaxWindfallYears))
+            check.Add("month", $"Pick a month within the next {MaxWindfallYears} years.");
+        else
+            windfall.Month = month;
+
+        windfall.UpdatedAt = now;
+        return check;
+    }
+
+    private static IResult WindfallMissing() =>
+        Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "That one-time amount wasn't found. Refresh and try again.");
 
     /// <summary>Updates the confirmed balances and records this month's snapshot, all or nothing.</summary>
     private static async Task<IResult> CheckIn(CheckInRequest request, ClaimsPrincipal principal, AppDbContext db, TimeProvider clock, CancellationToken ct)

@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
     public DbSet<InvestmentAccount> InvestmentAccounts => Set<InvestmentAccount>();
     public DbSet<OtherItem> OtherItems => Set<OtherItem>();
+    public DbSet<Windfall> Windfalls => Set<Windfall>();
     public DbSet<NetWorthSnapshot> NetWorthSnapshots => Set<NetWorthSnapshot>();
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
     public DbSet<UsedTrial> UsedTrials => Set<UsedTrial>();
@@ -111,6 +112,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(i => i.Type).HasConversion<string>().HasMaxLength(20);
             e.HasIndex(i => new { i.UserId, i.SortOrder });
             e.HasOne<AppUser>().WithMany().HasForeignKey(i => i.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Windfall>(e =>
+        {
+            e.Property(w => w.Name).HasMaxLength(60);
+            e.Property(w => w.Destination).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(w => new { w.UserId, w.Month });
+            e.HasOne<AppUser>().WithMany().HasForeignKey(w => w.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<NetWorthSnapshot>(e =>

@@ -13,6 +13,8 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *     amount plus anything paid in straight from the paycheck) and employer match.
  *  5. Other items (a home, a car) move by their own yearly change.
  *
+ * A windfall (one-time money) joins its month's savings, debt budget or investing, so it follows the same rules.
+ *
  * A minimum-only debt (a mortgage) is paid its minimum every month and never receives the extra; the
  * payoff order and the debt-free month skip it.
  *
@@ -46,6 +48,9 @@ export function project(input: ProjectionInput): ProjectionResult {
   const itemRates = otherItems.map((item) => monthlyRate(Math.max(-100, item.yearlyChange ?? 0)));
   const itemTotal = (kind: 'asset' | 'liability') => sum(itemValues.filter((_, i) => otherItems[i].kind === kind));
   const startingRemaining = input.remaining ?? 0;
+  /** One-time money by month and destination; months outside the horizon never come up. */
+  const windfallIn = (month: number, destination: 'debt' | 'savings' | 'investments') =>
+    sum((input.windfalls ?? []).filter((w) => w.month === month && w.destination === destination).map((w) => Math.max(0, w.amount)));
   const raise = (input.incomeGrowthRate ?? 0) / 100;
   const raiseInvested = input.raiseDestination === 'investments';
   const returnAdjustment = input.returnAdjustment ?? 0;
@@ -221,12 +226,12 @@ export function project(input: ProjectionInput): ProjectionResult {
     goals.forEach((balance, i) => {
       goals[i] = balance * (1 + goalRates[i]);
     });
-    let freedFromSavings = fillGoals(input.savingsMonthly);
+    let freedFromSavings = fillGoals(input.savingsMonthly + windfallIn(month, 'savings'));
 
     // 2. Debt
     const payments = zeros();
     const interest = zeros();
-    let debtBudget = input.debtMonthly;
+    let debtBudget = input.debtMonthly + windfallIn(month, 'debt');
     if (savingsDoneDestination === 'debt') {
       debtBudget += freedFromSavings;
       freedFromSavings = 0;
@@ -235,7 +240,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     interestPaidToDate += sum(interest);
 
     // 3. Freed money moves on. Anything that can't be placed ends up invested.
-    let toInvest = input.investmentsMonthly + (raiseInvested ? income - input.monthlyIncome : 0);
+    let toInvest = input.investmentsMonthly + (raiseInvested ? income - input.monthlyIncome : 0) + windfallIn(month, 'investments');
     const send = (amount: number, destination: FreedMoneyDestination) => {
       if (destination !== 'remaining') toInvest += amount;
     };

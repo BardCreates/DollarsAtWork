@@ -13,12 +13,14 @@ const kindColor: Record<TimelineKind, string> = {
   'debt-free': brand.red,
   goal: brand.green,
   'net-worth': brand.yellow,
+  windfall: brand.blue,
 };
 
 const kindLink: Partial<Record<TimelineKind, { to: string; label: string }>> = {
   debt: { to: '/debt', label: 'Debt' },
   'debt-free': { to: '/debt', label: 'Debt' },
   goal: { to: '/savings', label: 'Savings' },
+  windfall: { to: '/plan', label: 'Plan' },
 };
 
 /** Within this many months, a milestone sets the mascot off on its own. */
