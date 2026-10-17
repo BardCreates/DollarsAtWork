@@ -183,6 +183,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 
+                    b.Property<bool>("MinimumOnly")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -348,6 +351,10 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Value")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal>("YearlyChangePercent")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 

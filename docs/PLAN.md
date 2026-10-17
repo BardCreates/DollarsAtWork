@@ -182,9 +182,9 @@ Money is `decimal(19,4)`. Every row except Identity's belongs to one user; delet
 | Plans | MonthlyIncome, Currency, DebtStrategy, SavingsSplitMode, DebtDoneDestination, SavingsDoneDestination, InflationRate, IncomeGrowthRate | One per user |
 | Categories | Name, Kind (Custom/Savings/Debt/Investment), Amount, SortOrder, Color | Unique (UserId, Kind) for built-ins |
 | SavingsGoals | Name, TargetAmount, CurrentBalance, TargetDate?, Apy, Priority, SharePercent | |
-| Debts | Name, Type, Balance, Apr, MinPayment, SortOrder | |
+| Debts | Name, Type, Balance, Apr, MinPayment, MinimumOnly, SortOrder | MinimumOnly (default on for Mortgage): paid its minimum, out of the payoff order and the debt-free month |
 | InvestmentAccounts | Name, Type, Balance, ExpectedReturn, SharePercent, MatchPercent, MatchLimitPercent | Shares total 100% |
-| OtherItems | Name, Kind (Asset/Liability), Type, Value | |
+| OtherItems | Name, Kind (Asset/Liability), Type, Value, YearlyChangePercent | YearlyChangePercent moves the value in the projection (Home suggests 3, Vehicle −10, else 0) |
 | NetWorthSnapshots | Date, Assets, Liabilities, NetWorth | Written at check-in |
 | Subscriptions | Status, TrialEndsAt, CurrentPeriodEnd, PastDueSince, BillingInterval, StripeCustomerId, StripeSubscriptionId | Changed only by sign-up and Stripe webhooks |
 | ProcessedStripeEvents | EventId, ReceivedAt | Webhook idempotency |
@@ -225,7 +225,7 @@ terms/privacy, final prices, production Stripe webhook.
 - Plan only at launch; spending tracker later.
 - Gamification: keep confetti + mascot for milestones; no XP/levels.
 - No Google sign-in in version 1.
-- Home, car and other assets count toward net worth (manual list).
+- Home, car and other assets count toward net worth (manual list). A house is an asset here; its mortgage is a Debt (minimum only by default). Equity = value − balance, counted from day one. (Oct 17)
 - Stay on .NET + SQL Server.
 - Focus (Oct 12): compete on the plan-to-future connection, not on tracking.
 - No bank linking in version 1; "no bank login" is part of the pitch. Revisit only as a paid add-on if paying users ask.

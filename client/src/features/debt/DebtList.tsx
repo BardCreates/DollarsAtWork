@@ -89,7 +89,7 @@ export function DebtList({ debts, planned, canReorder, readOnly, onReorder, onEd
                           {formatMoney(debt.balance)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {debt.apr}% APR · {formatMoney(debt.minPayment)} minimum
+                          {debt.apr}% APR · {formatMoney(debt.minPayment)} minimum{debt.minimumOnly ? ' · minimum only' : ''}
                         </Typography>
                       </Box>
 

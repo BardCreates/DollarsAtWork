@@ -144,6 +144,8 @@ public class Debt
     /// <summary>Annual percentage rate as a percent: 19.99 means 19.99%.</summary>
     public decimal Apr { get; set; }
     public decimal MinPayment { get; set; }
+    /// <summary>Pay only the minimum and keep it out of the payoff order (a mortgage). The projection's debt-free month skips it.</summary>
+    public bool MinimumOnly { get; set; }
     public int SortOrder { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
@@ -244,6 +246,8 @@ public class OtherItem
     public OtherItemKind Kind { get; set; }
     public OtherItemType Type { get; set; }
     public decimal Value { get; set; }
+    /// <summary>How the value moves each year, as a percent: 3 means it gains 3% a year, -10 means it loses 10%. 0 keeps it flat.</summary>
+    public decimal YearlyChangePercent { get; set; }
     public int SortOrder { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

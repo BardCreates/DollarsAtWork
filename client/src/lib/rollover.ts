@@ -27,10 +27,15 @@ export interface Rollover {
 /**
  * For every debt that gets paid off, who receives its payment. The receiver is the open debt being paid
  * above its minimum in the payoff month (or the month after, if that month's payment used up the budget).
- * With no debts left, it goes to `destination`. Debts that are never paid off, or have nobody to pass
- * money to (the budget only covers minimums), are left out.
+ * With no debts left in the payoff order (a minimum-only mortgage doesn't count), it goes to `destination`.
+ * Debts that are never paid off, or have nobody to pass money to (the budget only covers minimums), are left out.
  */
-export function debtRollovers(result: ProjectionResult, minPayments: number[], destination: FreedMoneyDestination): Rollover[] {
+export function debtRollovers(
+  result: ProjectionResult,
+  minPayments: number[],
+  destination: FreedMoneyDestination,
+  minimumOnly: boolean[] = [],
+): Rollover[] {
   const rollovers: Rollover[] = [];
 
   result.debtPayoffMonths.forEach((month, index) => {
@@ -39,7 +44,7 @@ export function debtRollovers(result: ProjectionResult, minPayments: number[], d
     const amount = month >= 2 ? result.points[month - 1].debtPayments[index] : null;
     if (amount !== null && amount < DUST) return;
 
-    const open = result.debtPayoffMonths.flatMap((m, j) => (m === null || m > month ? [j] : []));
+    const open = result.debtPayoffMonths.flatMap((m, j) => ((m === null || m > month) && !minimumOnly[j] ? [j] : []));
     if (open.length === 0) {
       rollovers.push({ index, month, amount, target: { kind: 'destination', destination } });
       return;

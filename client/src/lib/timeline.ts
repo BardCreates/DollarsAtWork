@@ -32,11 +32,14 @@ const kindOrder: Record<TimelineKind, number> = { debt: 0, 'debt-free': 1, goal:
 export interface TimelineNames {
   debts: string[];
   goals: string[];
+  /** Per debt, in the same order: true for a minimum-only debt (a mortgage), which "Debt-free" leaves out. */
+  minimumOnly?: boolean[];
 }
 
 /**
  * Builds the roadmap:
- * - each debt's payoff, then "Debt-free" for the last one (a single debt is just "Debt-free");
+ * - each debt's payoff, then "Debt-free" for the last one (a single debt is just "Debt-free"); a minimum-only
+ *   debt still open at that point is named: "Debt-free (except Mortgage)";
  * - each savings goal, including ones already full and ones that never fill;
  * - the next few net-worth steps that haven't been reached yet and are reached within the projection.
  * Earliest first, with anything that never happens at the end.
@@ -53,7 +56,9 @@ export function buildTimeline(result: ProjectionResult, names: TimelineNames): T
         items.push({ key: `debt-${index}`, kind: 'debt', label: `${names.debts[index]} paid off`, month, index });
       });
     }
-    items.push({ key: 'debt-free', kind: 'debt-free', label: 'Debt-free', month: result.debtFreeMonth });
+    const stillOpen = debtFreeExcept(result, names);
+    const label = stillOpen.length > 0 ? `Debt-free (except ${stillOpen.join(', ')})` : 'Debt-free';
+    items.push({ key: 'debt-free', kind: 'debt-free', label, month: result.debtFreeMonth });
   }
 
   result.goalFullMonths.forEach((month, index) => {
@@ -73,6 +78,15 @@ export function buildTimeline(result: ProjectionResult, names: TimelineNames): T
   return items.sort(
     (a, b) => (a.month ?? Infinity) - (b.month ?? Infinity) || kindOrder[a.kind] - kindOrder[b.kind] || a.key.localeCompare(b.key),
   );
+}
+
+/** The minimum-only debts (a mortgage) still open when "debt-free" arrives, by name. Empty when there are none. */
+export function debtFreeExcept(result: ProjectionResult, names: TimelineNames): string[] {
+  return names.debts.filter((_, index) => {
+    if (!names.minimumOnly?.[index]) return false;
+    const payoff = result.debtPayoffMonths[index];
+    return payoff === null || payoff > (result.debtFreeMonth ?? Infinity);
+  });
 }
 
 /** Already reached today. */

@@ -25,7 +25,7 @@ import type { NetWorthData } from './networth';
 import { OtherItemsDialog } from './OtherItemsDialog';
 import { ProjectionChart } from './ProjectionChart';
 import { TimelineCard } from './TimelineCard';
-import { buildProjectionInput, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
+import { buildProjectionInput, homeEquityAt, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
 const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financial advice.';
 
@@ -184,7 +184,7 @@ function Dashboard({ data }: { data: DashboardData }) {
 
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.7fr) minmax(0, 1fr)' } }}>
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
-          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={todaysDollars} />
+          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={todaysDollars} homeEquity={homeEquityAt(data, result, year * 12)} />
           <DashCard title="Projection">
             <ProjectionChart result={result} year={year} />
             {result.warnings.investingWithoutAccounts && (

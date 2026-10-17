@@ -96,7 +96,7 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
   const { data: netWorth } = useNetWorth();
   const doneDestination = (netWorth?.settings.debtDoneDestination ?? 'Investments').toLowerCase() as FreedMoneyDestination;
   const rollovers = useMemo(
-    () => debtRollovers(projection.planned, data.debts.map((d) => d.minPayment), doneDestination),
+    () => debtRollovers(projection.planned, data.debts.map((d) => d.minPayment), doneDestination, data.debts.map((d) => d.minimumOnly)),
     [projection.planned, data.debts, doneDestination],
   );
 
@@ -255,8 +255,10 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
 }
 
 function Summary({ projection }: { projection: DebtProjection }) {
-  const { planned, minimumsOnly, totalDebt } = projection;
+  const { planned, minimumsOnly, totalDebt, debtFreeExcept } = projection;
   const debtFree = planned.debtFreeMonth;
+  // A mortgage on minimums only is paid on its own schedule, so "debt-free" means everything else.
+  const except = debtFreeExcept.length > 0 ? `Except ${debtFreeExcept.join(' and ')}, paid on its own schedule.` : undefined;
 
   let comparison: { value: string; note: string };
   if (debtFree === null) {
@@ -276,10 +278,10 @@ function Summary({ projection }: { projection: DebtProjection }) {
     <>
       <Figure label="Total debt" value={formatMoney(totalDebt)} color={totalDebt > 0 ? 'error.main' : 'text.primary'} />
       <Figure
-        label="Debt-free"
-        value={totalDebt <= 0 ? 'Now' : debtFree === null ? 'Not yet' : formatMonthFromNow(debtFree)}
+        label={except ? 'Debt-free, except…' : 'Debt-free'}
+        value={totalDebt <= 0 || debtFree === 0 ? 'Now' : debtFree === null ? 'Not yet' : formatMonthFromNow(debtFree)}
         color={debtFree === null ? 'warning.main' : 'success.main'}
-        note={totalDebt <= 0 ? undefined : debtFree === null ? 'Not within 40 years at this pace.' : `In ${formatDuration(debtFree)}.`}
+        note={totalDebt <= 0 ? undefined : debtFree === null ? 'Not within 40 years at this pace.' : [debtFree > 0 ? `In ${formatDuration(debtFree)}.` : null, except].filter(Boolean).join(' ')}
       />
       <Figure
         label="Interest you'll pay"

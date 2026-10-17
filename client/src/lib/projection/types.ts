@@ -34,6 +34,21 @@ export interface DebtInput {
   /** Annual percentage rate, charged monthly as apr / 12. */
   apr: number;
   minPayment: number;
+  /**
+   * Pay only this debt's minimum and keep it out of the payoff order (a mortgage). It still pays down on its
+   * own schedule and still counts against net worth, but the extra money and the debt-free month skip it.
+   * Default false.
+   */
+  minimumOnly?: boolean;
+}
+
+/** Something owned or owed that isn't tracked month by month: a home, a car, a loan from family. */
+export interface OtherItemInput {
+  id: string;
+  value: number;
+  kind: 'asset' | 'liability';
+  /** Yearly change in value as a percent: 3 means it gains 3% a year, −10 means it loses 10%. Default 0. */
+  yearlyChange?: number;
 }
 
 export interface AccountInput {
@@ -78,7 +93,9 @@ export interface ProjectionInput {
 
   accounts: AccountInput[];
 
-  /** Home, car and other things owned or owed that aren't tracked month by month. */
+  /** Home, car and other things owned or owed, each moving by its own yearly change. */
+  otherItems?: OtherItemInput[];
+  /** Flat totals that never change, added on top of otherItems. Kept for callers with no per-item detail. */
   otherAssets?: number;
   otherLiabilities?: number;
 
@@ -113,6 +130,8 @@ export interface MonthPoint {
   goalBalances: number[];
   debtBalances: number[];
   accountBalances: number[];
+  /** Each other item's value this month, in input order. */
+  otherItemValues: number[];
   /** Money invested while there were no accounts to put it in. Grows at the default return. */
   unassignedInvestments: number;
 
@@ -133,7 +152,10 @@ export interface ProjectionResult {
   /** One entry per month; points[0] is today and points[n] is n months from now. */
   points: MonthPoint[];
 
-  /** The month the last debt reaches $0. 0 when there is no debt today; null when not within the horizon. */
+  /**
+   * The month the last debt in the payoff order reaches $0; minimum-only debts (a mortgage) don't count.
+   * 0 when there is no such debt today; null when not within the horizon.
+   */
   debtFreeMonth: number | null;
   /** Per debt, in input order. */
   debtPayoffMonths: (number | null)[];
