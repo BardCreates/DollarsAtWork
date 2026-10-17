@@ -62,7 +62,7 @@ export function DemoPage() {
       </Box>
 
       {!me && (
-        <TrialCta headline="Now make it yours" body="Enter your income, your debts and your goals. It takes about three minutes to see your own 10-year number." secondary={null} from="demo" source="demo" />
+        <TrialCta headline="Now make it yours" body="Enter your income, your debts and your goals. It takes about three minutes to see your own 10-year number." secondary={null} from="demo" />
       )}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
         Estimates based on a made-up plan and assumed returns, not financial advice.

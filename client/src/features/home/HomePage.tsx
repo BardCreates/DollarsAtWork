@@ -16,7 +16,6 @@ import { formatMoney } from '../../lib/money';
 import { signUpPath } from '../../lib/signUp';
 import { PublicLayout } from '../../pages/public/PublicLayout';
 import { SampleImpactCard, useSampleImpact } from '../demo/SampleImpactCard';
-import { WaitlistForm } from '../waitlist/WaitlistForm';
 import { useRecordVisit } from '../../lib/usage';
 import { usePageMeta } from '../../lib/usePageMeta';
 
@@ -37,7 +36,7 @@ const features: { icon: ReactNode; title: string; body: string }[] = [
 
 /**
  * The front door for visitors who aren't signed in: what Dollars at Work does, a live taste of it on the
- * sample plan, and the ways in (trial, sign in, calculators, help, or the waitlist).
+ * sample plan, and the ways in (trial, sign in, calculators or help).
  */
 export function HomePage() {
   usePageMeta('Dollars at Work', 'A monthly money plan that shows your debt-free date, savings goals and net worth 10 years out. No bank login.');
@@ -154,9 +153,9 @@ export function HomePage() {
         ))}
       </Box>
 
-      {/* Close: trial + waitlist */}
+      {/* Close: the trial */}
       <Card component="section" sx={{ outline: 1, outlineStyle: 'solid', outlineColor: 'primary.main', mb: 2 }}>
-        <CardContent sx={{ display: 'grid', gap: 4, p: { xs: 3, md: 4 }, gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) minmax(0, 1fr)' } }}>
+        <CardContent sx={{ display: 'grid', gap: 4, p: { xs: 3, md: 4 }, gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start', minWidth: 0 }}>
             <Box component="img" src={mascot} alt="" sx={{ width: 72, height: 'auto', flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
             <Box sx={{ minWidth: 0 }}>
@@ -177,7 +176,6 @@ export function HomePage() {
               </Box>
             </Box>
           </Box>
-          <WaitlistForm source="home" />
         </CardContent>
       </Card>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>

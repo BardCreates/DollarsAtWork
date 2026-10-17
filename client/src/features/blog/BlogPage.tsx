@@ -1,16 +1,13 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Card, CardActionArea, CardContent, Chip, Typography } from '@mui/material';
 import { PageHeader } from '../../components/PageHeader';
-import { useMe } from '../../auth/auth';
 import { useRecordVisit } from '../../lib/usage';
-import { WaitlistForm } from '../waitlist/WaitlistForm';
 import { formatPostDate, visiblePosts } from './posts';
 import { usePageMeta } from '../../lib/usePageMeta';
 
 /** The list of posts, newest first. Open to everyone. */
 export function BlogPage() {
   useRecordVisit('visit_blog');
-  const { data: me } = useMe();
   usePageMeta('Blog · Dollars at Work', 'Plain-English money articles: debt payoff, savings, investing and making a plan that works.');
 
   return (
@@ -23,10 +20,9 @@ export function BlogPage() {
             <Typography variant="h6" sx={{ mb: 1 }}>
               The first posts are on their way
             </Typography>
-            <Typography color="text.secondary" sx={{ mb: me ? 0 : 3 }}>
+            <Typography color="text.secondary">
               Short, practical articles about paying off debt, saving and investing, written around the news that affects your money.
             </Typography>
-            {!me && <WaitlistForm source="blog" title="Want the first one?" body="Get the occasional money note: new articles as they go up, and launch deals. No account needed." />}
           </CardContent>
         </Card>
       ) : (

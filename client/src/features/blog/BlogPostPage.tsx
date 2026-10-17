@@ -81,7 +81,7 @@ export function BlogPostPage() {
           </Button>
         </Box>
       ) : (
-        <TrialCta headline={cta.headline} body={cta.body} primaryLabel={cta.button} secondary={cta.secondary} from={`blog/${post.slug}`} source="blog" />
+        <TrialCta headline={cta.headline} body={cta.body} primaryLabel={cta.button} secondary={cta.secondary} from={`blog/${post.slug}`} />
       )}
 
       {more.length > 0 && (

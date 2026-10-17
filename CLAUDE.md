@@ -139,6 +139,9 @@ and decisions already made. Don't re-ask decided questions.
   debtGrowing warning when a payment misses the interest (shown on the Debt page). The Invest page passes the raise.
   formatMoney never prints -$0. Production refuses an Email:ResendApiKey without "re_"; RetentionService (hourly, via
   TrialEmailWorker) deletes UsageEvents after 400 days and ProcessedStripeEvents after 90; LogMask hides email addresses in logs.
+- Money note box removed (Oct 16, Hannah's call): WaitlistForm is gone from home, the calculators, the demo and the
+  blog, so every visitor ask is the trial. POST /api/waitlist and WaitlistEntries stay: /affiliates "Ask for my link" uses
+  them, and addresses already collected are kept. The Privacy Policy says so.
 - Home and mortgage (Oct 17, R18): OtherItem.YearlyChangePercent (migration AddHomeAndMortgage) moves each item's value in the
   engine month by month (`otherItems` input, `otherItemValues` per point; the flat `otherAssets`/`otherLiabilities` still add on
   top); the Other items dialog suggests 3% for a Home and −10% for a Vehicle on a new item. Debt.MinimumOnly (default on for a new
