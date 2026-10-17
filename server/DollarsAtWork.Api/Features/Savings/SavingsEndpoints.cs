@@ -101,6 +101,11 @@ public static class SavingsEndpoints
         if (request.TargetDate is { } date && (date.Year < 2000 || date.Year > 2200))
             check.Add("targetDate", "Enter a realistic target date.");
         goal.TargetDate = request.TargetDate;
+        if (request.RepeatMonths is { } every && (every < 1 || every > 60))
+            check.Add("repeatMonths", "Pick how often the bill comes back.");
+        else if (request.RepeatMonths is not null && request.TargetDate is null)
+            check.Add("targetDate", "Enter when the bill is next due.");
+        goal.RepeatMonths = request.RepeatMonths;
         goal.UpdatedAt = now;
         return check;
     }

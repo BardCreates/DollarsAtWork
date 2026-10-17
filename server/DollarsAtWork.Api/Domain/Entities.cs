@@ -189,6 +189,11 @@ public class SavingsGoal
     public int Priority { get; set; }
     /// <summary>Share of the monthly savings amount in Percent mode.</summary>
     public decimal SharePercent { get; set; }
+    /// <summary>
+    /// A sinking fund for a bill that comes back: every this many months (12 for yearly) the target is spent on
+    /// TargetDate's month and the goal starts filling again. Null for an ordinary goal.
+    /// </summary>
+    public int? RepeatMonths { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
