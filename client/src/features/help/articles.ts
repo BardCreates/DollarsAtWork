@@ -265,7 +265,7 @@ The **Growth** tab shows what you put in, your employer's match, and growth over
     title: 'The dashboard',
     section: 'Dashboard',
     summary: 'Your net worth today, the years slider, the projection chart and your money timeline.',
-    keywords: 'net worth slider projection chart milestones timeline roadmap assets liabilities home car house mortgage equity appreciation value confetti history',
+    keywords: 'retirement number 4% rule fire social security pension retire age net worth slider projection chart milestones timeline roadmap assets liabilities home car house mortgage equity appreciation value confetti history',
     body: `The Dashboard brings everything together: where you stand today and where your plan takes you.
 
 ## Net worth and the years slider
@@ -276,6 +276,11 @@ The chart stacks your savings, investments and other assets above the line and y
 
 ## Money timeline
 A dated roadmap of what's coming: each debt paid off, the day you're debt-free, each goal reached, one-time money arriving, and your next net-worth milestones. When a milestone is close, the mascot celebrates. Tap the mascot any time for confetti.
+
+## Retirement number
+The **Retirement number** card works out how much invested money could pay for your retirement: about 25 times a year of what you'd spend then, less any Social Security or pension. That's the common **4% rule**: spending about 4% of your investments in the first year, then the same amount raised with inflation, has usually lasted 30 years in US market history. It's a guide, not a promise.
+
+Press **Set it up** to add the year you were born (for your age on each date), the age you'd like to retire, what you expect to spend each month (leave it empty to use your everyday categories on Plan) and other income then. Everything is in today's dollars. The card shows when your investments reach the number and, with an age set, about how much more a month would get you there in time. It's on your money timeline too.
 
 ## Homes, cars and other things
 Your home, car and anything else you own live on the [Assets](/assets) page. Under the net worth figure, **Home** is your home's value and **Other** is everything else you own there; if you've recorded something you owe outside the Debt page, a second line splits your debts into **Debt page** and **Other**. Both "Other" words link to the Assets page.

@@ -14,6 +14,7 @@ import { toAccountInput, useInvestments, type InvestmentsData } from '../invest/
 import { planTotals, usePlan, type CategoryKind, type Plan } from '../plan/plan';
 import { useSavings, type SavingsData } from '../savings/savings';
 import { toWindfallInputs, useNetWorth, type NetWorthData } from './networth';
+import { retirementOutlook } from './retirementOutlook';
 
 /** The dashboard slider: 0 to 40 years. */
 export const DASHBOARD_YEARS = 40;
@@ -92,9 +93,18 @@ export function useDashboardProjection(data: DashboardData, todaysDollars: boole
       goals: data.savings.goals.map((g) => g.name),
       minimumOnly: data.debts.debts.map((d) => d.minimumOnly),
       windfalls: windfallNames(data),
+      retirement: retirementOnTimeline(data),
     });
     return { result, timeline };
   }, [data, todaysDollars]);
+}
+
+/** The retirement number for the timeline, once the person has set it up (a birth year or their own spending). */
+function retirementOnTimeline(data: DashboardData): { amount: number; month: number | null } | undefined {
+  const settings = data.netWorth.settings.retirement;
+  if (!settings || (settings.birthYear === null && settings.spendingMonthly === null)) return undefined;
+  const outlook = retirementOutlook(data);
+  return outlook.number > 0 ? { amount: outlook.number, month: outlook.month } : undefined;
 }
 
 /** Upcoming one-time money with the projection month it lands in, for the timeline. */

@@ -184,6 +184,11 @@ and decisions already made. Don't re-ask decided questions.
   at the promo rate; avalanche orders by the rate charged that month) and result promoEndBalances (what's owed when a
   promotion ends). debts.ts toDebtInput maps every debt for the engine. The Debt page warns when a promotion ends with a
   balance and says about how much more a month clears it; deferred interest is explained, not modelled.
+- Retirement number (Oct 17): Plan.BirthYear, RetirementAge, RetirementSpendingMonthly, RetirementIncomeMonthly (migration
+  AddRetirementNumber; PUT /networth/retirement; settings.retirement). lib/retirement (4% rule: 25 × yearly spending less
+  other income; monthNumberReached on investments; extraMonthlyToReach by halving). features/dashboard/retirementOutlook
+  works in today's dollars; RetirementCard on the dashboard; the timeline shows it (kind 'retirement') once set up.
+  The Privacy Policy lists the new inputs.
 
 ## What we compete on
 

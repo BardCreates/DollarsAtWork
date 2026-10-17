@@ -24,6 +24,7 @@ import { NetWorthCard, RANGE_POINTS } from './NetWorthCard';
 import { ReportDialog } from './ReportDialog';
 import type { NetWorthData } from './networth';
 import { ProjectionChart } from './ProjectionChart';
+import { RetirementCard } from './RetirementCard';
 import { TimelineCard } from './TimelineCard';
 import { buildProjectionInput, homeEquityAt, netWorthBreakdownAt, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
@@ -234,6 +235,7 @@ function Dashboard({ data }: { data: DashboardData }) {
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <CheckInCard snapshots={data.netWorth.snapshots} readOnly={readOnly} onStart={() => setDialog('check-in')} onShowReport={() => setDialog('report')} />
           <TimelineCard items={timeline} />
+          <RetirementCard data={data} readOnly={readOnly} />
           <PlanCard data={data} />
           <DebtPayoffCard data={data} result={result} />
           <GoalsCard data={data} result={result} />
