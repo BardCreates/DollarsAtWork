@@ -576,3 +576,95 @@ describe('the engine is pure', () => {
     expect(second).toEqual(first);
   });
 });
+
+describe('rule 8: which debts are growing', () => {
+  it('names each debt whose payment missed its interest, in input order', () => {
+    // Card: 10,000 at 30% charges 10,000 × 0.30 / 12 = 250 a month; its 100 minimum misses that, so it grows.
+    // Loan: 1,000 at 12% charges 10; its 50 minimum covers it. The budget is exactly the minimums (150).
+    const result = project(
+      plan({
+        months: 2,
+        debtMonthly: 150,
+        debts: [
+          { id: 'card', balance: 10_000, apr: 30, minPayment: 100 },
+          { id: 'loan', balance: 1_000, apr: 12, minPayment: 50 },
+        ],
+      }),
+    );
+    expect(result.warnings.debtGrowing).toBe(true);
+    expect(result.warnings.growingDebts).toEqual([true, false]);
+    // 10,000 + 250 − 100 = 10,150 after month 1.
+    expect(result.points[1].debtBalances[0]).toBeCloseTo(10_150, 6);
+  });
+});
+
+describe('rule 9: paycheck contributions and a match on salary before taxes', () => {
+  it('adds what comes straight from the paycheck on top of the plan amount, and counts it as invested', () => {
+    // Plan amount 100 + paycheck 400 = 500 a month into a 0% account.
+    const { points } = project(plan({ months: 2, investmentsMonthly: 100, accounts: [{ ...cashAccount, payrollMonthly: 400 }] }));
+    expect(points[1].investments).toBeCloseTo(500, 6);
+    expect(points[2].investments).toBeCloseTo(1_000, 6);
+    expect(points[2].investedToDate).toBeCloseTo(1_000, 6);
+  });
+
+  it('paycheck money goes in even when the plan invests nothing', () => {
+    const { points } = project(plan({ months: 1, accounts: [{ ...cashAccount, payrollMonthly: 250 }] }));
+    expect(points[1].investments).toBeCloseTo(250, 6);
+  });
+
+  it('caps the match at a percent of salary before taxes, not take-home pay', () => {
+    // Take-home 5,000, salary 90,000 a year = 7,500 a month. Match 50% up to 6%: the cap is 6% × 7,500 = 450.
+    // Paycheck 600 → matchable 450 → match 225. Total 600 + 225 = 825.
+    const account = { ...cashAccount, payrollMonthly: 600, matchPercent: 50, matchLimitPercent: 6, matchSalaryMonthly: 7_500 };
+    const withSalary = project(plan({ months: 1, accounts: [account] }));
+    expect(withSalary.points[1].investments).toBeCloseTo(825, 6);
+    expect(withSalary.points[1].matchedToDate).toBeCloseTo(225, 6);
+
+    // Without the salary the cap falls back to take-home: 6% × 5,000 = 300 → match 150. Total 750.
+    const noSalary = { ...account, matchSalaryMonthly: undefined };
+    expect(project(plan({ months: 1, accounts: [noSalary] })).points[1].investments).toBeCloseTo(750, 6);
+  });
+
+  it('the salary the match is capped on grows with the raise', () => {
+    // Salary 5,000 a month, 10% raise from month 13: 5,500. Match 100% up to 10%: cap 500 in year one, 550 in year two.
+    // Contributing 1,000 a month: month 1 adds 1,000 + 500, month 13 adds 1,000 + 550.
+    const account = { ...cashAccount, payrollMonthly: 1_000, matchPercent: 100, matchLimitPercent: 10, matchSalaryMonthly: 5_000 };
+    const { points } = project(plan({ months: 13, incomeGrowthRate: 10, accounts: [account] }));
+    expect(points[1].investments).toBeCloseTo(1_500, 6);
+    expect(points[13].investments - points[12].investments).toBeCloseTo(1_550, 6);
+  });
+});
+
+describe('rule 10: a raise can go to investments', () => {
+  it('adds each raise to the month’s investing instead of Remaining', () => {
+    // Income 5,000, 10% raise: year two is 5,500, so 500 more a month is invested from month 13.
+    // Months 1–12 invest 100 each = 1,200; month 13 invests 100 + 500 = 600 → 1,800.
+    const input = plan({ months: 13, investmentsMonthly: 100, incomeGrowthRate: 10, raiseDestination: 'investments', accounts: [cashAccount] });
+    const { points } = project(input);
+    expect(points[12].investments).toBeCloseTo(1_200, 6);
+    expect(points[13].investments).toBeCloseTo(1_800, 6);
+    // And Remaining doesn't also count it.
+    expect(points[13].remaining).toBeCloseTo(0, 6);
+  });
+
+  it('by default the raise still lands in Remaining and is not invested', () => {
+    const { points } = project(plan({ months: 13, investmentsMonthly: 100, incomeGrowthRate: 10, accounts: [cashAccount] }));
+    expect(points[13].investments).toBeCloseTo(1_300, 6);
+    expect(points[13].remaining).toBeCloseTo(500, 6);
+  });
+});
+
+describe('rule 11: a lower or higher return for the range', () => {
+  it('moves every account’s expected return by the adjustment', () => {
+    // 7% − 2 = 5%: 10,000 → 10,500 after a year. 7% + 2 = 9%: 10,900.
+    const account = { id: 'a', balance: 10_000, expectedReturn: 7, sharePercent: 100 };
+    expect(project(plan({ months: 12, accounts: [account], returnAdjustment: -2 })).points[12].investments).toBeCloseTo(10_500, 6);
+    expect(project(plan({ months: 12, accounts: [account], returnAdjustment: 2 })).points[12].investments).toBeCloseTo(10_900, 6);
+  });
+
+  it('moves the default return for money with no account too', () => {
+    // 1,000 a month with no account at the default 7% − 7 = 0%: exactly 2,000 after two months.
+    const { points } = project(plan({ months: 2, investmentsMonthly: 1_000, returnAdjustment: -7 }));
+    expect(points[2].investments).toBeCloseTo(2_000, 6);
+  });
+});

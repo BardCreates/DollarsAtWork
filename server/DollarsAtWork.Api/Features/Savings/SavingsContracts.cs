@@ -18,6 +18,6 @@ public record GoalResponse(Guid Id, string Name, decimal TargetAmount, decimal C
 
 /// <summary>
 /// MonthlyAmount is read from the plan's built-in Savings category; it is never stored here.
-/// PlannedExpenses is the total of the plan's custom categories, used to size an emergency fund.
+/// PlannedExpenses is the plan's custom categories plus every open debt's minimum payment, used to size an emergency fund.
 /// </summary>
 public record SavingsResponse(string SplitMode, decimal MonthlyAmount, decimal PlannedExpenses, IReadOnlyList<GoalResponse> Goals);

@@ -4,10 +4,20 @@ namespace DollarsAtWork.Api.Features.Investments;
 
 /// <summary>
 /// Used to add an account and to replace one. ExpectedReturn defaults to 7.
-/// Match fields are optional: MatchPercent of each contribution, on contributions up to MatchLimitPercent of income.
+/// Match fields are optional: MatchPercent of each contribution, on contributions up to MatchLimitPercent of
+/// MatchSalaryYearly (the salary before taxes; when left out, the plan's take-home income is used).
+/// PayrollMonthly is what already goes in straight from the paycheck (default 0).
 /// Shares are changed together through the split endpoint, never here.
 /// </summary>
-public record SaveAccountRequest(string? Name, string? Type, decimal? Balance, decimal? ExpectedReturn, decimal? MatchPercent, decimal? MatchLimitPercent);
+public record SaveAccountRequest(
+    string? Name,
+    string? Type,
+    decimal? Balance,
+    decimal? ExpectedReturn,
+    decimal? MatchPercent,
+    decimal? MatchLimitPercent,
+    decimal? MatchSalaryYearly = null,
+    decimal? PayrollMonthly = null);
 
 public record AccountShare(Guid Id, decimal? SharePercent);
 
@@ -23,10 +33,12 @@ public record AccountResponse(
     decimal SharePercent,
     decimal? MatchPercent,
     decimal? MatchLimitPercent,
+    decimal? MatchSalaryYearly,
+    decimal PayrollMonthly,
     int SortOrder)
 {
     public static AccountResponse From(InvestmentAccount a) =>
-        new(a.Id, a.Name, a.Type.ToString(), a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.SortOrder);
+        new(a.Id, a.Name, a.Type.ToString(), a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly, a.SortOrder);
 }
 
 /// <summary>

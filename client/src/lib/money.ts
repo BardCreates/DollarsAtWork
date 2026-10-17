@@ -44,6 +44,20 @@ export function parseMoneyInput(text: string, percentOf?: number): number | null
   return dollars <= MAX_AMOUNT ? dollars : null;
 }
 
+/**
+ * Why a typed amount can't be used, in words for the box's helper text, or null when parseMoneyInput accepts it.
+ * Say what's wrong ("can't be negative") rather than only what's wanted.
+ */
+export function moneyInputProblem(text: string, percentOf?: number): string | null {
+  if (parseMoneyInput(text, percentOf) !== null) return null;
+  const cleaned = text.replace(/[\s$,]/g, '');
+  if (cleaned.startsWith('-')) return "Amounts can't be negative. Enter 0 or more.";
+  if (cleaned.endsWith('%') && percentOf === undefined) return 'Enter a dollar amount, not a percent.';
+  const digits = cleaned.endsWith('%') ? cleaned.slice(0, -1) : cleaned;
+  if (/^(\d+\.?\d*|\.\d+)$/.test(digits)) return `That's more than ${formatMoney(Math.floor(MAX_AMOUNT))}.`;
+  return percentOf === undefined ? 'Enter a dollar amount, like 500.' : 'Enter dollars or a percent, like 500 or 10%.';
+}
+
 const compact = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 });
 
 /** Short form for chart axes: $1.2K, $350K, $1.5M. */

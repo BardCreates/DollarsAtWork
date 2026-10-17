@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { project, type ProjectionResult } from '../../lib/projection';
+import { project, type AccountInput, type ProjectionResult } from '../../lib/projection';
 
 export type AccountType = 'Retirement401k' | 'Ira' | 'RothIra' | 'Brokerage' | 'Hsa' | 'Other';
 
@@ -25,8 +25,12 @@ export interface Account {
   sharePercent: number;
   /** Employer adds this percent of each contribution; null means no match. */
   matchPercent: number | null;
-  /** …on contributions up to this percent of monthly income; null means no cap. */
+  /** …on contributions up to this percent of salary; null means no cap. */
   matchLimitPercent: number | null;
+  /** Yearly salary before taxes that the match limit is a percent of; null means take-home income is used. */
+  matchSalaryYearly: number | null;
+  /** What already goes in straight from the paycheck each month, on top of the plan's Investments amount. */
+  payrollMonthly: number;
   sortOrder: number;
 }
 
@@ -38,6 +42,20 @@ export interface InvestmentsData {
 }
 
 export type AccountFields = Omit<Account, 'id' | 'sortOrder' | 'sharePercent'>;
+
+/** An account as the projection engine takes it. Every page builds its input through this, so they can't disagree. */
+export function toAccountInput(a: Account): AccountInput {
+  return {
+    id: a.id,
+    balance: a.balance,
+    expectedReturn: a.expectedReturn,
+    sharePercent: a.sharePercent,
+    matchPercent: a.matchPercent ?? undefined,
+    matchLimitPercent: a.matchLimitPercent ?? undefined,
+    matchSalaryMonthly: a.matchSalaryYearly === null ? undefined : a.matchSalaryYearly / 12,
+    payrollMonthly: a.payrollMonthly,
+  };
+}
 
 export const investmentsQueryKey = ['investments'] as const;
 
@@ -111,28 +129,23 @@ export interface InvestmentProjection {
 
 /**
  * Runs the shared projection engine for the investment accounts alone. `incomeGrowthRate` is the yearly raise
- * from Assumptions: the employer match is capped at a share of income, so without it the match figures here would
- * fall behind the dashboard's from year two on.
+ * from Assumptions: the employer match is capped at a share of salary, so without it the match figures here would
+ * fall behind the dashboard's from year two on. `raiseToInvestments` adds each raise to the monthly amount, as the
+ * dashboard does when that assumption is on.
  */
-export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate = 0): InvestmentProjection {
+export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate = 0, raiseToInvestments = false): InvestmentProjection {
   return useMemo(() => {
     const result = project({
       months: INVEST_HORIZON_YEARS * 12,
       monthlyIncome: data.monthlyIncome,
       incomeGrowthRate,
+      raiseDestination: raiseToInvestments ? 'investments' : 'remaining',
       savingsMonthly: 0,
       debtMonthly: 0,
       investmentsMonthly: data.monthlyAmount,
       goals: [],
       debts: [],
-      accounts: data.accounts.map((a) => ({
-        id: a.id,
-        balance: a.balance,
-        expectedReturn: a.expectedReturn,
-        sharePercent: a.sharePercent,
-        matchPercent: a.matchPercent ?? undefined,
-        matchLimitPercent: a.matchLimitPercent ?? undefined,
-      })),
+      accounts: data.accounts.map(toAccountInput),
     });
 
     const totalToday = data.accounts.reduce((sum, a) => sum + a.balance, 0);
@@ -154,5 +167,5 @@ export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate 
       sharesTotal: data.accounts.reduce((sum, a) => sum + a.sharePercent, 0),
       matchNextMonth: result.points[1]?.matchedToDate ?? 0,
     };
-  }, [data, incomeGrowthRate]);
+  }, [data, incomeGrowthRate, raiseToInvestments]);
 }

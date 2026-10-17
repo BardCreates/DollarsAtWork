@@ -5,7 +5,9 @@ import { z } from 'zod';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
 import { ApiError, errorMessage } from '../../api/client';
-import { parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { formatMoney, parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { monthlyInterest } from '../../lib/projection';
+import { useGuardedClose } from '../../components/useGuardedClose';
 import { debtTypeLabels, useAddDebt, useUpdateDebt, type Debt, type DebtType } from './debts';
 
 const debtTypes = Object.keys(debtTypeLabels) as [DebtType, ...DebtType[]];
@@ -29,7 +31,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
   const update = useUpdateDebt();
   const saving = debt ? update : add;
 
-  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -54,6 +56,14 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
     lastType.current = type;
   }, [type, debt, setValue]);
 
+  // A minimum that doesn't cover the month's interest means the balance grows forever: say so while it's typed.
+  const balanceNow = parseMoneyInput(watch('balance'));
+  const aprNow = parsePercentInput(watch('apr'));
+  const minimumNow = isAmount(watch('minPayment')) ? parseMoneyInput(watch('minPayment')) : null;
+  const interestNow = balanceNow !== null && aprNow !== null ? monthlyInterest(balanceNow, aprNow) : 0;
+  const minimumMissesInterest = minimumNow !== null && interestNow > 0 && minimumNow <= interestNow;
+  const guardedClose = useGuardedClose(open, isDirty, onClose);
+
   const serverError = saving.error instanceof ApiError ? saving.error : undefined;
   const fieldError = (field: keyof FormValues) => errors[field]?.message ?? serverError?.fieldErrors(field)[0];
   const hasFieldError = (Object.keys(blank) as (keyof FormValues)[]).some((field) => fieldError(field));
@@ -72,7 +82,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog open={open} onClose={guardedClose} fullWidth maxWidth="xs">
       <Box component="form" onSubmit={onSubmit} noValidate>
         <DialogTitle>{debt ? `Edit ${debt.name}` : 'Add a debt'}</DialogTitle>
         <DialogContent>
@@ -116,6 +126,12 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
               helperText={fieldError('minPayment') ?? (type === 'Mortgage' ? 'Principal and interest only, not escrow (taxes and insurance).' : undefined)}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
             />
+            {minimumMissesInterest && (
+              <Alert severity="warning">
+                This debt charges about {formatMoney(interestNow)} of interest a month, so a {formatMoney(minimumNow ?? 0)} payment won't shrink it.
+                Check the minimum on your statement, or plan to pay more than {formatMoney(interestNow)}.
+              </Alert>
+            )}
             <Controller
               name="minimumOnly"
               control={control}
@@ -135,7 +151,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} color="inherit">
+          <Button onClick={guardedClose} color="inherit">
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={saving.isPending}>

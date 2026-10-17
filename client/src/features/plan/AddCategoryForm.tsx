@@ -5,7 +5,7 @@ import { Box, Button, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { muiField } from '../../components/formHelpers';
 import { ApiError, errorMessage } from '../../api/client';
-import { parseMoneyInput } from '../../lib/money';
+import { moneyInputProblem, parseMoneyInput } from '../../lib/money';
 import { categoryColors } from '../../theme';
 import { useAddCategory, type Category } from './plan';
 
@@ -35,7 +35,7 @@ export function AddCategoryForm({ categories, income, disabled }: { categories: 
   const onSubmit = handleSubmit(({ name, amount }) => {
     const dollars = parseMoneyInput(amount, income);
     if (dollars === null) {
-      setError('amount', { message: 'Enter dollars or a percent, like 500 or 10%.' });
+      setError('amount', { message: moneyInputProblem(amount, income) ?? 'Enter dollars or a percent, like 500 or 10%.' });
       return;
     }
     add.mutate(

@@ -245,7 +245,13 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
   );
 }
 
-/** First visit: suggest an emergency fund sized from the plan's own expenses. */
+/** A small cushion to hold while extra money goes to high-interest debt. */
+const STARTER_FUND = 1_000;
+
+/**
+ * First visit: suggest an emergency fund sized from the plan's own expenses (its everyday categories plus every debt's
+ * minimum, since an emergency doesn't pause those), or a small starter fund to build before paying debt down faster.
+ */
 function EmergencyFundStarter({
   plannedExpenses,
   readOnly,
@@ -270,9 +276,13 @@ function EmergencyFundStarter({
           {plannedExpenses > 0 ? (
             <>
               <Typography color="text.secondary" sx={{ mb: 2, maxWidth: 560 }}>
-                Your plan has {formatMoney(plannedExpenses)} of expenses a month. A common first goal is enough to cover 3 to 6 months of them.
+                Your everyday categories and debt minimums come to {formatMoney(plannedExpenses)} a month. A common goal is enough to cover 3 to 6
+                months of them. Paying off card debt? Many people save a small starter fund first, then build the rest once the cards are gone.
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+                <Button variant="outlined" disabled={readOnly} onClick={() => onStart({ name: 'Starter emergency fund', targetAmount: STARTER_FUND })}>
+                  Starter · {formatMoney(STARTER_FUND)}
+                </Button>
                 {sizes.map((months) => (
                   <Button
                     key={months}

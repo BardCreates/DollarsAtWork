@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
+import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
 import { parseMoneyInput, parsePercentInput } from '../../lib/money';
 import { useAddGoal, useSaveGoal, type Goal, type GoalFields } from './savings';
@@ -24,6 +25,12 @@ type FormValues = z.infer<typeof schema>;
 const blank: FormValues = { name: '', targetAmount: '', currentBalance: '', targetDate: '', apy: '', sharePercent: '' };
 const numberText = (value: number) => (value === 0 ? '' : String(value));
 
+/** Today on the person's own calendar, as the date box writes it (YYYY-MM-DD). */
+function todayText(now: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
 interface GoalDialogProps {
   open: boolean;
   /** The goal being edited, or starting values for a new one. */
@@ -40,7 +47,7 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
   const save = useSaveGoal();
   const saving = goal ? save : add;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, reset, setError, formState: { errors, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -65,7 +72,14 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
   const fieldError = (field: keyof FormValues) => errors[field]?.message ?? serverError?.fieldErrors(field)[0];
   const hasFieldError = (Object.keys(blank) as (keyof FormValues)[]).some((field) => fieldError(field));
 
+  const guardedClose = useGuardedClose(open, isDirty, onClose);
+
   const onSubmit = handleSubmit((values) => {
+    // A date that has already gone by can't be "on track". An old goal keeps its own date until it's changed.
+    if (values.targetDate && values.targetDate < todayText() && values.targetDate !== goal?.targetDate) {
+      setError('targetDate', { message: 'That date has passed. Pick a future date, or leave it empty.' });
+      return;
+    }
     const fields: GoalFields = {
       name: values.name,
       targetAmount: parseMoneyInput(values.targetAmount) ?? 0,
@@ -79,7 +93,7 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog open={open} onClose={guardedClose} fullWidth maxWidth="xs">
       <Box component="form" onSubmit={onSubmit} noValidate>
         <DialogTitle>{goal ? `Edit ${goal.name}` : 'Add a goal'}</DialogTitle>
         <DialogContent>
@@ -108,7 +122,7 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
               {...muiField(register, 'targetDate')}
               error={!!fieldError('targetDate')}
               helperText={fieldError('targetDate') ?? "We'll tell you whether you're on track."}
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: todayText() } }}
             />
             <TextField
               label="APY (optional)"
@@ -131,7 +145,7 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} color="inherit">
+          <Button onClick={guardedClose} color="inherit">
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={saving.isPending}>

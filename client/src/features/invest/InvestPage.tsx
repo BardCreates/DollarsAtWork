@@ -35,6 +35,7 @@ import { PlanAmountBanner } from '../../components/PlanAmountBanner';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
+import { LIMITS_YEAR, overLimit } from '../../lib/contributionLimits';
 import { useNetWorth } from '../dashboard/networth';
 import { AccountDialog } from './AccountDialog';
 import { GrowthChart } from './GrowthChart';
@@ -86,7 +87,7 @@ function InvestModule({ data }: { data: InvestmentsData }) {
   const readOnly = !me?.access.hasFullAccess;
   // The yearly raise (Dashboard > Assumptions) lifts the match cap, as on the dashboard.
   const { data: netWorth } = useNetWorth();
-  const projection = useInvestmentProjection(data, netWorth?.settings.incomeGrowthRate ?? 0);
+  const projection = useInvestmentProjection(data, netWorth?.settings.incomeGrowthRate ?? 0, netWorth?.settings.raiseToInvestments ?? false);
   const remove = useDeleteAccount();
 
   const [tab, setTab] = useState<'overview' | 'growth'>('overview');
@@ -98,6 +99,8 @@ function InvestModule({ data }: { data: InvestmentsData }) {
   const hasAccounts = data.accounts.length > 0;
   const splitBroken = hasAccounts && Math.abs(projection.sharesTotal - 100) > 0.01;
   const valueIn = (years: number) => projection.years[years].value;
+  const planShare = (account: Account) => (data.monthlyAmount * account.sharePercent) / (projection.sharesTotal || 100);
+  const limitWarnings = overLimit(data.accounts.map((account) => ({ type: account.type, monthly: planShare(account) + account.payrollMonthly })));
 
   const addButton = (
     <Button variant="contained" startIcon={<AddIcon />} disabled={readOnly} onClick={() => setEditing('new')}>
@@ -146,6 +149,13 @@ function InvestModule({ data }: { data: InvestmentsData }) {
               Your plan doesn't put anything into Investments yet, so this shows growth on today's balances only. Give Investments an amount in Plan.
             </Alert>
           )}
+          {limitWarnings.map((warning) => (
+            <Alert key={warning.group} severity="warning" sx={{ mb: 3 }}>
+              Your plan puts about {formatMoney(Math.round(warning.yearly))} a year into your {warning.label}. The {LIMITS_YEAR} limit is{' '}
+              {formatMoney(warning.limit)} ({warning.higher}). Money over the limit can't go in, so move the extra to another account with Change
+              split.
+            </Alert>
+          ))}
 
           <Card sx={{ mb: 3 }}>
             <CardContent sx={{ display: 'grid', gap: { xs: 2, md: 4 }, alignItems: 'start', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
@@ -181,7 +191,7 @@ function InvestModule({ data }: { data: InvestmentsData }) {
                     <AccountRow
                       key={account.id}
                       account={account}
-                      monthly={(data.monthlyAmount * account.sharePercent) / (projection.sharesTotal || 100)}
+                      monthly={planShare(account)}
                       readOnly={readOnly}
                       onEdit={() => setEditing(account)}
                       onDelete={() => setDeleting(account)}
@@ -253,7 +263,7 @@ function AccountRow({ account, monthly, readOnly, onEdit, onDelete }: { account:
   const match =
     account.matchPercent === null || account.matchPercent === 0
       ? null
-      : `${account.matchPercent}% match${account.matchLimitPercent === null ? '' : ` up to ${account.matchLimitPercent}% of income`}`;
+      : `${account.matchPercent}% match${account.matchLimitPercent === null ? '' : ` up to ${account.matchLimitPercent}% of ${account.matchSalaryYearly === null ? 'take-home pay' : 'salary'}`}`;
 
   return (
     <Box
@@ -288,6 +298,11 @@ function AccountRow({ account, monthly, readOnly, onEdit, onDelete }: { account:
         <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
           {formatMoney(monthly)}/month · {account.sharePercent}%
         </Typography>
+        {account.payrollMonthly > 0 && (
+          <Typography variant="caption" color="text.secondary" component="div">
+            + {formatMoney(account.payrollMonthly)}/month from your paycheck
+          </Typography>
+        )}
         {match && (
           <Typography variant="caption" color="text.secondary">
             {match}

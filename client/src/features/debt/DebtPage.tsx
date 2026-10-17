@@ -28,6 +28,7 @@ import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
+import { listNames } from '../../lib/words';
 import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
 import { debtRollovers } from '../../lib/rollover';
 import { RolloverList } from '../../components/RolloverList';
@@ -91,6 +92,7 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
   const projection = useDebtProjection(data, whole);
+  const growingNames = data.debts.filter((_, i) => projection.planned.warnings.growingDebts[i]).map((d) => d.name);
 
   // Where the money goes once every debt is gone is the user's own setting (Dashboard > Assumptions).
   const { data: netWorth } = useNetWorth();
@@ -148,8 +150,15 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
           )}
           {projection.planned.warnings.debtGrowing && (
             <Alert severity="warning" sx={{ mb: 3 }}>
-              At least one debt is getting less each month than the interest it charges, so it grows instead of shrinking. Check its minimum
-              payment, or give Debt more in Plan.
+              {growingNames.length > 0 ? (
+                <>
+                  {listNames(growingNames)} {growingNames.length === 1 ? 'gets' : 'get'} less each month than the interest charged, so{' '}
+                  {growingNames.length === 1 ? 'it grows' : 'they grow'} instead of shrinking.
+                </>
+              ) : (
+                'At least one debt is getting less each month than the interest it charges, so it grows instead of shrinking.'
+              )}{' '}
+              Check the minimum payment, or give Debt more in Plan.
             </Alert>
           )}
 

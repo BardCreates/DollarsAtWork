@@ -10,7 +10,7 @@ import {
 import { yearMonthFromNow } from '../../lib/dates';
 import { buildTimeline, type TimelineItem } from '../../lib/timeline';
 import { useDebts, type DebtsData } from '../debt/debts';
-import { useInvestments, type InvestmentsData } from '../invest/investments';
+import { toAccountInput, useInvestments, type InvestmentsData } from '../invest/investments';
 import { planTotals, usePlan, type CategoryKind, type Plan } from '../plan/plan';
 import { useSavings, type SavingsData } from '../savings/savings';
 import { useNetWorth, type NetWorthData } from './networth';
@@ -66,20 +66,14 @@ export function buildProjectionInput(data: DashboardData, todaysDollars: boolean
     savingsSplitMode: savings.splitMode.toLowerCase() as SavingsSplitMode,
     debts: debts.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment, minimumOnly: d.minimumOnly })),
     debtStrategy: debts.strategy.toLowerCase() as DebtStrategy,
-    accounts: investments.accounts.map((a) => ({
-      id: a.id,
-      balance: a.balance,
-      expectedReturn: a.expectedReturn,
-      sharePercent: a.sharePercent,
-      matchPercent: a.matchPercent ?? undefined,
-      matchLimitPercent: a.matchLimitPercent ?? undefined,
-    })),
+    accounts: investments.accounts.map(toAccountInput),
     otherItems: netWorth.items.map((i) => ({ id: i.id, value: i.value, kind: (i.kind === 'Asset' ? 'asset' : 'liability') as 'asset' | 'liability', yearlyChange: i.yearlyChangePercent })),
     debtDoneDestination: netWorth.settings.debtDoneDestination.toLowerCase() as FreedMoneyDestination,
     savingsDoneDestination: netWorth.settings.savingsDoneDestination.toLowerCase() as FreedMoneyDestination,
     todaysDollars,
     inflationRate: netWorth.settings.inflationRate,
     incomeGrowthRate: netWorth.settings.incomeGrowthRate,
+    raiseDestination: netWorth.settings.raiseToInvestments ? 'investments' : 'remaining',
   };
 }
 

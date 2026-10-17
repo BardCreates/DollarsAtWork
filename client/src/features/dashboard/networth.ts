@@ -31,6 +31,8 @@ export interface Settings {
   savingsDoneDestination: Destination;
   inflationRate: number;
   incomeGrowthRate: number;
+  /** True: each raise is added to the Investments amount. False: it lands in Remaining and isn't projected. */
+  raiseToInvestments: boolean;
 }
 
 export interface OtherItem {

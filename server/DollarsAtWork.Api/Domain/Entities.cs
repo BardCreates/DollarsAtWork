@@ -92,6 +92,8 @@ public class Plan
     public decimal InflationRate { get; set; } = 3m;
     /// <summary>Expected yearly raise as a percent.</summary>
     public decimal IncomeGrowthRate { get; set; }
+    /// <summary>True: each raise is added to the Investments amount. False: it lands in Remaining and isn't projected.</summary>
+    public bool RaiseToInvestments { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
@@ -203,8 +205,18 @@ public class InvestmentAccount
     public decimal SharePercent { get; set; }
     /// <summary>Employer adds this percent of each contribution. Null means no match.</summary>
     public decimal? MatchPercent { get; set; }
-    /// <summary>The match applies to contributions up to this percent of income. Null means no cap.</summary>
+    /// <summary>The match applies to contributions up to this percent of salary. Null means no cap.</summary>
     public decimal? MatchLimitPercent { get; set; }
+    /// <summary>
+    /// Yearly salary before taxes, which an employer's match limit is a percent of. Null means the plan's take-home
+    /// income is used instead (which understates the match).
+    /// </summary>
+    public decimal? MatchSalaryYearly { get; set; }
+    /// <summary>
+    /// What already goes into this account straight from the paycheck each month (a 401(k) deferral). It never passes
+    /// through take-home pay, so it's added on top of the plan's Investments amount, not taken from it. 0 for none.
+    /// </summary>
+    public decimal PayrollMonthly { get; set; }
     public int SortOrder { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

@@ -41,7 +41,7 @@ export function DashboardHint() {
   return (
     <Hint id="dashboard" title="Your future, one slider away" helpSlug="dashboard">
       <p>
-        Drag the years slider to see your net worth up to 40 years out. Switch on Today's dollars to see those amounts after inflation. Once a month, press Start check-in to update
+        Drag the years slider to see your net worth up to 40 years out. Amounts start in today's dollars, after inflation; switch Today's dollars off to see future dollars. Once a month, press Start check-in to update
         your balances.
       </p>
     </Hint>
@@ -52,7 +52,7 @@ export function PlanHint() {
   return (
     <Hint id="plan" title="Give every dollar a job" helpSlug="plan">
       <p>
-        Enter your monthly take-home pay, then add categories until Remaining reaches $0. Type dollars or a percent, like 10%. Everything saves as you go. Watch the Move a dollar
+        Enter your monthly take-home pay, then fill in the everyday categories and add your own until Remaining reaches $0. Type dollars or a percent, like 10%. Everything saves as you go. Watch the Move a dollar
         panel as you change amounts: it shows what each change does to your debt-free date and your net worth.
       </p>
     </Hint>
@@ -96,7 +96,7 @@ export function InvestHint() {
   return (
     <Hint id="invest" title="Watch your investing grow" helpSlug="invest">
       <p>
-        Add your 401(k), IRA or brokerage account with today's balance. If your employer matches what you put in, add the match too; it's free money in your projection. With two
+        Add your 401(k), IRA or brokerage account with today's balance, plus anything already taken from your paycheck. If your employer matches what you put in, add the match and your salary before taxes; it's free money in your projection. With two
         or more accounts, use Change split to share your Investments amount between them.
       </p>
     </Hint>

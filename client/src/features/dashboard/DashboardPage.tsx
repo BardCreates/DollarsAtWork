@@ -13,13 +13,14 @@ import { ConfirmEmailNotice } from '../account/ConfirmEmailNotice';
 import { useSendWelcomeEmail } from '../account/welcomeEmail';
 import { formatMoney } from '../../lib/money';
 import { recordUsage } from '../../lib/usage';
+import { listNames } from '../../lib/words';
 import { brand } from '../../theme';
 import { DashboardHint, TourHint } from '../hints/PageHints';
 import { planTotals } from '../plan/plan';
 import { AssumptionsDialog } from './AssumptionsDialog';
 import { AssetsLiabilitiesCard, CheckInCard, DashCard, DebtPayoffCard, GoalsCard, HistoryCard, PlanCard } from './cards';
 import { CheckInDialog } from './CheckInDialog';
-import { NetWorthCard } from './NetWorthCard';
+import { NetWorthCard, RANGE_POINTS } from './NetWorthCard';
 import { ReportDialog } from './ReportDialog';
 import type { NetWorthData } from './networth';
 import { ProjectionChart } from './ProjectionChart';
@@ -76,10 +77,17 @@ function Dashboard({ data }: { data: DashboardData }) {
   const readOnly = !me?.access.hasFullAccess;
 
   const [year, setYear] = useState(10);
-  const [todaysDollars, setTodaysDollars] = useState(false);
+  // Long-range numbers start in today's buying power: 40 years of inflation makes future dollars look far bigger than they are.
+  const [todaysDollars, setTodaysDollars] = useState(true);
   const [dialog, setDialog] = useState<'assumptions' | 'check-in' | 'report' | null>(null);
 
   const { result, timeline } = useDashboardProjection(data, todaysDollars);
+  // The same plan with returns a little lower and higher, shown as a range under the estimate.
+  const range = useMemo(() => {
+    const input = buildProjectionInput(data, todaysDollars);
+    return { low: project({ ...input, returnAdjustment: -RANGE_POINTS }), high: project({ ...input, returnAdjustment: RANGE_POINTS }) };
+  }, [data, todaysDollars]);
+  const growingDebtNames = data.debts.debts.filter((_, i) => result.warnings.growingDebts[i]).map((d) => d.name);
   const { remaining } = planTotals(data.plan);
   const blank = isBlank(data);
 
@@ -99,7 +107,7 @@ function Dashboard({ data }: { data: DashboardData }) {
   if (blank) {
     return (
       <>
-        <PageHeader title="Dashboard" subtitle={me ? `Welcome, ${me.email}` : undefined} />
+        <PageHeader title="Dashboard" subtitle="Welcome to Dollars at Work." />
         <ConfirmEmailNotice me={me} />
         <TourHint />
         <Card>
@@ -113,9 +121,14 @@ function Dashboard({ data }: { data: DashboardData }) {
                 Your net worth, the years slider and the charts appear here once your plan is set up. Start by entering your monthly income and splitting
                 it into categories.
               </Typography>
-              <Button component={RouterLink} to="/welcome" variant="contained" size="large">
-                Set up your plan
-              </Button>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                <Button component={RouterLink} to="/welcome" variant="contained" size="large">
+                  Set up your plan
+                </Button>
+                <Button component={RouterLink} to="/demo" variant="outlined" size="large">
+                  See an example plan first
+                </Button>
+              </Box>
             </Box>
           </CardContent>
         </Card>
@@ -180,10 +193,32 @@ function Dashboard({ data }: { data: DashboardData }) {
           Your Debt amount doesn't cover your minimum payments. Raise it in Plan.
         </Alert>
       )}
+      {growingDebtNames.length > 0 && !result.warnings.debtBudgetBelowMinimums && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 3 }}
+          action={
+            <Button component={RouterLink} to="/debt" color="inherit" size="small">
+              See Debt
+            </Button>
+          }
+        >
+          {listNames(growingDebtNames)} {growingDebtNames.length === 1 ? 'is' : 'are'} growing: the payment doesn't cover the interest, so the
+          balance never shrinks and pulls these projections down. Check the minimum, or put more of your Debt amount there.
+        </Alert>
+      )}
 
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.7fr) minmax(0, 1fr)' } }}>
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
-          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={todaysDollars} homeEquity={homeEquityAt(data, result, year * 12)} breakdown={netWorthBreakdownAt(data, result, year * 12)} />
+          <NetWorthCard
+            result={result}
+            year={year}
+            onYearChange={setYear}
+            todaysDollars={todaysDollars}
+            homeEquity={homeEquityAt(data, result, year * 12)}
+            breakdown={netWorthBreakdownAt(data, result, year * 12)}
+            range={range}
+          />
           <DashCard title="Projection">
             <ProjectionChart result={result} year={year} />
             {result.warnings.investingWithoutAccounts && (

@@ -6,7 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DollarsAtWork.Api.Common;
 
-/// <summary>Creates everything a brand-new account needs: its plan, the three built-in categories and a 30-day trial.</summary>
+/// <summary>
+/// Creates everything a brand-new account needs: its plan, the three built-in categories, the everyday essentials
+/// and a 30-day trial.
+/// </summary>
 public class AccountSetup(AppDbContext db, TimeProvider clock)
 {
     public static readonly (CategoryKind Kind, string Name, string Color)[] BuiltIns =
@@ -14,6 +17,18 @@ public class AccountSetup(AppDbContext db, TimeProvider clock)
         (CategoryKind.Savings, "Savings", "#19c37d"),
         (CategoryKind.Debt, "Debt", "#ff5c5c"),
         (CategoryKind.Investment, "Investments", "#4aa8ff"),
+    ];
+
+    /// <summary>
+    /// Everyday spending every plan starts with, at $0 so nothing is guessed for the person. They are ordinary
+    /// categories: renamed or deleted like any other. Colors come from the client's categoryColors palette.
+    /// </summary>
+    public static readonly (string Name, string Color)[] Essentials =
+    [
+        ("Housing", "#f5c518"),
+        ("Groceries", "#ff4081"),
+        ("Utilities", "#a78bfa"),
+        ("Transportation", "#2dd4bf"),
     ];
 
     /// <summary>A one-way fingerprint of an email address, the same for "A@x.com" and "a@x.com ".</summary>
@@ -54,6 +69,23 @@ public class AccountSetup(AppDbContext db, TimeProvider clock)
                 Color = color,
                 Amount = 0m,
                 SortOrder = i,
+                CreatedAt = now,
+                UpdatedAt = now,
+            });
+        }
+
+        for (var i = 0; i < Essentials.Length; i++)
+        {
+            var (name, color) = Essentials[i];
+            db.Categories.Add(new Category
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Kind = CategoryKind.Custom,
+                Name = name,
+                Color = color,
+                Amount = 0m,
+                SortOrder = BuiltIns.Length + i,
                 CreatedAt = now,
                 UpdatedAt = now,
             });

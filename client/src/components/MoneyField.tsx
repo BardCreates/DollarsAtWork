@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { TextField, type TextFieldProps } from '@mui/material';
-import { formatMoney, parseMoneyInput } from '../lib/money';
+import { formatMoney, moneyInputProblem, parseMoneyInput } from '../lib/money';
 
 interface MoneyFieldProps {
   value: number;
@@ -11,7 +11,10 @@ interface MoneyFieldProps {
    * Null means "nothing usable": the text isn't an amount, or the edit was abandoned.
    */
   onDraft?: (dollars: number | null) => void;
-  /** When set, "10%" is accepted and means 10% of this number. */
+  /**
+   * When set, "10%" is accepted and means 10% of this number (the plan's income), and an amount above it gets a note
+   * while typing that it's more than the whole income.
+   */
   percentOf?: number;
   label?: string;
   ariaLabel?: string;
@@ -26,7 +29,8 @@ interface MoneyFieldProps {
  */
 export function MoneyField({ value, onCommit, onDraft, percentOf, label, ariaLabel, disabled, size = 'small', sx }: MoneyFieldProps) {
   const [draft, setDraft] = useState<string | null>(null);
-  const [invalid, setInvalid] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const invalid = problem !== null;
   const cancelled = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectAll = useRef(false);
@@ -39,18 +43,21 @@ export function MoneyField({ value, onCommit, onDraft, percentOf, label, ariaLab
     inputRef.current?.select();
   });
 
+  const drafted = draft === null ? null : parseMoneyInput(draft, percentOf);
+  const overIncome = percentOf !== undefined && percentOf > 0 && drafted !== null && drafted > percentOf;
+
   const finish = () => {
     keepSelection.current = false;
     if (cancelled.current || draft === null) {
       cancelled.current = false;
       setDraft(null);
-      setInvalid(false);
+      setProblem(null);
       onDraft?.(null);
       return;
     }
     const dollars = parseMoneyInput(draft, percentOf);
     if (dollars === null) {
-      setInvalid(true);
+      setProblem(moneyInputProblem(draft, percentOf));
       onDraft?.(null);
       return;
     }
@@ -67,7 +74,7 @@ export function MoneyField({ value, onCommit, onDraft, percentOf, label, ariaLab
       sx={sx}
       value={draft ?? formatMoney(value)}
       error={invalid}
-      helperText={invalid ? (percentOf === undefined ? 'Enter a dollar amount.' : 'Enter dollars or a percent, like 500 or 10%.') : undefined}
+      helperText={problem ?? (overIncome ? "That's more than your whole income." : undefined)}
       inputRef={inputRef}
       onFocus={() => {
         if (draft !== null) return;
@@ -82,7 +89,7 @@ export function MoneyField({ value, onCommit, onDraft, percentOf, label, ariaLab
       }}
       onChange={(event) => {
         setDraft(event.target.value);
-        setInvalid(false);
+        setProblem(null);
         onDraft?.(parseMoneyInput(event.target.value, percentOf));
       }}
       onBlur={finish}
