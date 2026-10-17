@@ -92,6 +92,8 @@ public static class InvestmentsEndpoints
         account.ExpectedReturn = check.Percent("expectedReturn", request.ExpectedReturn ?? DefaultExpectedReturn, "an expected return", MaxReturn);
         account.MatchPercent = request.MatchPercent is null ? null : check.Percent("matchPercent", request.MatchPercent, "a match", MaxMatch);
         account.MatchLimitPercent = request.MatchLimitPercent is null ? null : check.Percent("matchLimitPercent", request.MatchLimitPercent, "a match limit");
+        account.MatchSalaryYearly = request.MatchSalaryYearly is null ? null : check.Amount("matchSalaryYearly", request.MatchSalaryYearly.Value, "a salary");
+        account.PayrollMonthly = check.Amount("payrollMonthly", request.PayrollMonthly ?? 0m, "a paycheck amount");
         account.UpdatedAt = now;
         return check;
     }

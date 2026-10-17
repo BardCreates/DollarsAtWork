@@ -237,10 +237,18 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 
+                    b.Property<decimal?>("MatchSalaryYearly")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
+
+                    b.Property<decimal>("PayrollMonthly")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
 
                     b.Property<decimal>("SharePercent")
                         .HasPrecision(19, 4)
@@ -406,6 +414,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<decimal>("MonthlyIncome")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
+
+                    b.Property<bool>("RaiseToInvestments")
+                        .HasColumnType("bit");
 
                     b.Property<string>("SavingsDoneDestination")
                         .IsRequired()

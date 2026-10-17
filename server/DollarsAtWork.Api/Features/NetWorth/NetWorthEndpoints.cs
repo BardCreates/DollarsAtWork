@@ -73,6 +73,8 @@ public static class NetWorthEndpoints
         plan.SavingsDoneDestination = savingsDone;
         plan.InflationRate = inflation;
         plan.IncomeGrowthRate = raise;
+        // Left out by an older client: keep what was there.
+        plan.RaiseToInvestments = request.RaiseToInvestments ?? plan.RaiseToInvestments;
         plan.UpdatedAt = clock.GetUtcNow();
         await db.SaveChangesAsync(ct);
         return Results.Ok(SettingsResponse.From(plan));

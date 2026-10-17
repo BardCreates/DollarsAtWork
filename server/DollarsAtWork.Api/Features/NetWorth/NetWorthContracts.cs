@@ -5,7 +5,7 @@ namespace DollarsAtWork.Api.Features.NetWorth;
 /// <summary>Used to add an item and to replace one.</summary>
 public record SaveOtherItemRequest(string? Name, string? Kind, string? Type, decimal? Value, decimal? YearlyChangePercent);
 
-public record SaveSettingsRequest(string? DebtDoneDestination, string? SavingsDoneDestination, decimal? InflationRate, decimal? IncomeGrowthRate);
+public record SaveSettingsRequest(string? DebtDoneDestination, string? SavingsDoneDestination, decimal? InflationRate, decimal? IncomeGrowthRate, bool? RaiseToInvestments = null);
 
 public record BalanceUpdate(Guid Id, decimal? Balance);
 
@@ -26,10 +26,10 @@ public record SnapshotResponse(DateOnly Date, decimal Assets, decimal Liabilitie
     public static SnapshotResponse From(NetWorthSnapshot s) => new(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts);
 }
 
-public record SettingsResponse(string DebtDoneDestination, string SavingsDoneDestination, decimal InflationRate, decimal IncomeGrowthRate)
+public record SettingsResponse(string DebtDoneDestination, string SavingsDoneDestination, decimal InflationRate, decimal IncomeGrowthRate, bool RaiseToInvestments)
 {
     public static SettingsResponse From(Domain.Plan p) =>
-        new(p.DebtDoneDestination.ToString(), p.SavingsDoneDestination.ToString(), p.InflationRate, p.IncomeGrowthRate);
+        new(p.DebtDoneDestination.ToString(), p.SavingsDoneDestination.ToString(), p.InflationRate, p.IncomeGrowthRate, p.RaiseToInvestments);
 }
 
 public record NetWorthResponse(SettingsResponse Settings, IReadOnlyList<OtherItemResponse> Items, IReadOnlyList<SnapshotResponse> Snapshots);

@@ -32,13 +32,18 @@ public static class SavingsEndpoints
         if (splitMode is null)
             return PlanMissing();
 
-        // Both numbers come from the plan's categories and are stored nowhere else.
+        // Both numbers come from the plan's categories (and the debts' minimums) and are stored nowhere else.
         var categories = await db.Categories.AsNoTracking()
             .Where(c => c.UserId == userId && (c.Kind == CategoryKind.Savings || c.Kind == CategoryKind.Custom))
             .Select(c => new { c.Kind, c.Amount })
             .ToListAsync(ct);
         var monthlyAmount = categories.Where(c => c.Kind == CategoryKind.Savings).Sum(c => c.Amount);
-        var plannedExpenses = categories.Where(c => c.Kind == CategoryKind.Custom).Sum(c => c.Amount);
+        // An emergency has to keep paying the bills and every debt's minimum (a mortgage included), so both count.
+        var debtMinimums = await db.Debts.AsNoTracking()
+            .Where(d => d.UserId == userId && d.Balance > 0)
+            .Select(d => d.MinPayment)
+            .ToListAsync(ct);
+        var plannedExpenses = categories.Where(c => c.Kind == CategoryKind.Custom).Sum(c => c.Amount) + debtMinimums.Sum();
 
         var goals = await db.SavingsGoals.AsNoTracking().Where(g => g.UserId == userId).OrderBy(g => g.Priority).ToListAsync(ct);
         return Results.Ok(new SavingsResponse(splitMode.Value.ToString(), monthlyAmount, plannedExpenses, goals.Select(GoalResponse.From).ToList()));
