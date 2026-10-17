@@ -14,6 +14,7 @@ export function NetWorthCard({
   onYearChange,
   todaysDollars,
   homeEquity,
+  breakdown,
 }: {
   result: ProjectionResult;
   year: number;
