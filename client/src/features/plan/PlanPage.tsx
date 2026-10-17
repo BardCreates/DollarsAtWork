@@ -6,7 +6,6 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { Figure } from '../../components/Figure';
 import { PageHeader } from '../../components/PageHeader';
 import { PlanHint } from '../hints/PageHints';
-import { MoneyField } from '../../components/MoneyField';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney, formatPercent } from '../../lib/money';
@@ -16,6 +15,7 @@ import { AllocationDonut } from './AllocationDonut';
 import { CategoryRow } from './CategoryRow';
 import { useNetWorth } from '../dashboard/networth';
 import { FundingNudge } from './FundingNudge';
+import { IncomeBox } from './IncomeBox';
 import { WindfallsCard } from './WindfallsCard';
 import { ImpactPanel } from './ImpactPanel';
 import { plansDiffer, usePlanImpact } from './usePlanImpact';
@@ -155,7 +155,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
           }}
         >
           <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-            <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} />
+            <IncomeBox income={income} readOnly={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} />
           </Box>
           <Figure
             label="Allocated"

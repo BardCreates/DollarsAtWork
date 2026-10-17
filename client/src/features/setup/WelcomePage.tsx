@@ -16,6 +16,7 @@ import { AssetDialog } from '../assets/AssetDialog';
 import { useNetWorth } from '../dashboard/networth';
 import { useInvestments } from '../invest/investments';
 import { AddCategoryForm } from '../plan/AddCategoryForm';
+import { IncomeBox } from '../plan/IncomeBox';
 import { planTotals, usePlan, useSetModuleAmount, useUpdateCategory, useUpdateIncome, type Category, type CategoryKind, type Plan } from '../plan/plan';
 import { GoalDialog } from '../savings/GoalDialog';
 import { useSavings } from '../savings/savings';
@@ -363,5 +364,5 @@ export function WelcomePage() {
 
 function IncomeField({ income, readOnly, onError }: { income: number; readOnly: boolean; onError: (e: unknown) => void }) {
   const updateIncome = useUpdateIncome();
-  return <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly} onCommit={(value) => updateIncome.mutate(value, { onError })} />;
+  return <IncomeBox income={income} readOnly={readOnly} onCommit={(value) => updateIncome.mutate(value, { onError })} />;
 }

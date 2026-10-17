@@ -77,8 +77,13 @@ Your hint settings are saved to your account, so they follow you to any device y
     title: 'Your monthly plan',
     section: 'Your plan',
     summary: 'Enter your take-home pay and give every dollar a job with categories.',
-    keywords: 'budget income categories remaining allocate allocation over-allocated percent drag reorder delete undo rent groceries donut windfall tax refund bonus one-time lump sum',
+    keywords: 'budget income categories remaining allocate allocation over-allocated percent drag reorder delete undo rent groceries donut windfall tax refund bonus one-time lump sum two incomes paycheck biweekly weekly partner second job freelance irregular variable pay',
     body: `The [Plan](/plan) page is where everything starts. Enter your **monthly take-home income** (your pay after taxes; if it varies, use a typical month), then split it into categories.
+
+## Two paychecks, or pay that varies
+Under the income box, press **Two paychecks, or pay that varies?** to add **income sources**: your paycheck, a partner's, a second job, freelance work. For each, enter what you take home and how often: every two weeks, twice a month, weekly, monthly, yearly, or **it varies**. Your monthly income becomes their average month added up (26 two-weekly paychecks spread over 12 months, for example), and the income box follows them; change it by changing the sources.
+
+If your pay varies, enter a careful month, lower than usual, and add anything extra as **one-time money** when you know it's coming. Paid every two weeks? Two months a year have a third paycheck; you can plan on two a month and add the extra ones as one-time money instead. Delete every source to go back to typing one number.
 
 ## Categories
 - New plans start with four everyday categories at $0: **Housing**, **Groceries**, **Utilities** and **Transportation**. They're ordinary categories, so rename or delete any of them. With a mortgage, put only property tax, insurance and HOA in Housing: the loan payment is part of your Debt amount, so it would otherwise count twice.
