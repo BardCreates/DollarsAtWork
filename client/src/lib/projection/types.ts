@@ -42,6 +42,23 @@ export interface DebtInput {
   minimumOnly?: boolean;
 }
 
+/** Where one-time money goes in its month. */
+export type WindfallDestination = 'debt' | 'savings' | 'investments';
+
+/** One-time money (a tax refund, a bonus) arriving in one month of the projection. */
+export interface WindfallInput {
+  id: string;
+  /** The projection month it lands in: 1 is next month. Months outside 1 to the horizon are ignored. */
+  month: number;
+  amount: number;
+  /**
+   * 'debt': an extra payment that month, to the debt the payoff order targets (anything left over is finished
+   * money, like a paid-off debt's). 'savings': shared among the goals like the monthly amount (what the goals can't
+   * take is finished money too). 'investments': added to that month's investing, by the split.
+   */
+  destination: WindfallDestination;
+}
+
 /** Something owned or owed that isn't tracked month by month: a home, a car, a loan from family. */
 export interface OtherItemInput {
   id: string;
@@ -102,6 +119,9 @@ export interface ProjectionInput {
   minimumsOnly?: boolean;
 
   accounts: AccountInput[];
+
+  /** One-time money on chosen months. Default none. */
+  windfalls?: WindfallInput[];
 
   /** Home, car and other things owned or owed, each moving by its own yearly change. */
   otherItems?: OtherItemInput[];

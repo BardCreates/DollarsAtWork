@@ -6,7 +6,7 @@ import { firstMonthNetWorthReaches, type ProjectionResult } from './projection';
  * Pure: the same projection always gives the same roadmap.
  */
 
-export type TimelineKind = 'debt-free' | 'debt' | 'goal' | 'net-worth';
+export type TimelineKind = 'debt-free' | 'debt' | 'goal' | 'net-worth' | 'windfall';
 
 export interface TimelineItem {
   key: string;
@@ -27,13 +27,15 @@ const NET_WORTH_ON_ROADMAP = 3;
 /** A milestone this many months away or fewer counts as "nearing". */
 export const NEAR_MONTHS = 3;
 
-const kindOrder: Record<TimelineKind, number> = { debt: 0, 'debt-free': 1, goal: 2, 'net-worth': 3 };
+const kindOrder: Record<TimelineKind, number> = { windfall: 0, debt: 1, 'debt-free': 2, goal: 3, 'net-worth': 4 };
 
 export interface TimelineNames {
   debts: string[];
   goals: string[];
   /** Per debt, in the same order: true for a minimum-only debt (a mortgage), which "Debt-free" leaves out. */
   minimumOnly?: boolean[];
+  /** Upcoming one-time money, with the projection month it lands in. */
+  windfalls?: { id: string; name: string; amount: number; month: number }[];
 }
 
 /**
@@ -41,7 +43,8 @@ export interface TimelineNames {
  * - each debt's payoff, then "Debt-free" for the last one (a single debt is just "Debt-free"); a minimum-only
  *   debt still open at that point is named: "Debt-free (except Mortgage)";
  * - each savings goal, including ones already full and ones that never fill;
- * - the next few net-worth steps that haven't been reached yet and are reached within the projection.
+ * - the next few net-worth steps that haven't been reached yet and are reached within the projection;
+ * - each upcoming one-time amount, in the month it arrives.
  * Earliest first, with anything that never happens at the end.
  */
 export function buildTimeline(result: ProjectionResult, names: TimelineNames): TimelineItem[] {
@@ -64,6 +67,11 @@ export function buildTimeline(result: ProjectionResult, names: TimelineNames): T
   result.goalFullMonths.forEach((month, index) => {
     items.push({ key: `goal-${index}`, kind: 'goal', label: `${names.goals[index]} reached`, month, index });
   });
+
+  for (const windfall of names.windfalls ?? []) {
+    if (windfall.month < 1 || windfall.month >= result.points.length) continue;
+    items.push({ key: `windfall-${windfall.id}`, kind: 'windfall', label: `${windfall.name} arrives (${formatMoney(windfall.amount)})`, month: windfall.month });
+  }
 
   let added = 0;
   for (const amount of NET_WORTH_STEPS) {

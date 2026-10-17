@@ -17,6 +17,22 @@ export function yearMonthFromNow(months: number, from?: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/**
+ * Calendar months from this month to a "2027-03" month: 0 for this month, 5 for five months on, negative once it has
+ * passed. Null when the text isn't a year and month.
+ */
+export function monthsUntilYearMonth(yearMonth: string, from: Date = new Date()): number | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(yearMonth);
+  if (!match) return null;
+  return (Number(match[1]) - from.getFullYear()) * 12 + (Number(match[2]) - 1 - from.getMonth());
+}
+
+/** "Mar 2027" for a "2027-03" month. */
+export function formatYearMonth(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  return monthAndYear.format(new Date(year, month - 1, 1));
+}
+
 /** "2026-10-16": today's date in this browser's own time zone (not UTC's). */
 export function localToday(from: Date = new Date()): string {
   return `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`;

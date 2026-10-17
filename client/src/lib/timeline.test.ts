@@ -171,3 +171,19 @@ describe('what counts as near', () => {
     expect(nextUp([])).toBeNull();
   });
 });
+
+describe('one-time money on the roadmap', () => {
+  it('lists each upcoming windfall in its month, and skips ones outside the projection', () => {
+    const result = project(plan({ months: 24, accounts: [cash] }));
+    const items = buildTimeline(result, {
+      debts: [],
+      goals: [],
+      windfalls: [
+        { id: 'refund', name: 'Tax refund', amount: 2_000, month: 5 },
+        { id: 'far', name: 'Inheritance', amount: 50_000, month: 99 },
+      ],
+    });
+    const windfalls = items.filter((item) => item.kind === 'windfall');
+    expect(windfalls).toEqual([{ key: 'windfall-refund', kind: 'windfall', label: 'Tax refund arrives ($2,000)', month: 5 }]);
+  });
+});

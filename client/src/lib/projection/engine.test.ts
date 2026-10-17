@@ -668,3 +668,84 @@ describe('rule 11: a lower or higher return for the range', () => {
     expect(points[2].investments).toBeCloseTo(2_000, 6);
   });
 });
+
+describe('rule 12: one-time money (windfalls)', () => {
+  it('a debt windfall is an extra payment that month', () => {
+    // 1,000 at 12% (1% a month), 100 a month, plus 500 in month 1: 1,000 × 1.01 − 100 − 500 = 410.
+    const { points } = project(
+      plan({
+        months: 2,
+        debtMonthly: 100,
+        debts: [{ id: 'card', balance: 1_000, apr: 12, minPayment: 25 }],
+        accounts: [cashAccount],
+        windfalls: [{ id: 'refund', month: 1, amount: 500, destination: 'debt' }],
+      }),
+    );
+    expect(points[1].debt).toBeCloseTo(410, 6);
+    // Month 2 is back to 100: 410 × 1.01 − 100 = 314.1.
+    expect(points[2].debt).toBeCloseTo(314.1, 6);
+  });
+
+  it('what a debt windfall doesn’t need moves on like a paid-off debt’s money', () => {
+    // 300 owed at 0%, 50 a month, 1,000 in month 1: 300 is paid, 750 is left (1,050 − 300) and goes to Investments.
+    const { points, debtFreeMonth } = project(
+      plan({
+        months: 1,
+        debtMonthly: 50,
+        debts: [{ id: 'loan', balance: 300, apr: 0, minPayment: 50 }],
+        accounts: [cashAccount],
+        windfalls: [{ id: 'bonus', month: 1, amount: 1_000, destination: 'debt' }],
+      }),
+    );
+    expect(debtFreeMonth).toBe(1);
+    expect(points[1].investments).toBeCloseTo(750, 6);
+  });
+
+  it('a savings windfall fills goals, and what they can’t take is finished money', () => {
+    // Goal 1,000; 100 a month. Month 1: 100. Month 2: 100 + 2,000 → fills to 1,000, 1,200 left → Investments.
+    const { points, goalFullMonths } = project(
+      plan({
+        months: 2,
+        savingsMonthly: 100,
+        goals: [{ id: 'fund', target: 1_000, balance: 0 }],
+        accounts: [cashAccount],
+        windfalls: [{ id: 'gift', month: 2, amount: 2_000, destination: 'savings' }],
+      }),
+    );
+    expect(points[1].savings).toBeCloseTo(100, 6);
+    expect(points[2].savings).toBeCloseTo(1_000, 6);
+    expect(goalFullMonths[0]).toBe(2);
+    expect(points[2].investments).toBeCloseTo(1_200, 6);
+  });
+
+  it('an investment windfall is invested that month only, and two in one month add up', () => {
+    const { points } = project(
+      plan({
+        months: 4,
+        accounts: [cashAccount],
+        windfalls: [
+          { id: 'a', month: 3, amount: 1_000, destination: 'investments' },
+          { id: 'b', month: 3, amount: 250, destination: 'investments' },
+        ],
+      }),
+    );
+    expect(points[2].investments).toBe(0);
+    expect(points[3].investments).toBeCloseTo(1_250, 6);
+    expect(points[4].investments).toBeCloseTo(1_250, 6);
+    expect(points[3].investedToDate).toBeCloseTo(1_250, 6);
+  });
+
+  it('ignores months outside the projection', () => {
+    const { points } = project(
+      plan({
+        months: 2,
+        accounts: [cashAccount],
+        windfalls: [
+          { id: 'past', month: 0, amount: 999, destination: 'investments' },
+          { id: 'later', month: 5, amount: 999, destination: 'investments' },
+        ],
+      }),
+    );
+    expect(points[2].investments).toBe(0);
+  });
+});
