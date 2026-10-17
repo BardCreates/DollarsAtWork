@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import { meQueryKey, useMe, type HintSettings, type Me } from '../../auth/auth';
 
 /** Every first-time hint in the app. Ids are stored on the server when a hint is closed, so never rename one. */
-export type HintId = 'tour' | 'dashboard' | 'plan' | 'savings' | 'debt' | 'invest' | 'what-if' | 'tools';
+export type HintId = 'tour' | 'dashboard' | 'plan' | 'savings' | 'debt' | 'invest' | 'assets' | 'what-if' | 'tools';
 
 /** Change the cached signed-in user's hint settings in place, so hints vanish the moment they're closed. */
 function setHints(queryClient: ReturnType<typeof useQueryClient>, update: (hints: HintSettings) => HintSettings) {

@@ -1,7 +1,8 @@
-import { Box, Card, CardContent, Slider, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, Card, CardContent, Link, Slider, Typography } from '@mui/material';
 import { formatMoney } from '../../lib/money';
 import type { ProjectionResult } from '../../lib/projection';
-import { DASHBOARD_YEARS } from './useDashboard';
+import { DASHBOARD_YEARS, type NetWorthBreakdown } from './useDashboard';
 
 const marks = [0, 10, 20, 30, 40].map((value) => ({ value, label: value === 0 ? 'Today' : `${value}y` }));
 const whole = (value: number) => formatMoney(Math.round(value));
@@ -20,7 +21,14 @@ export function NetWorthCard({
   todaysDollars: boolean;
   /** Home value less what's left on the mortgage at the slider year; null when there is no home. */
   homeEquity?: number | null;
+  /** What makes up "Other" on each side, at the slider year. Left out on the demo. */
+  breakdown?: NetWorthBreakdown;
 }) {
+  const assetsLink = (
+    <Link component={RouterLink} to="/assets" underline="hover" color="inherit">
+      Other
+    </Link>
+  );
   const today = result.points[0];
   const then = result.points[year * 12];
   const change = then.netWorth - today.netWorth;
@@ -84,8 +92,14 @@ export function NetWorthCard({
             </Box>
             <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.75 }}>
               Savings {whole(then.savings)} · Investments {whole(then.investments)}
-              {then.otherAssets > 0 ? ` · Other ${whole(then.otherAssets)}` : ''}
+              {breakdown?.home !== null && breakdown?.home !== undefined ? ` · Home ${whole(breakdown.home)}` : ''}
+              {breakdown ? (breakdown.otherOwned > 0 ? <> · {assetsLink} {whole(breakdown.otherOwned)}</> : '') : then.otherAssets > 0 ? ` · Other ${whole(then.otherAssets)}` : ''}
             </Typography>
+            {breakdown?.otherOwed !== null && breakdown?.otherOwed !== undefined && (
+              <Typography variant="caption" color="text.secondary" component="div">
+                Debt page {whole(breakdown.debtPage)} · {assetsLink} {whole(breakdown.otherOwed)} owed
+              </Typography>
+            )}
             {homeEquity != null && (
               <Typography variant="caption" color="text.secondary" component="div">
                 Home equity {whole(homeEquity)}: what your home is worth, less what's left on the mortgage
