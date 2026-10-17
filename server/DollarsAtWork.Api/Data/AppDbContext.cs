@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<IncomeSource> IncomeSources => Set<IncomeSource>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Debt> Debts => Set<Debt>();
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
@@ -80,6 +81,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasFilter("[Kind] <> 'Custom'");
 
             e.HasOne<AppUser>().WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<IncomeSource>(e =>
+        {
+            e.Property(i => i.Name).HasMaxLength(60);
+            e.Property(i => i.Frequency).HasConversion<string>().HasMaxLength(20);
+            e.Ignore(i => i.MonthlyAmount);
+            e.HasIndex(i => new { i.UserId, i.SortOrder });
+            e.HasOne<AppUser>().WithMany().HasForeignKey(i => i.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Debt>(e =>

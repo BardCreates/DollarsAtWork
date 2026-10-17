@@ -106,6 +106,47 @@ public class Plan
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
+/// <summary>How often an income source pays.</summary>
+public enum IncomeFrequency
+{
+    Monthly = 0,
+    /// <summary>Twice a month (the 1st and 15th).</summary>
+    TwiceMonthly = 1,
+    /// <summary>Every two weeks: 26 paychecks a year.</summary>
+    Biweekly = 2,
+    Weekly = 3,
+    Yearly = 4,
+    /// <summary>Pay that changes month to month; the amount is a typical, careful month.</summary>
+    Varies = 5,
+}
+
+/// <summary>
+/// One paycheck or other income (a second job, a partner's pay, freelance work). When a plan has any, its monthly
+/// income is their monthly equivalents added up, and the income box on Plan follows them.
+/// </summary>
+public class IncomeSource
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    /// <summary>Take-home pay per paycheck (or per month for Monthly and Varies, per year for Yearly).</summary>
+    public decimal Amount { get; set; }
+    public IncomeFrequency Frequency { get; set; }
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+
+    /// <summary>The average month: 26 biweekly or 52 weekly paychecks spread over 12 months.</summary>
+    public decimal MonthlyAmount => Frequency switch
+    {
+        IncomeFrequency.TwiceMonthly => Amount * 2m,
+        IncomeFrequency.Biweekly => Amount * 26m / 12m,
+        IncomeFrequency.Weekly => Amount * 52m / 12m,
+        IncomeFrequency.Yearly => Amount / 12m,
+        _ => Amount,
+    };
+}
+
 /// <summary>A slice of the monthly plan. Built-ins can be reordered and re-amounted but not renamed or deleted.</summary>
 public class Category
 {

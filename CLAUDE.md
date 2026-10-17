@@ -193,6 +193,11 @@ and decisions already made. Don't re-ask decided questions.
   GoalInput.repeat {firstMonth, everyMonths}: the bill (target) is paid at the end of each due month after deposits, the
   goal fills again, warnings.shortBills flags a fund short at a due date. lib/sinkingFund nextDueMonths rolls a passed
   due date forward; savings.ts toGoalInput maps every goal. GoalList shows "Ready for the bill" and the next due date.
+- Income sources (Oct 17): IncomeSource table (migration AddIncomeSources; Frequency Monthly/TwiceMonthly/Biweekly/Weekly/
+  Yearly/Varies; MonthlyAmount = average month). /plan/incomes CRUD (Features/Plan/IncomeEndpoints) answers with the
+  sources and the income; while any exist Plan.MonthlyIncome is their total (to the cent) and PUT /plan/income refuses.
+  Client: features/plan/incomes.ts (sets the plan cache's income), IncomeBox (Plan and /welcome), IncomeSourcesDialog,
+  lib/income monthlyEquivalent. Deleting the last source leaves the income as it was.
 
 ## What we compete on
 
