@@ -121,7 +121,7 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
     <>
       <PageHeader title="Debt" subtitle={SUBTITLE} actions={hasDebts ? addButton : undefined} />
       <DebtHint />
-      <PlanAmountBanner amount={data.monthlyBudget} />
+      <PlanAmountBanner amount={data.monthlyBudget} kind="Debt" />
 
       {!hasDebts ? (
         <Card>

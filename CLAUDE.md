@@ -151,6 +151,10 @@ and decisions already made. Don't re-ask decided questions.
   ("A home or car"). The dashboard's Other items dialog is gone; its Assets vs liabilities card links to /assets. The net worth card's
   breakdown (useDashboard netWorthBreakdownAt) splits owned items into Home and Other, and shows a "Debt page · Other owed" line when
   an "I owe" item exists; both "Other" words link to /assets. Help article "assets"; hint id "assets".
+- Amount from the page (Oct 17, R20): PlanAmountBanner with `kind` is editable on Savings, Debt and Invest. It writes to the plan's
+  built-in category through plan.ts useSetModuleAmount (useUpdateCategory + invalidating the module query, so the module's own
+  monthly amount refreshes); no second copy. When the plan ends up over income the banner turns to a warning with the amount over
+  and points to Plan. Without `kind` the banner is the old read-only one.
 
 ## What we compete on
 

@@ -24,7 +24,7 @@ export interface Goal {
 
 export interface SavingsData {
   splitMode: SavingsSplitMode;
-  /** The plan's Savings category amount. Edited in Plan, never here. */
+  /** The plan's Savings category amount, read from the plan; the banner writes changes back to that category. */
   monthlyAmount: number;
   /** Total of the plan's custom categories: what a month of living costs. */
   plannedExpenses: number;

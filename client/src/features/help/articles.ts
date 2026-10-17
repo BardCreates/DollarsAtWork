@@ -122,7 +122,7 @@ On phones the panel sits at the top of the page, so it stays in view while you s
     section: 'Savings, debt and investing',
     summary: 'Turn your Savings amount into goals that fill in order or by fixed shares.',
     keywords: 'goal emergency fund target date on track priority percent share apy interest vacation',
-    body: `The [Savings](/savings) page puts your Savings amount from Plan to work on goals. The banner at the top shows that amount; change it with **Edit in Plan**.
+    body: `The [Savings](/savings) page puts your Savings amount from Plan to work on goals. The banner at the top shows that amount; type a new one right there and it saves to your plan's Savings category. If that puts your categories over your income, the banner says so; take it from another category on [Plan](/plan).
 
 ## Adding a goal
 - **Name**: what you're saving for.
@@ -152,7 +152,7 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
     section: 'Savings, debt and investing',
     summary: 'Add your debts and see your debt-free date with snowball, avalanche or your own order.',
     keywords: 'debt free date snowball avalanche custom apr minimum payment interest schedule credit card loan mortgage student auto medical payoff',
-    body: `The [Debt](/debt) page uses your Debt amount from Plan to pay everything off. The banner at the top shows that amount.
+    body: `The [Debt](/debt) page uses your Debt amount from Plan to pay everything off. The banner at the top shows that amount; type a new one there and it saves to your plan's Debt category (the banner warns if your categories then add up to more than your income).
 
 ## Adding a debt
 - **Name** and **Type** (credit card, auto loan, student loan, mortgage, medical or other).
@@ -203,7 +203,7 @@ The house goes here as something you own. The mortgage goes on the [Debt](/debt)
     section: 'Savings, debt and investing',
     summary: 'Add your 401(k), IRA or brokerage account, include your employer match, and see the growth.',
     keywords: '401k ira roth brokerage hsa expected return employer match split 100 percent growth retirement',
-    body: `The [Invest](/invest) page spreads your Investments amount from Plan across your accounts and shows what it could grow into.
+    body: `The [Invest](/invest) page spreads your Investments amount from Plan across your accounts and shows what it could grow into. The banner at the top shows that amount; type a new one there and it saves to your plan's Investments category.
 
 ## Adding an account
 - **Name** and **Type**: 401(k), IRA, Roth IRA, brokerage, HSA or other.
