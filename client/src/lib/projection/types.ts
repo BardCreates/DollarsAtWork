@@ -58,10 +58,20 @@ export interface AccountInput {
   expectedReturn?: number;
   /** Share of the monthly investment amount. Shares that don't total 100 are scaled to fit. */
   sharePercent: number;
-  /** Employer adds this percent of each contribution… */
+  /** Employer adds this percent of each contribution (the plan's share plus the paycheck amount)… */
   matchPercent?: number;
-  /** …on contributions up to this percent of monthly income. Left out means no cap. */
+  /** …on contributions up to this percent of monthly salary. Left out means no cap. */
   matchLimitPercent?: number;
+  /**
+   * Monthly salary before taxes that matchLimitPercent is a percent of; it grows with the yearly raise.
+   * Left out means the plan's take-home income is used (which understates the match).
+   */
+  matchSalaryMonthly?: number;
+  /**
+   * What already goes in straight from the paycheck each month (a 401(k) deferral). It never passes through
+   * take-home pay, so it's added on top of the plan's Investments amount. Default 0.
+   */
+  payrollMonthly?: number;
 }
 
 export interface ProjectionInput {
@@ -108,8 +118,18 @@ export interface ProjectionInput {
   todaysDollars?: boolean;
   /** Yearly inflation used by todaysDollars. Default 3. */
   inflationRate?: number;
-  /** Yearly raise, first paid in month 13 (then 25, 37…): months 1–12 are year one. The extra income lands in Remaining. Default 0. */
+  /** Yearly raise, first paid in month 13 (then 25, 37…): months 1–12 are year one. Default 0. */
   incomeGrowthRate?: number;
+  /**
+   * Where the raise goes. 'remaining' (the default): unplanned money, not projected. 'investments': added to the
+   * month's investing, so contributions grow with income.
+   */
+  raiseDestination?: 'remaining' | 'investments';
+  /**
+   * Percentage points added to every account's expected return (and to the default for money with no account),
+   * for a lower or higher range around the estimate: −2 means every return is 2 points lower. Default 0.
+   */
+  returnAdjustment?: number;
 }
 
 /** The state of everything at the end of one month. */
@@ -171,6 +191,8 @@ export interface ProjectionResult {
     debtBudgetBelowMinimums: boolean;
     /** In at least one month a debt was paid less than the interest it charged, so its balance grew. */
     debtGrowing: boolean;
+    /** Per debt, in input order: true when that debt's payment missed its interest in at least one month. */
+    growingDebts: boolean[];
     /** Money was invested with no investment accounts set up. */
     investingWithoutAccounts: boolean;
   };

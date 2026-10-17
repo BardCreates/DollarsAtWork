@@ -9,7 +9,8 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *  2. Debt: every debt is charged interest, then minimums are paid, then the rest of the debt
  *     budget goes to the target debt (and on to the next one if the target is cleared).
  *  3. Money whose job is finished (all goals full, all debt paid) moves to its chosen destination.
- *  4. Investments: every account grows on what it held, then receives contributions and employer match.
+ *  4. Investments: every account grows on what it held, then receives contributions (its share of the plan's
+ *     amount plus anything paid in straight from the paycheck) and employer match.
  *  5. Other items (a home, a car) move by their own yearly change.
  *
  * A minimum-only debt (a mortgage) is paid its minimum every month and never receives the extra; the
@@ -46,6 +47,10 @@ export function project(input: ProjectionInput): ProjectionResult {
   const itemTotal = (kind: 'asset' | 'liability') => sum(itemValues.filter((_, i) => otherItems[i].kind === kind));
   const startingRemaining = input.remaining ?? 0;
   const raise = (input.incomeGrowthRate ?? 0) / 100;
+  const raiseInvested = input.raiseDestination === 'investments';
+  const returnAdjustment = input.returnAdjustment ?? 0;
+  /** An expected return moved by the range adjustment; nothing can lose more than all of itself. */
+  const adjustedRate = (expectedReturn: number) => monthlyRate(Math.max(-100, expectedReturn + returnAdjustment));
 
   const goals = input.goals.map((goal) => Math.max(0, goal.balance));
   const goalRates = input.goals.map((goal) => monthlyRate(goal.apy ?? 0));
@@ -56,7 +61,7 @@ export function project(input: ProjectionInput): ProjectionResult {
   const inPayoff = (i: number) => !input.debts[i].minimumOnly;
   const payoffDone = () => debts.every((balance, i) => balance === 0 || !inPayoff(i));
   const accounts = input.accounts.map((account) => Math.max(0, account.balance));
-  const accountRates = input.accounts.map((account) => monthlyRate(account.expectedReturn ?? DEFAULT_EXPECTED_RETURN));
+  const accountRates = input.accounts.map((account) => adjustedRate(account.expectedReturn ?? DEFAULT_EXPECTED_RETURN));
   const accountWeights = shareWeights(input.accounts.map((account) => account.sharePercent));
   let unassignedInvestments = 0;
 
@@ -68,7 +73,12 @@ export function project(input: ProjectionInput): ProjectionResult {
   let investedToDate = 0;
   let matchedToDate = 0;
   let investmentGrowthToDate = 0;
-  const warnings = { debtBudgetBelowMinimums: false, debtGrowing: false, investingWithoutAccounts: false };
+  const warnings = {
+    debtBudgetBelowMinimums: false,
+    debtGrowing: false,
+    investingWithoutAccounts: false,
+    growingDebts: input.debts.map(() => false),
+  };
 
   /** What each goal has received so far this month. */
   let deposits = goals.map(() => 0);
@@ -111,7 +121,12 @@ export function project(input: ProjectionInput): ProjectionResult {
   const payDebts = (budget: number, payments: number[], interest: number[]): number => {
     const left = payDebtsOnce(budget, payments, interest);
     // A debt that got less than this month's interest grew: say so, since "never paid off" alone doesn't explain why.
-    if (interest.some((charged, i) => charged > DUST && payments[i] < charged - DUST)) warnings.debtGrowing = true;
+    interest.forEach((charged, i) => {
+      if (charged > DUST && payments[i] < charged - DUST) {
+        warnings.debtGrowing = true;
+        warnings.growingDebts[i] = true;
+      }
+    });
     return left;
   };
 
@@ -170,7 +185,8 @@ export function project(input: ProjectionInput): ProjectionResult {
     return {
       month,
       income,
-      remaining: startingRemaining + (income - input.monthlyIncome),
+      // A raise lands in Remaining unless it is being invested.
+      remaining: startingRemaining + (raiseInvested ? 0 : income - input.monthlyIncome),
       savings,
       investments,
       debt,
@@ -197,7 +213,8 @@ export function project(input: ProjectionInput): ProjectionResult {
 
   for (let month = 1; month <= horizon; month++) {
     // Months 1–12 are the first year at today's income; the first raise is paid in month 13, the next in month 25.
-    const income = input.monthlyIncome * Math.pow(1 + raise, Math.floor((month - 1) / 12));
+    const raiseFactor = Math.pow(1 + raise, Math.floor((month - 1) / 12));
+    const income = input.monthlyIncome * raiseFactor;
 
     // 1. Savings
     deposits = goals.map(() => 0);
@@ -218,7 +235,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     interestPaidToDate += sum(interest);
 
     // 3. Freed money moves on. Anything that can't be placed ends up invested.
-    let toInvest = input.investmentsMonthly;
+    let toInvest = input.investmentsMonthly + (raiseInvested ? income - input.monthlyIncome : 0);
     const send = (amount: number, destination: FreedMoneyDestination) => {
       if (destination !== 'remaining') toInvest += amount;
     };
@@ -232,7 +249,7 @@ export function project(input: ProjectionInput): ProjectionResult {
 
     // 4. Investments
     if (accounts.length === 0) {
-      const growth = unassignedInvestments * monthlyRate(DEFAULT_EXPECTED_RETURN);
+      const growth = unassignedInvestments * adjustedRate(DEFAULT_EXPECTED_RETURN);
       unassignedInvestments += growth + toInvest;
       investmentGrowthToDate += growth;
       investedToDate += toInvest;
@@ -241,9 +258,11 @@ export function project(input: ProjectionInput): ProjectionResult {
       accounts.forEach((balance, i) => {
         const account = input.accounts[i];
         const growth = balance * accountRates[i];
-        const contribution = toInvest * accountWeights[i];
+        const contribution = toInvest * accountWeights[i] + Math.max(0, account.payrollMonthly ?? 0);
+        // The match limit is a percent of salary before taxes when it's known, else of take-home pay.
+        const salary = account.matchSalaryMonthly === undefined ? income : account.matchSalaryMonthly * raiseFactor;
         const matchable =
-          account.matchLimitPercent === undefined ? contribution : Math.min(contribution, (income * account.matchLimitPercent) / 100);
+          account.matchLimitPercent === undefined ? contribution : Math.min(contribution, (salary * account.matchLimitPercent) / 100);
         const match = (matchable * (account.matchPercent ?? 0)) / 100;
 
         accounts[i] = balance + growth + contribution + match;
@@ -298,6 +317,11 @@ export function monthlyNeededForGoal(goal: { target: number; balance: number; ap
   const shortfall = goal.target - goal.balance * growth;
   if (shortfall <= 0) return 0;
   return rate === 0 ? shortfall / months : (shortfall * rate) / (growth - 1);
+}
+
+/** The interest a debt charges in one month (APR ÷ 12, as the engine charges it). */
+export function monthlyInterest(balance: number, apr: number): number {
+  return (Math.max(0, balance) * Math.max(0, apr)) / 100 / 12;
 }
 
 /** Turns percent shares into fractions that add up to 1. With no usable shares, everyone gets an equal part. */

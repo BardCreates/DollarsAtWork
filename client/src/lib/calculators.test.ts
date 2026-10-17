@@ -108,4 +108,18 @@ describe('dividend reinvestment', () => {
     const rows = drip({ initial: 5_000, yearlyContribution: 600, priceGrowth: 6, dividendYield: 0, years: 15 });
     expect(rows[15].reinvested).toBeCloseTo(rows[15].notReinvested, 6);
   });
+
+  it('handles a falling share price', () => {
+    // 10,000, price −10%, yield 2%: reinvesting gives 10,000 × 0.9 + 200 = 9,200; cash gives 9,000 + 200 = 9,200.
+    const rows = drip({ initial: 10_000, yearlyContribution: 0, priceGrowth: -10, dividendYield: 2, years: 1 });
+    expect(rows[1].reinvested).toBeCloseTo(9_200, 6);
+    expect(rows[1].notReinvested).toBeCloseTo(9_200, 6);
+  });
+});
+
+describe('loan cost with a term too short for a payment', () => {
+  it('has no payment, so the comparison has nothing to compare', () => {
+    // 0.02 years rounds to 0 months.
+    expect(loanCost({ amount: 25_000, apr: 6.5, years: 0.02 })).toEqual({ payment: 0, totalPaid: 0, totalInterest: 0 });
+  });
 });
