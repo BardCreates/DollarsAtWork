@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, Switch, TextField } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
 import { parseMoneyInput, parsePercentInput } from '../../lib/money';
-import { useAddGoal, useSaveGoal, type Goal, type GoalFields } from './savings';
+import { repeatChoices, useAddGoal, useSaveGoal, type Goal, type GoalFields } from './savings';
 
 const isAmount = (text: string) => parseMoneyInput(text) !== null;
 const isOptionalPercent = (text: string) => text.trim() === '' || parsePercentInput(text) !== null;
@@ -19,10 +19,12 @@ const schema = z.object({
   targetDate: z.string(),
   apy: z.string().refine(isOptionalPercent, 'Enter an APY between 0% and 100%.'),
   sharePercent: z.string().refine(isOptionalPercent, 'Enter a share between 0% and 100%.'),
+  repeats: z.boolean(),
+  repeatMonths: z.string(),
 });
 type FormValues = z.infer<typeof schema>;
 
-const blank: FormValues = { name: '', targetAmount: '', currentBalance: '', targetDate: '', apy: '', sharePercent: '' };
+const blank: FormValues = { name: '', targetAmount: '', currentBalance: '', targetDate: '', apy: '', sharePercent: '', repeats: false, repeatMonths: '12' };
 const numberText = (value: number) => (value === 0 ? '' : String(value));
 
 /** Today on the person's own calendar, as the date box writes it (YYYY-MM-DD). */
@@ -47,7 +49,7 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
   const save = useSaveGoal();
   const saving = goal ? save : add;
 
-  const { register, handleSubmit, reset, setError, formState: { errors, isDirty } } = useForm<FormValues>({
+  const { register, control, handleSubmit, reset, setError, watch, formState: { errors, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -65,6 +67,8 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
       targetDate: from?.targetDate ?? '',
       apy: numberText(from?.apy ?? 0),
       sharePercent: numberText(from?.sharePercent ?? 0),
+      repeats: (from?.repeatMonths ?? null) !== null,
+      repeatMonths: String(from?.repeatMonths ?? 12),
     });
   }, [open, goal, starter]);
 
@@ -73,8 +77,13 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
   const hasFieldError = (Object.keys(blank) as (keyof FormValues)[]).some((field) => fieldError(field));
 
   const guardedClose = useGuardedClose(open, isDirty, onClose);
+  const repeats = watch('repeats');
 
   const onSubmit = handleSubmit((values) => {
+    if (values.repeats && !values.targetDate) {
+      setError('targetDate', { message: 'Enter when the bill is next due.' });
+      return;
+    }
     // A date that has already gone by can't be "on track". An old goal keeps its own date until it's changed.
     if (values.targetDate && values.targetDate < todayText() && values.targetDate !== goal?.targetDate) {
       setError('targetDate', { message: 'That date has passed. Pick a future date, or leave it empty.' });
@@ -87,6 +96,7 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
       targetDate: values.targetDate || null,
       apy: values.apy.trim() === '' ? 0 : (parsePercentInput(values.apy) ?? 0),
       sharePercent: values.sharePercent.trim() === '' ? 0 : (parsePercentInput(values.sharePercent) ?? 0),
+      repeatMonths: values.repeats ? Number(values.repeatMonths) : null,
     };
     if (goal) save.mutate({ id: goal.id, goal: fields }, { onSuccess: onClose });
     else add.mutate(fields, { onSuccess: onClose });
@@ -116,12 +126,42 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
               helperText={fieldError('currentBalance') ?? 'Update this whenever the real balance changes.'}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
             />
+            <Controller
+              name="repeats"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={<Switch checked={field.value} onChange={(_, checked) => field.onChange(checked)} />}
+                  label="It's for a bill that comes back (a sinking fund)"
+                />
+              )}
+            />
+            {repeats && (
+              <Controller
+                name="repeatMonths"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    select
+                    label="The bill comes"
+                    {...field}
+                    helperText="On the due date the target is paid from this goal, and it starts filling again."
+                  >
+                    {repeatChoices.map((choice) => (
+                      <MenuItem key={choice.months} value={String(choice.months)}>
+                        {choice.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            )}
             <TextField
-              label="Target date (optional)"
+              label={repeats ? 'Next due date' : 'Target date (optional)'}
               type="date"
               {...muiField(register, 'targetDate')}
               error={!!fieldError('targetDate')}
-              helperText={fieldError('targetDate') ?? "We'll tell you whether you're on track."}
+              helperText={fieldError('targetDate') ?? (repeats ? "When the bill is next due. We'll tell you whether you're on track for it." : "We'll tell you whether you're on track.")}
               slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: todayText() } }}
             />
             <TextField

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { monthlyNeededForGoal, project, type ProjectionInput, type ProjectionResult, type SavingsSplitMode as EngineSplitMode } from '../../lib/projection';
+import { nextDueMonths } from '../../lib/sinkingFund';
+import { monthlyNeededForGoal, project, type GoalInput, type ProjectionInput, type ProjectionResult, type SavingsSplitMode as EngineSplitMode } from '../../lib/projection';
 
 export type SavingsSplitMode = 'Priority' | 'Percent';
 
@@ -20,6 +21,8 @@ export interface Goal {
   apy: number;
   priority: number;
   sharePercent: number;
+  /** A sinking fund: the bill (the target) comes back every this many months, due on targetDate's month. Null otherwise. */
+  repeatMonths: number | null;
 }
 
 export interface SavingsData {
@@ -32,6 +35,29 @@ export interface SavingsData {
 }
 
 export type GoalFields = Omit<Goal, 'id' | 'priority'>;
+
+
+/** How often a bill comes back, for the goal dialog. */
+export const repeatChoices: { months: number; label: string }[] = [
+  { months: 1, label: 'Every month' },
+  { months: 3, label: 'Every 3 months' },
+  { months: 6, label: 'Every 6 months' },
+  { months: 12, label: 'Every year' },
+  { months: 24, label: 'Every 2 years' },
+];
+
+/** A goal as the projection engine takes it. */
+export function toGoalInput(g: Goal, from: Date = new Date()): GoalInput {
+  const due = nextDueMonths(g, from);
+  return {
+    id: g.id,
+    target: g.targetAmount,
+    balance: g.currentBalance,
+    apy: g.apy,
+    sharePercent: g.sharePercent,
+    ...(due !== null && g.repeatMonths ? { repeat: { firstMonth: due, everyMonths: g.repeatMonths } } : {}),
+  };
+}
 
 export const savingsQueryKey = ['savings'] as const;
 
@@ -135,7 +161,7 @@ export interface SavingsProjection {
  */
 export function useSavingsProjection(data: SavingsData, whole?: ProjectionInput): SavingsProjection {
   return useMemo(() => {
-    const goals = data.goals.map((g) => ({ id: g.id, target: g.targetAmount, balance: g.currentBalance, apy: g.apy, sharePercent: g.sharePercent }));
+    const goals = data.goals.map((g) => toGoalInput(g));
     const result = whole ? project({ ...whole, months: SAVINGS_HORIZON_MONTHS, todaysDollars: false }) : project({
       months: SAVINGS_HORIZON_MONTHS,
       monthlyIncome: 0,
@@ -155,7 +181,8 @@ export function useSavingsProjection(data: SavingsData, whole?: ProjectionInput)
       const fullMonth = result.goalFullMonths[i];
       if (!goal.targetDate) return { monthlyNow, fullMonth };
 
-      const months = monthsUntil(goal.targetDate);
+      // A sinking fund is judged against its next bill, and it's on track when it isn't short then.
+      const months = nextDueMonths(goal) ?? monthsUntil(goal.targetDate);
       const onTrack = fullMonth !== null && fullMonth <= Math.max(0, months);
       const needed = monthlyNeededForGoal(goals[i], months);
       return { monthlyNow, fullMonth, deadline: { months, onTrack, extraNeeded: onTrack ? 0 : Math.max(0, needed - monthlyNow) } };
