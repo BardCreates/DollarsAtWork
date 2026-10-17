@@ -35,8 +35,8 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             Add(zip, "categories.csv", ["Name", "Kind", "Amount", "Order"], data.Categories.Select(c => new object?[] { c.Name, c.Kind, c.Amount, c.SortOrder }));
             Add(zip, "savings-goals.csv", ["Name", "Target", "Balance", "TargetDate", "Apy", "Priority", "SharePercent"],
                 data.SavingsGoals.Select(g => new object?[] { g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent }));
-            Add(zip, "debts.csv", ["Name", "Type", "Balance", "Apr", "MinimumPayment", "MinimumOnly", "Order"],
-                data.Debts.Select(d => new object?[] { d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.SortOrder }));
+            Add(zip, "debts.csv", ["Name", "Type", "Balance", "Apr", "MinimumPayment", "MinimumOnly", "PromoApr", "PromoEndsMonth", "Order"],
+                data.Debts.Select(d => new object?[] { d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, d.PromoEndsMonth, d.SortOrder }));
             Add(zip, "investment-accounts.csv", ["Name", "Type", "Balance", "ExpectedReturn", "SharePercent", "MatchPercent", "MatchLimitPercent", "MatchSalaryYearly", "PayrollMonthly"],
                 data.InvestmentAccounts.Select(a => new object?[] { a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly }));
             Add(zip, "other-items.csv", ["Name", "Kind", "Type", "Value", "YearlyChangePercent"], data.OtherItems.Select(i => new object?[] { i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent }));
@@ -64,7 +64,7 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             await db.SavingsGoals.AsNoTracking().Where(g => g.UserId == id).OrderBy(g => g.Priority)
                 .Select(g => new ExportGoal(g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent)).ToListAsync(ct),
             await db.Debts.AsNoTracking().Where(d => d.UserId == id).OrderBy(d => d.SortOrder)
-                .Select(d => new ExportDebt(d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.SortOrder)).ToListAsync(ct),
+                .Select(d => new ExportDebt(d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, d.PromoEndsMonth, d.SortOrder)).ToListAsync(ct),
             await db.InvestmentAccounts.AsNoTracking().Where(a => a.UserId == id).OrderBy(a => a.SortOrder)
                 .Select(a => new ExportInvestmentAccount(a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly)).ToListAsync(ct),
             await db.OtherItems.AsNoTracking().Where(i => i.UserId == id).OrderBy(i => i.SortOrder)
@@ -121,7 +121,7 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
     private record ExportPlan(decimal MonthlyIncome, string Currency, DebtStrategy DebtStrategy, SavingsSplitMode SavingsSplitMode, FreedMoneyDestination DebtDoneDestination, FreedMoneyDestination SavingsDoneDestination, decimal InflationRate, decimal IncomeGrowthRate, bool RaiseToInvestments);
     private record ExportCategory(string Name, CategoryKind Kind, decimal Amount, int SortOrder);
     private record ExportGoal(string Name, decimal TargetAmount, decimal CurrentBalance, DateOnly? TargetDate, decimal Apy, int Priority, decimal SharePercent);
-    private record ExportDebt(string Name, DebtType Type, decimal Balance, decimal Apr, decimal MinPayment, bool MinimumOnly, int SortOrder);
+    private record ExportDebt(string Name, DebtType Type, decimal Balance, decimal Apr, decimal MinPayment, bool MinimumOnly, decimal? PromoApr, DateOnly? PromoEndsMonth, int SortOrder);
     private record ExportInvestmentAccount(string Name, InvestmentAccountType Type, decimal Balance, decimal ExpectedReturn, decimal SharePercent, decimal? MatchPercent, decimal? MatchLimitPercent, decimal? MatchSalaryYearly, decimal PayrollMonthly);
     private record ExportOtherItem(string Name, OtherItemKind Kind, OtherItemType Type, decimal Value, decimal YearlyChangePercent);
     private record ExportWindfall(string Name, decimal Amount, DateOnly Month, WindfallDestination Destination);

@@ -148,6 +148,10 @@ public class Debt
     public decimal MinPayment { get; set; }
     /// <summary>Pay only the minimum and keep it out of the payoff order (a mortgage). The projection's debt-free month skips it.</summary>
     public bool MinimumOnly { get; set; }
+    /// <summary>A promotional rate (0 for a 0% balance transfer) charged instead of Apr through PromoEndsMonth. Null: none.</summary>
+    public decimal? PromoApr { get; set; }
+    /// <summary>The first day of the last month the promotional rate applies. Null: no promotion.</summary>
+    public DateOnly? PromoEndsMonth { get; set; }
     public int SortOrder { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

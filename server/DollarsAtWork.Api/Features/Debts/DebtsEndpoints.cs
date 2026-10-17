@@ -50,6 +50,8 @@ public static class DebtsEndpoints
         var balance = check.Amount("balance", request.Balance, "a balance");
         var apr = check.Percent("apr", request.Apr, "an APR", MaxApr);
         var minPayment = check.Amount("minPayment", request.MinPayment, "a minimum payment");
+        var now = clock.GetUtcNow();
+        var promo = string.IsNullOrEmpty(request.PromoEndsMonth) ? null : Promo(check, request.PromoApr, request.PromoEndsMonth, now);
         if (check.Failed)
             return check.ToResult();
 
@@ -61,7 +63,6 @@ public static class DebtsEndpoints
             return check.ToResult();
         }
 
-        var now = clock.GetUtcNow();
         var debt = new Debt
         {
             Id = Guid.NewGuid(),
@@ -73,6 +74,8 @@ public static class DebtsEndpoints
             MinPayment = minPayment,
             // A mortgage is paid on its own schedule unless the user says otherwise.
             MinimumOnly = request.MinimumOnly ?? type == DebtType.Mortgage,
+            PromoApr = promo?.Apr,
+            PromoEndsMonth = promo?.EndsMonth,
             SortOrder = (existing.Max() ?? -1) + 1,
             CreatedAt = now,
             UpdatedAt = now,
@@ -97,12 +100,48 @@ public static class DebtsEndpoints
         if (request.Apr is not null) debt.Apr = check.Percent("apr", request.Apr, "an APR", MaxApr);
         if (request.MinPayment is not null) debt.MinPayment = check.Amount("minPayment", request.MinPayment, "a minimum payment");
         if (request.MinimumOnly is not null) debt.MinimumOnly = request.MinimumOnly.Value;
+        if (request.PromoEndsMonth == "")
+        {
+            debt.PromoApr = null;
+            debt.PromoEndsMonth = null;
+        }
+        else if (request.PromoEndsMonth is not null && Promo(check, request.PromoApr, request.PromoEndsMonth, clock.GetUtcNow(), debt.PromoEndsMonth) is { } promo)
+        {
+            debt.PromoApr = promo.Apr;
+            debt.PromoEndsMonth = promo.EndsMonth;
+        }
         if (check.Failed)
             return check.ToResult();
 
         debt.UpdatedAt = clock.GetUtcNow();
         await db.SaveChangesAsync(ct);
         return Results.Ok(DebtResponse.From(debt));
+    }
+
+    /// <summary>
+    /// Reads a promotional rate and the last month it applies. The month can't be one that has passed (a month back is
+    /// allowed for a browser a day behind UTC), unless it's the one the debt already has.
+    /// </summary>
+    private static (decimal Apr, DateOnly EndsMonth)? Promo(Validation check, decimal? apr, string month, DateTimeOffset now, DateOnly? current = null)
+    {
+        var rate = check.Percent("promoApr", apr ?? 0m, "a promotional rate", MaxApr);
+        var thisMonth = new DateOnly(now.Year, now.Month, 1);
+        if (!DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", out var ends))
+        {
+            check.Add("promoEndsMonth", "Pick the last month of the promotional rate.");
+            return null;
+        }
+        if (ends < thisMonth.AddMonths(-1) && ends != current)
+        {
+            check.Add("promoEndsMonth", "That month has passed. Leave the promotion off if it's over.");
+            return null;
+        }
+        if (ends > thisMonth.AddYears(10))
+        {
+            check.Add("promoEndsMonth", "Pick a month within the next 10 years.");
+            return null;
+        }
+        return (rate, ends);
     }
 
     private static async Task<IResult> DeleteDebt(Guid id, ClaimsPrincipal principal, AppDbContext db, CancellationToken ct)
