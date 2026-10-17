@@ -73,7 +73,7 @@ export function SampleImpactCard({
           </Box>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="caption" color="text.secondary" component="div">
-              Net worth in 10 years
+              Net worth in 10 years, in today's dollars
             </Typography>
             <Typography variant="h6" component="p">
               {whole(impact.netWorth.after)}

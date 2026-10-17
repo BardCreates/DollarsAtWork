@@ -198,6 +198,10 @@ and decisions already made. Don't re-ask decided questions.
   sources and the income; while any exist Plan.MonthlyIncome is their total (to the cent) and PUT /plan/income refuses.
   Client: features/plan/incomes.ts (sets the plan cache's income), IncomeBox (Plan and /welcome), IncomeSourcesDialog,
   lib/income monthlyEquivalent. Deleting the last source leaves the income as it was.
+- Demo and home (Oct 17): the sample "Alex" plan (lib/sampleData) runs in today's dollars and shows a car-insurance sinking
+  fund, a $1,800 tax refund on debt (SAMPLE_WINDFALL), paycheck 401(k) money with a salary-based match, the ±2-point range
+  and a retirement number (SAMPLE_RETIREMENT). The home page lists the new features and says plainly there's no bank
+  linking or transaction import.
 
 ## What we compete on
 
