@@ -59,7 +59,7 @@ describe('help text', () => {
   });
 
   it('every link inside an article points at a page or article that exists', () => {
-    const pages = ['/', '/plan', '/savings', '/debt', '/invest', '/what-if', '/tools', '/profile', '/welcome', '/pricing', '/security', '/privacy', '/terms', '/help', '/demo'];
+    const pages = ['/', '/plan', '/savings', '/debt', '/invest', '/assets', '/what-if', '/tools', '/profile', '/welcome', '/pricing', '/security', '/privacy', '/terms', '/help', '/demo'];
     for (const article of HELP_ARTICLES) {
       for (const [, href] of article.body.matchAll(/\]\(([^)]+)\)/g)) {
         const path = href.split('?')[0];
