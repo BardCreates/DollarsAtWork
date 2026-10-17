@@ -506,6 +506,9 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RepeatMonths")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("SharePercent")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");

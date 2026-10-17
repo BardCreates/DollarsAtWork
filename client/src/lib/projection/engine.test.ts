@@ -793,3 +793,57 @@ describe('rule 13: a promotional rate that ends', () => {
     expect(result.points[1].debtBalances[1]).toBeCloseTo(888.3333333, 6);
   });
 });
+
+describe('rule 14: sinking funds for bills that come back', () => {
+  it('pays the bill in its month, then fills again', () => {
+    // A 1,200 yearly bill due in month 12, 100 a month: 1,200 by month 12, paid, so 0. Month 13: 100.
+    const result = project(
+      plan({
+        months: 24,
+        savingsMonthly: 100,
+        goals: [{ id: 'insurance', target: 1_200, balance: 0, repeat: { firstMonth: 12, everyMonths: 12 } }],
+        accounts: [cashAccount],
+      }),
+    );
+    expect(result.points[11].savings).toBeCloseTo(1_100, 6);
+    expect(result.points[12].savings).toBe(0);
+    expect(result.points[13].savings).toBeCloseTo(100, 6);
+    // Month 24: the second bill, paid in full again.
+    expect(result.points[24].savings).toBe(0);
+    expect(result.goalFullMonths[0]).toBe(12);
+    expect(result.warnings.shortBills).toEqual([false]);
+    // A sinking fund's money is never finished, so nothing spills to Investments.
+    expect(result.points[24].investments).toBe(0);
+  });
+
+  it('flags a bill the fund was short of and pays what it has', () => {
+    // 50 a month toward a 1,200 bill in month 6: 300 there, all of it used.
+    const result = project(
+      plan({
+        months: 7,
+        savingsMonthly: 50,
+        goals: [{ id: 'gifts', target: 1_200, balance: 0, repeat: { firstMonth: 6, everyMonths: 12 } }],
+      }),
+    );
+    expect(result.points[6].savings).toBe(0);
+    expect(result.warnings.shortBills).toEqual([true]);
+  });
+
+  it('a full sinking fund holds money back from the next goal only until its target', () => {
+    // Priority: the 600 bill fund (due month 12) first, then a 10,000 goal. 200 a month:
+    // months 1–3 fill the bill fund to 600; from month 4 everything goes to the second goal: 200 × 9 = 1,800 by month 12.
+    const result = project(
+      plan({
+        months: 12,
+        savingsMonthly: 200,
+        goals: [
+          { id: 'bill', target: 600, balance: 0, repeat: { firstMonth: 12, everyMonths: 12 } },
+          { id: 'trip', target: 10_000, balance: 0 },
+        ],
+      }),
+    );
+    expect(result.points[3].goalBalances[0]).toBeCloseTo(600, 6);
+    expect(result.points[12].goalBalances[1]).toBeCloseTo(1_800, 6);
+    expect(result.points[12].goalBalances[0]).toBe(0);
+  });
+});

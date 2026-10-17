@@ -5,7 +5,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { formatMonthFromNow } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
-import type { Goal, GoalOutlook } from './savings';
+import { repeatChoices, type Goal, type GoalOutlook } from './savings';
 
 interface GoalListProps {
   goals: Goal[];
@@ -91,7 +91,11 @@ export function GoalList({ goals, outlooks, showShares, readOnly, onReorder, onE
 
 function GoalSummary({ goal, outlook, showShare }: { goal: Goal; outlook: GoalOutlook; showShare: boolean }) {
   const percent = goal.targetAmount > 0 ? Math.min(100, (goal.currentBalance / goal.targetAmount) * 100) : 100;
-  const full = outlook.fullMonth === 0;
+  const sinking = goal.repeatMonths !== null;
+  // A sinking fund is never "done": it's ready for the next bill, then fills again.
+  const full = outlook.fullMonth === 0 && !sinking;
+  const ready = outlook.fullMonth === 0 && sinking;
+  const every = repeatChoices.find((choice) => choice.months === goal.repeatMonths)?.label.toLowerCase() ?? `every ${goal.repeatMonths} months`;
 
   return (
     <Box sx={{ minWidth: 0 }}>
@@ -100,8 +104,9 @@ function GoalSummary({ goal, outlook, showShare }: { goal: Goal; outlook: GoalOu
           {goal.name}
         </Typography>
         {full && <Chip size="small" color="success" label="Done" />}
-        {!full && outlook.deadline?.onTrack && <Chip size="small" color="success" variant="outlined" label="On track" />}
-        {!full && outlook.deadline && !outlook.deadline.onTrack && (
+        {ready && <Chip size="small" color="success" label="Ready for the bill" />}
+        {!full && !ready && outlook.deadline?.onTrack && <Chip size="small" color="success" variant="outlined" label="On track" />}
+        {!full && !ready && outlook.deadline && !outlook.deadline.onTrack && (
           <Chip
             size="small"
             color="warning"
@@ -134,7 +139,15 @@ function GoalSummary({ goal, outlook, showShare }: { goal: Goal; outlook: GoalOu
       <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.75 }}>
         {full
           ? 'Done. Every dollar made it.'
-          : [
+          : sinking
+            ? [
+                `Bill ${every}, next due ${formatMonthFromNow(outlook.deadline?.months ?? 0)}`,
+                `${formatMoney(outlook.monthlyNow)}/month now`,
+                goal.apy > 0 ? `${goal.apy}% APY` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')
+            : [
               `${formatMoney(outlook.monthlyNow)}/month now`,
               showShare ? `${goal.sharePercent}% share` : null,
               goal.apy > 0 ? `${goal.apy}% APY` : null,

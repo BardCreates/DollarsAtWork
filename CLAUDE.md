@@ -189,6 +189,10 @@ and decisions already made. Don't re-ask decided questions.
   other income; monthNumberReached on investments; extraMonthlyToReach by halving). features/dashboard/retirementOutlook
   works in today's dollars; RetirementCard on the dashboard; the timeline shows it (kind 'retirement') once set up.
   The Privacy Policy lists the new inputs.
+- Sinking funds (Oct 17): SavingsGoal.RepeatMonths (migration AddSinkingFunds; needs TargetDate = next due date). Engine
+  GoalInput.repeat {firstMonth, everyMonths}: the bill (target) is paid at the end of each due month after deposits, the
+  goal fills again, warnings.shortBills flags a fund short at a due date. lib/sinkingFund nextDueMonths rolls a passed
+  due date forward; savings.ts toGoalInput maps every goal. GoalList shows "Ready for the bill" and the next due date.
 
 ## What we compete on
 

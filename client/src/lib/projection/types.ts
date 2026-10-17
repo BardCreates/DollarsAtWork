@@ -25,6 +25,12 @@ export interface GoalInput {
   apy?: number;
   /** Share of the monthly savings amount, used in 'percent' mode. */
   sharePercent?: number;
+  /**
+   * A sinking fund for a bill that comes back: at the end of month firstMonth, and every everyMonths after it, the
+   * bill (the target) is paid from the goal and it starts filling again. A balance short of the target pays what it
+   * has. Left out for an ordinary goal.
+   */
+  repeat?: { firstMonth: number; everyMonths: number };
 }
 
 /** A debt. List order is the payoff order for the 'custom' strategy. */
@@ -219,6 +225,8 @@ export interface ProjectionResult {
     growingDebts: boolean[];
     /** Money was invested with no investment accounts set up. */
     investingWithoutAccounts: boolean;
+    /** Per goal, in input order: true when a sinking fund was short of its target when a bill came due. */
+    shortBills: boolean[];
   };
 
   /**

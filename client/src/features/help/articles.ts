@@ -149,7 +149,7 @@ On phones the panel sits at the top of the page, so it stays in view while you s
     title: 'Savings goals',
     section: 'Savings, debt and investing',
     summary: 'Turn your Savings amount into goals that fill in order or by fixed shares.',
-    keywords: 'goal emergency fund target date on track priority percent share apy interest vacation',
+    keywords: 'goal emergency fund target date on track priority percent share apy interest vacation sinking fund yearly bill insurance gifts annual repeat',
     body: `The [Savings](/savings) page puts your Savings amount from Plan to work on goals. The banner at the top shows that amount; type a new one right there and it saves to your plan's Savings category. If that puts your categories over your income, the banner says so; take it from another category on [Plan](/plan).
 
 ## Adding a goal
@@ -160,6 +160,11 @@ On phones the panel sits at the top of the page, so it stays in view while you s
 - **APY** (optional): the yearly interest the account pays, like 4.5.
 
 You can have up to 50 goals. A target date can't be one that has already passed. No goals yet? The page suggests an **emergency fund** of 3 or 6 months of your everyday categories plus every debt's minimum payment (an emergency doesn't pause those), or a **$1,000 starter fund** to hold while you pay off cards.
+
+## Sinking funds for bills that come back
+Car insurance every December, gifts every year, registration every two years: turn on **It's for a bill that comes back**, pick how often, and set the **next due date** and the bill's amount as the target. Saving a little each month means the bill doesn't land all at once.
+
+On each due date the target is paid out of the goal, and it starts filling again for next time. The goal shows **Ready for the bill** once it has enough, or how much more a month it needs before the next due date. A sinking fund never counts as done, so its money doesn't move on to other goals. If a bill comes due before the fund is full, the projection pays what's there. Update the balance at your check-in after you pay it.
 
 ## Priority or Percent
 - **Priority** fills goals from the top down. Drag goals to change the order.

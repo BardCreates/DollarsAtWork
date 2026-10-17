@@ -2,18 +2,37 @@ using DollarsAtWork.Api.Domain;
 
 namespace DollarsAtWork.Api.Features.Savings;
 
-/// <summary>Used to add a goal and to replace one. TargetDate and Apy are optional.</summary>
-public record SaveGoalRequest(string? Name, decimal? TargetAmount, decimal? CurrentBalance, DateOnly? TargetDate, decimal? Apy, decimal? SharePercent);
+/// <summary>
+/// Used to add a goal and to replace one. TargetDate and Apy are optional. RepeatMonths (1 to 60) makes it a sinking
+/// fund for a bill that comes back, which needs a TargetDate: the bill's next due date.
+/// </summary>
+public record SaveGoalRequest(
+    string? Name,
+    decimal? TargetAmount,
+    decimal? CurrentBalance,
+    DateOnly? TargetDate,
+    decimal? Apy,
+    decimal? SharePercent,
+    int? RepeatMonths = null);
 
 /// <summary>Every goal id, in the new priority order.</summary>
 public record ReorderGoalsRequest(Guid[]? Ids);
 
 public record SetSplitModeRequest(string? SplitMode);
 
-public record GoalResponse(Guid Id, string Name, decimal TargetAmount, decimal CurrentBalance, DateOnly? TargetDate, decimal Apy, int Priority, decimal SharePercent)
+public record GoalResponse(
+    Guid Id,
+    string Name,
+    decimal TargetAmount,
+    decimal CurrentBalance,
+    DateOnly? TargetDate,
+    decimal Apy,
+    int Priority,
+    decimal SharePercent,
+    int? RepeatMonths)
 {
     public static GoalResponse From(SavingsGoal g) =>
-        new(g.Id, g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent);
+        new(g.Id, g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent, g.RepeatMonths);
 }
 
 /// <summary>
