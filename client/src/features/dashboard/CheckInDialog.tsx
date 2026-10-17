@@ -24,7 +24,7 @@ function sections(data: DashboardData): Section[] {
     { field: 'goals', title: 'Savings goals', rows: data.savings.goals.map((g) => row('goal', g.id, g.name, g.currentBalance)) },
     { field: 'debts', title: 'Debts', rows: data.debts.debts.map((d) => row('debt', d.id, d.name, d.balance)) },
     { field: 'accounts', title: 'Investment accounts', rows: data.investments.accounts.map((a) => row('account', a.id, a.name, a.balance)) },
-    { field: 'items', title: 'Other assets and debts', rows: data.netWorth.items.map((i) => row('item', i.id, i.name, i.value)) },
+    { field: 'items', title: 'Home, car and other items', rows: data.netWorth.items.map((i) => row('item', i.id, i.name, i.value)) },
   ];
   return all.filter((section) => section.rows.length > 0);
 }

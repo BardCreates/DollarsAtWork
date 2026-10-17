@@ -39,15 +39,16 @@ export const HELP_ARTICLES: HelpArticle[] = [
 
 ## How the pieces fit
 - **Plan**: enter your monthly take-home pay and split it into categories. Three of them are built in: Savings, Debt and Investments.
-- **Savings, Debt and Invest**: each takes its monthly amount from Plan and puts it to work on your goals, your debts and your accounts.
+- **Savings, Debt and Invest**: each takes its monthly amount from Plan and puts it to work on your goals, your debts and your accounts. You can change that amount on the page itself.
+- **Assets**: your home, car and other things you own, so your net worth counts them.
 - **Dashboard**: your net worth today and where your plan takes it. Check in once a month to keep the numbers true.
 - **What if**: try a different plan and compare it with yours, without changing anything.
 - **Tools**: quick calculators for one-off questions.
 
 ## Your first five minutes
-When you sign up, the walkthrough at [Set up your plan](/welcome) asks three things: your income, how much goes to Savings, Debt and Investments, and (optionally) one debt, goal or account. You can skip any step and change everything later.
+When you sign up, the walkthrough at [Set up your plan](/welcome) asks three things: your income, how much goes to Savings, Debt and Investments, and (optionally) a debt, a goal, an account or your home. You can skip any step and change everything later.
 
-After that, add your everyday categories (rent, groceries and so on) on [Plan](/plan) until Remaining reaches $0. Then add the rest of your debts, goals and accounts on their pages.
+After that, add your everyday categories (rent, groceries and so on) on [Plan](/plan) until Remaining reaches $0. Then add the rest of your debts, goals, accounts and assets on their pages.
 
 ## Estimates, not promises
 Every projection is an estimate based on the numbers you enter and the returns you assume. It isn't financial advice. Updating your balances once a month keeps the estimates close to reality.`,
