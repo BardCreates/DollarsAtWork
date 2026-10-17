@@ -49,7 +49,13 @@ public class BillingService(
             {
                 try
                 {
-                    f = ToResponse(await prices.GetAsync(_stripe.FoundingPriceId, cancellationToken: ct));
+                    var foundingPrice = await prices.GetAsync(_stripe.FoundingPriceId, cancellationToken: ct);
+                    // The offer is sold as a yearly price ("$49 / year"). A price that bills any other way (a monthly
+                    // $49, say) would charge people far more than the page says, so it is never offered.
+                    if (foundingPrice.Recurring?.Interval == "year" && foundingPrice.Recurring.IntervalCount == 1 && foundingPrice.Active)
+                        f = ToResponse(foundingPrice);
+                    else
+                        logger.LogError("Founding price {PriceId} doesn't bill once a year, so the founding offer is hidden. Point Stripe:FoundingPriceId at a yearly price.", _stripe.FoundingPriceId);
                 }
                 catch (StripeException ex)
                 {
