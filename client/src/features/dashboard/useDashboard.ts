@@ -9,7 +9,7 @@ import {
 } from '../../lib/projection';
 import { yearMonthFromNow } from '../../lib/dates';
 import { buildTimeline, type TimelineItem } from '../../lib/timeline';
-import { useDebts, type DebtsData } from '../debt/debts';
+import { toDebtInput, useDebts, type DebtsData } from '../debt/debts';
 import { toAccountInput, useInvestments, type InvestmentsData } from '../invest/investments';
 import { planTotals, usePlan, type CategoryKind, type Plan } from '../plan/plan';
 import { useSavings, type SavingsData } from '../savings/savings';
@@ -64,7 +64,7 @@ export function buildProjectionInput(data: DashboardData, todaysDollars: boolean
     investmentsMonthly: categoryAmount(plan, 'Investment'),
     goals: savings.goals.map((g) => ({ id: g.id, target: g.targetAmount, balance: g.currentBalance, apy: g.apy, sharePercent: g.sharePercent })),
     savingsSplitMode: savings.splitMode.toLowerCase() as SavingsSplitMode,
-    debts: debts.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment, minimumOnly: d.minimumOnly })),
+    debts: debts.debts.map((d) => toDebtInput(d)),
     debtStrategy: debts.strategy.toLowerCase() as DebtStrategy,
     accounts: investments.accounts.map(toAccountInput),
     windfalls: toWindfallInputs(netWorth.windfalls ?? []),

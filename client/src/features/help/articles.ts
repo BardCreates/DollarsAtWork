@@ -179,7 +179,7 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
     title: 'Paying off debt',
     section: 'Savings, debt and investing',
     summary: 'Add your debts and see your debt-free date with snowball, avalanche or your own order.',
-    keywords: 'debt free date snowball avalanche custom apr minimum payment interest schedule credit card loan mortgage student auto medical payoff',
+    keywords: 'debt free date snowball avalanche custom apr minimum payment interest schedule credit card loan mortgage student auto medical payoff promo promotional 0% balance transfer deferred',
     body: `The [Debt](/debt) page uses your Debt amount from Plan to pay everything off. The banner at the top shows that amount; type a new one there and it saves to your plan's Debt category (the banner warns if your categories then add up to more than your income).
 
 ## Adding a debt
@@ -187,6 +187,7 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
 - **Balance**: what you owe today.
 - **APR**: the yearly interest rate, like 19.99.
 - **Minimum payment**: what you must pay each month. For a mortgage, enter the principal and interest only, not the escrow part (taxes and insurance), since that never touches the balance.
+- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. Avalanche orders debts by the rate they charge that month. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
 - **Minimum only**: on by default for a mortgage. The debt is paid on its own schedule and still counts against your net worth, but your extra money skips it and "debt-free" means everything else. Turn it on for any long loan you'd rather not snowball, or off to throw your extra at the mortgage too.
 
 You can have up to 50 debts. If a minimum payment doesn't cover the month's interest, the form warns you as you type: that debt would grow forever. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.

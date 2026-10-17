@@ -4,6 +4,7 @@ import { Alert, AlertTitle, Button } from '@mui/material';
 import { nextFundingStep, type FundingStep } from '../../lib/fundingOrder';
 import { formatMoney } from '../../lib/money';
 import { planExpectedReturn } from '../../lib/planImpact';
+import { toDebtInput } from '../debt/debts';
 import { useDashboardData } from '../dashboard/useDashboard';
 import type { Plan } from './plan';
 
@@ -28,7 +29,11 @@ export function FundingNudge({ plan }: { plan: Plan }) {
       savingsMonthly: amountOf(plan, 'Savings'),
       investmentsMonthly: investing,
       savedToday: data.savings.goals.reduce((sum, g) => sum + g.currentBalance, 0),
-      debts: data.debts.debts.map((d) => ({ name: d.name, balance: d.balance, apr: d.apr, minimumOnly: d.minimumOnly })),
+      // A debt on a promotional rate is judged by the rate it charges now.
+      debts: data.debts.debts.map((d) => {
+        const engine = toDebtInput(d);
+        return { name: d.name, balance: d.balance, apr: engine.promoMonths ? (engine.promoApr ?? 0) : d.apr, minimumOnly: d.minimumOnly };
+      }),
       accounts: accounts.map((a) => {
         const fromPlan = (investing * a.sharePercent) / sharesTotal;
         return {

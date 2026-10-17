@@ -6,6 +6,7 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import { muiField } from '../../components/formHelpers';
 import { ApiError, errorMessage } from '../../api/client';
 import { formatMoney, parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { yearMonthFromNow } from '../../lib/dates';
 import { monthlyInterest } from '../../lib/projection';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { debtTypeLabels, useAddDebt, useUpdateDebt, type Debt, type DebtType } from './debts';
@@ -20,10 +21,13 @@ const schema = z.object({
   apr: z.string().refine((text) => parsePercentInput(text) !== null, 'Enter an APR between 0% and 100%.'),
   minPayment: z.string().refine(isAmount, 'Enter the minimum payment in dollars.'),
   minimumOnly: z.boolean(),
+  hasPromo: z.boolean(),
+  promoApr: z.string(),
+  promoEndsMonth: z.string(),
 });
 type FormValues = z.infer<typeof schema>;
 
-const blank: FormValues = { name: '', type: 'CreditCard', balance: '', apr: '', minPayment: '', minimumOnly: false };
+const blank: FormValues = { name: '', type: 'CreditCard', balance: '', apr: '', minPayment: '', minimumOnly: false, hasPromo: false, promoApr: '0', promoEndsMonth: '' };
 
 /** Add a debt, or edit one when `debt` is given. */
 export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt; onClose: () => void }) {
@@ -31,7 +35,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
   const update = useUpdateDebt();
   const saving = debt ? update : add;
 
-  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<FormValues>({
+  const { register, control, handleSubmit, reset, watch, setValue, setError, formState: { errors, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -43,7 +47,17 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
     update.reset();
     reset(
       debt
-        ? { name: debt.name, type: debt.type, balance: String(debt.balance), apr: String(debt.apr), minPayment: String(debt.minPayment), minimumOnly: debt.minimumOnly }
+        ? {
+            name: debt.name,
+            type: debt.type,
+            balance: String(debt.balance),
+            apr: String(debt.apr),
+            minPayment: String(debt.minPayment),
+            minimumOnly: debt.minimumOnly,
+            hasPromo: debt.promoEndsMonth !== null,
+            promoApr: String(debt.promoApr ?? 0),
+            promoEndsMonth: debt.promoEndsMonth ?? '',
+          }
         : blank,
     );
   }, [open, debt]);
@@ -68,7 +82,23 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
   const fieldError = (field: keyof FormValues) => errors[field]?.message ?? serverError?.fieldErrors(field)[0];
   const hasFieldError = (Object.keys(blank) as (keyof FormValues)[]).some((field) => fieldError(field));
 
+  const hasPromo = watch('hasPromo');
+
   const onSubmit = handleSubmit((values) => {
+    if (values.hasPromo) {
+      if (parsePercentInput(values.promoApr) === null) {
+        setError('promoApr', { message: 'Enter the promotional rate, like 0.' });
+        return;
+      }
+      if (!/^\d{4}-\d{2}$/.test(values.promoEndsMonth)) {
+        setError('promoEndsMonth', { message: 'Pick the last month of the promotional rate.' });
+        return;
+      }
+      if (values.promoEndsMonth < yearMonthFromNow(0) && values.promoEndsMonth !== debt?.promoEndsMonth) {
+        setError('promoEndsMonth', { message: "That month has passed. Turn the promotion off if it's over." });
+        return;
+      }
+    }
     const fields = {
       name: values.name,
       type: values.type,
@@ -76,8 +106,11 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
       apr: parsePercentInput(values.apr) ?? 0,
       minPayment: parseMoneyInput(values.minPayment) ?? 0,
       minimumOnly: values.minimumOnly,
+      promoApr: values.hasPromo ? (parsePercentInput(values.promoApr) ?? 0) : null,
+      promoEndsMonth: values.hasPromo ? values.promoEndsMonth : null,
     };
-    if (debt) update.mutate({ id: debt.id, changes: fields }, { onSuccess: onClose });
+    // Sending an empty month is how an edit turns a promotion off.
+    if (debt) update.mutate({ id: debt.id, changes: { ...fields, promoEndsMonth: fields.promoEndsMonth ?? '' } }, { onSuccess: onClose });
     else add.mutate(fields, { onSuccess: onClose });
   });
 
@@ -126,9 +159,44 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
               helperText={fieldError('minPayment') ?? (type === 'Mortgage' ? 'Principal and interest only, not escrow (taxes and insurance).' : undefined)}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
             />
+            <Controller
+              name="hasPromo"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={<Switch checked={field.value} onChange={(_, checked) => field.onChange(checked)} />}
+                  label="It has a promotional rate, like a 0% balance transfer"
+                />
+              )}
+            />
+            {hasPromo && (
+              <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                <TextField
+                  label="Promotional rate"
+                  placeholder="%"
+                  {...muiField(register, 'promoApr')}
+                  error={!!fieldError('promoApr')}
+                  helperText={fieldError('promoApr') ?? 'Often 0.'}
+                  slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+                />
+                <TextField
+                  label="Last month at that rate"
+                  type="month"
+                  {...muiField(register, 'promoEndsMonth')}
+                  error={!!fieldError('promoEndsMonth')}
+                  helperText={fieldError('promoEndsMonth') ?? 'After it, the APR above applies.'}
+                  slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: yearMonthFromNow(0) } }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ gridColumn: '1 / -1' }}>
+                  Some store cards charge "deferred interest": miss the deadline and the interest for the whole promotion is added at once.
+                  The projection doesn't add that, so aim to clear the balance in time.
+                </Typography>
+              </Box>
+            )}
             {minimumMissesInterest && (
               <Alert severity="warning">
-                This debt charges about {formatMoney(interestNow)} of interest a month, so a {formatMoney(minimumNow ?? 0)} payment won't shrink it.
+                {hasPromo ? 'Once the promotion ends, this debt charges' : 'This debt charges'} about {formatMoney(interestNow)} of interest a month, so a{' '}
+                {formatMoney(minimumNow ?? 0)} payment won't shrink it.
                 Check the minimum on your statement, or plan to pay more than {formatMoney(interestNow)}.
               </Alert>
             )}

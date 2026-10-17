@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { project, type DebtStrategy as EngineStrategy, type ProjectionInput, type ProjectionResult } from '../../lib/projection';
+import { project, type DebtInput, type DebtStrategy as EngineStrategy, type ProjectionInput, type ProjectionResult } from '../../lib/projection';
+import { monthsUntilYearMonth } from '../../lib/dates';
 import { debtFreeExcept } from '../../lib/timeline';
 import { savingsQueryKey } from '../savings/savings';
 
@@ -32,6 +33,10 @@ export interface Debt {
   minPayment: number;
   /** Pay only the minimum and keep it out of the payoff order (a mortgage). "Debt-free" skips it. */
   minimumOnly: boolean;
+  /** A promotional rate (0 for a 0% balance transfer) charged through promoEndsMonth; null for none. */
+  promoApr: number | null;
+  /** "2027-06": the last month the promotional rate applies; null for none. */
+  promoEndsMonth: string | null;
   sortOrder: number;
 }
 
@@ -43,6 +48,22 @@ export interface DebtsData {
 }
 
 export type DebtFields = Omit<Debt, 'id' | 'sortOrder'>;
+
+/**
+ * A debt as the projection engine takes it. The promotion lasts from month 1 through its last calendar month, so a
+ * promotion ending this month (or earlier) no longer changes anything.
+ */
+export function toDebtInput(d: Debt, from: Date = new Date()): DebtInput {
+  const promoMonths = d.promoEndsMonth ? (monthsUntilYearMonth(d.promoEndsMonth, from) ?? 0) : 0;
+  return {
+    id: d.id,
+    balance: d.balance,
+    apr: d.apr,
+    minPayment: d.minPayment,
+    minimumOnly: d.minimumOnly,
+    ...(promoMonths > 0 ? { promoApr: d.promoApr ?? 0, promoMonths } : {}),
+  };
+}
 
 export const debtsQueryKey = ['debts'] as const;
 
@@ -150,7 +171,7 @@ export function useDebtProjection(data: DebtsData, whole?: ProjectionInput): Deb
       debtMonthly: data.monthlyBudget,
       goals: [],
       accounts: [],
-      debts: data.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment, minimumOnly: d.minimumOnly })),
+      debts: data.debts.map((d) => toDebtInput(d)),
       debtStrategy: data.strategy.toLowerCase() as EngineStrategy,
       // Fallback only (the rest of the plan failed to load): the debts alone.
       debtDoneDestination: 'remaining' as const,
