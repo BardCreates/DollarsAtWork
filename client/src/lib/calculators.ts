@@ -84,31 +84,75 @@ export interface DripYear {
   notReinvested: number;
   /** Dividends paid that year when reinvesting. */
   dividends: number;
+  /** Everything put in so far: the starting amount plus the monthly additions. */
+  contributed: number;
+}
+
+export type PayoutFrequency = 12 | 4 | 2 | 1;
+
+export interface DripInput {
+  initial: number;
+  /** Added at the end of every month, buying shares at that month's price. */
+  monthlyContribution: number;
+  /** Yearly change in the share price, as a percent; can be negative. Spread evenly over the months. */
+  priceGrowth: number;
+  /** Today's dividend yield: a year of dividends as a percent of today's share price. */
+  dividendYield: number;
+  /** How much the dividend per share is raised each year, as a percent; often different from the price's growth. */
+  dividendGrowth: number;
+  /** Payouts a year: 12 monthly, 4 quarterly, 2 twice a year, 1 yearly. */
+  payoutsPerYear: PayoutFrequency;
+  years: number;
 }
 
 /**
- * Dividend reinvestment, year by year. Each year the holding pays its yield on the starting value,
- * grows by the price growth, and receives the year's contributions at the end.
+ * Dividend reinvestment, simulated month by month the way a brokerage pays it.
+ *  - The share price moves a twelfth of its yearly growth each month (compounding to exactly the yearly rate).
+ *  - On a payout month, every share held is paid the dividend per share; reinvested, it buys shares at that price.
+ *  - The dividend per share starts at today's yield and is raised by the dividend growth once a year, after the
+ *    year's last payout, so it can grow faster or slower than the price (a dividend-growth stock's yield on cost rises).
+ *  - The monthly addition goes in at the end of the month, after any payout.
+ * Taxes on dividends are left out.
  */
-export function drip(input: { initial: number; yearlyContribution: number; priceGrowth: number; dividendYield: number; years: number }): DripYear[] {
+export function drip(input: DripInput): DripYear[] {
   const years = Math.max(0, Math.floor(input.years));
-  const growth = input.priceGrowth / 100;
-  const dividendYield = input.dividendYield / 100;
-  const contribution = Math.max(0, input.yearlyContribution);
+  const monthlyGrowth = Math.pow(1 + Math.max(-100, input.priceGrowth) / 100, 1 / 12);
+  const step = 12 / input.payoutsPerYear;
+  const contribution = Math.max(0, input.monthlyContribution);
+  const initial = Math.max(0, input.initial);
 
-  let reinvested = Math.max(0, input.initial);
-  let shares = reinvested;
+  // Prices are relative to today's, so a share starts at $1 and the starting amount is that many shares.
+  let price = 1;
+  let perShare = input.dividendYield / 100 / input.payoutsPerYear;
+  let sharesReinvesting = initial;
+  let sharesCash = initial;
   let cash = 0;
-  const rows: DripYear[] = [{ year: 0, reinvested, notReinvested: shares, dividends: 0 }];
+  let paidThisYear = 0;
 
-  for (let year = 1; year <= years; year++) {
-    const dividends = reinvested * dividendYield;
-    reinvested = reinvested * (1 + growth) + dividends + contribution;
-
-    cash += shares * dividendYield;
-    shares = shares * (1 + growth) + contribution;
-
-    rows.push({ year, reinvested, notReinvested: shares + cash, dividends });
+  const rows: DripYear[] = [{ year: 0, reinvested: initial, notReinvested: initial, dividends: 0, contributed: initial }];
+  for (let month = 1; month <= years * 12; month++) {
+    price *= monthlyGrowth;
+    if (month % step === 0) {
+      const paid = sharesReinvesting * perShare;
+      paidThisYear += paid;
+      if (price > 0) sharesReinvesting += paid / price;
+      cash += sharesCash * perShare;
+    }
+    if (contribution > 0 && price > 0) {
+      sharesReinvesting += contribution / price;
+      sharesCash += contribution / price;
+    }
+    if (month % 12 === 0) {
+      rows.push({
+        year: month / 12,
+        reinvested: sharesReinvesting * price,
+        notReinvested: sharesCash * price + cash,
+        dividends: paidThisYear,
+        contributed: initial + contribution * month,
+      });
+      paidThisYear = 0;
+      perShare *= 1 + input.dividendGrowth / 100;
+    }
   }
   return rows;
 }
