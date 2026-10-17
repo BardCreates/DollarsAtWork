@@ -23,6 +23,7 @@ export function TourHint() {
         <li>
           {to('/savings', 'Savings')}, {to('/debt', 'Debt')} and {to('/invest', 'Invest')}: tell each one where its monthly amount goes.
         </li>
+        <li>{to('/assets', 'Assets')}: add your home, car and anything else you own.</li>
         <li>Dashboard: see where it all leads, and check in once a month to keep it true.</li>
         <li>
           {to('/what-if', 'What if')}: try a different plan without touching your real one.
@@ -75,6 +76,17 @@ export function DebtHint() {
       <p>
         Add each card or loan with its balance, APR and minimum payment. Every minimum gets paid, and the rest of your Debt amount goes to one target debt. Snowball picks the
         smallest balance first and Avalanche the highest rate.
+      </p>
+    </Hint>
+  );
+}
+
+export function AssetsHint() {
+  return (
+    <Hint id="assets" title="Count what you own" helpSlug="assets">
+      <p>
+        Add your home, car or anything else worth money, at what it would sell for today. Each one has a yearly change so the projection can move it. A loan
+        with a monthly payment belongs on {to('/debt', 'Debt')}; a house and its mortgage are two separate things, and your net worth counts both.
       </p>
     </Hint>
   );

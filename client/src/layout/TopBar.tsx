@@ -29,6 +29,7 @@ export const navItems = [
   { label: 'Savings', to: '/savings' },
   { label: 'Debt', to: '/debt' },
   { label: 'Invest', to: '/invest' },
+  { label: 'Assets', to: '/assets' },
   { label: 'What if', to: '/what-if' },
   { label: 'Tools', to: '/tools' },
 ] as const;

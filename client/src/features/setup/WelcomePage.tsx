@@ -12,6 +12,8 @@ import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboar
 import { DebtDialog } from '../debt/DebtDialog';
 import { useDebts } from '../debt/debts';
 import { AccountDialog } from '../invest/AccountDialog';
+import { AssetDialog } from '../assets/AssetDialog';
+import { useNetWorth } from '../dashboard/networth';
 import { useInvestments } from '../invest/investments';
 import { planTotals, usePlan, useUpdateCategory, useUpdateIncome, type Category } from '../plan/plan';
 import { GoalDialog } from '../savings/GoalDialog';
@@ -74,11 +76,12 @@ export function WelcomePage() {
   const debts = useDebts();
   const savings = useSavings();
   const investments = useInvestments();
+  const netWorth = useNetWorth();
   const updateIncome = useUpdateIncome();
   const updateCategory = useUpdateCategory();
 
   const [step, setStep] = useState(0);
-  const [adding, setAdding] = useState<'debt' | 'goal' | 'account' | null>(null);
+  const [adding, setAdding] = useState<'debt' | 'goal' | 'account' | 'asset' | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const onError = (e: unknown) => setProblem(errorMessage(e));
 
@@ -107,6 +110,7 @@ export function WelcomePage() {
     { key: 'debt' as const, title: 'A debt', about: 'A card or loan, to see your debt-free date.', count: debts.data?.debts.length ?? 0 },
     { key: 'goal' as const, title: 'A savings goal', about: 'Something to save for, with a target.', count: savings.data?.goals.length ?? 0 },
     { key: 'account' as const, title: 'An investment account', about: 'A 401(k), IRA or brokerage account.', count: investments.data?.accounts.length ?? 0 },
+    { key: 'asset' as const, title: 'A home or car', about: 'Something you own, at what it would sell for today.', count: netWorth.data?.items.length ?? 0 },
   ];
 
   return (
@@ -243,6 +247,7 @@ export function WelcomePage() {
       <DebtDialog open={adding === 'debt'} onClose={() => setAdding(null)} />
       <GoalDialog open={adding === 'goal'} showShare={false} onClose={() => setAdding(null)} />
       <AccountDialog open={adding === 'account'} onClose={() => setAdding(null)} />
+      <AssetDialog open={adding === 'asset'} onClose={() => setAdding(null)} />
     </Box>
   );
 }
