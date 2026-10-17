@@ -1,9 +1,7 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Divider, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import mascot from '../../assets/mascot.png';
 import { signUpPath } from '../../lib/signUp';
-import { WaitlistForm } from '../waitlist/WaitlistForm';
-import type { WaitlistSource } from '../waitlist/waitlist';
 
 const SAMPLE_PLAN = { label: 'See a sample plan', to: '/demo' };
 
@@ -17,7 +15,6 @@ export function TrialCta({
   from,
   primaryLabel = 'Start your free trial',
   secondary = SAMPLE_PLAN,
-  source = 'tools',
 }: {
   headline: string;
   body: string;
@@ -25,7 +22,6 @@ export function TrialCta({
   primaryLabel?: string;
   /** A second, lighter button; null for none. */
   secondary?: { label: string; to: string } | null;
-  source?: WaitlistSource;
 }) {
   return (
     <Card sx={{ mt: 4, outline: 1, outlineStyle: 'solid', outlineColor: 'primary.main' }}>
@@ -51,10 +47,6 @@ export function TrialCta({
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', px: { xs: 2.5, md: 3 }, pb: 2 }}>
         30 days of full access. No card needed.
       </Typography>
-      <Divider />
-      <Box sx={{ px: { xs: 2.5, md: 3 }, py: 2.5 }}>
-        <WaitlistForm source={source} />
-      </Box>
     </Card>
   );
 }

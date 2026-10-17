@@ -139,6 +139,9 @@ and decisions already made. Don't re-ask decided questions.
   debtGrowing warning when a payment misses the interest (shown on the Debt page). The Invest page passes the raise.
   formatMoney never prints -$0. Production refuses an Email:ResendApiKey without "re_"; RetentionService (hourly, via
   TrialEmailWorker) deletes UsageEvents after 400 days and ProcessedStripeEvents after 90; LogMask hides email addresses in logs.
+- Money note box removed (Oct 16, Hannah's call): WaitlistForm is gone from home, the calculators, the demo and the
+  blog, so every visitor ask is the trial. POST /api/waitlist and WaitlistEntries stay: /affiliates "Ask for my link" uses
+  them, and addresses already collected are kept. The Privacy Policy says so.
 
 ## What we compete on
 
