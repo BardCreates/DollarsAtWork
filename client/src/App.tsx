@@ -20,6 +20,7 @@ import { PlanPage } from './features/plan/PlanPage';
 import { DebtPage } from './features/debt/DebtPage';
 import { SavingsPage } from './features/savings/SavingsPage';
 import { InvestPage } from './features/invest/InvestPage';
+import { AssetsPage } from './features/assets/AssetsPage';
 import { ScenariosPage } from './features/scenarios/ScenariosPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NumbersPage } from './features/numbers/NumbersPage';
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/savings" element={<SavingsPage />} />
           <Route path="/debt" element={<DebtPage />} />
           <Route path="/invest" element={<InvestPage />} />
+          <Route path="/assets" element={<AssetsPage />} />
           <Route path="/what-if" element={<ScenariosPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/numbers" element={<NumbersPage />} />

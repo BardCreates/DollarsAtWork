@@ -101,6 +101,32 @@ export function useDashboardProjection(data: DashboardData, todaysDollars: boole
   }, [data, todaysDollars]);
 }
 
+/** The asset and liability lines under the net worth card, read from the projection at a month. */
+export interface NetWorthBreakdown {
+  /** Home items' value (the Home type, owned). Null when there is none. */
+  home: number | null;
+  /** Every other owned item. */
+  otherOwned: number;
+  /** Debts from the Debt page. */
+  debtPage: number;
+  /** "I owe" items, which live on the Assets page. Null when there are none. */
+  otherOwed: number | null;
+}
+
+export function netWorthBreakdownAt(data: DashboardData, result: ProjectionResult, month: number): NetWorthBreakdown {
+  const point = result.points[Math.min(month, result.points.length - 1)];
+  const sumWhere = (keep: (item: DashboardData['netWorth']['items'][number]) => boolean) =>
+    data.netWorth.items.reduce((sum, item, i) => (keep(item) ? sum + point.otherItemValues[i] : sum), 0);
+  const hasHome = data.netWorth.items.some((item) => item.kind === 'Asset' && item.type === 'Home');
+  const hasOwed = data.netWorth.items.some((item) => item.kind === 'Liability');
+  return {
+    home: hasHome ? sumWhere((item) => item.kind === 'Asset' && item.type === 'Home') : null,
+    otherOwned: sumWhere((item) => item.kind === 'Asset' && item.type !== 'Home'),
+    debtPage: point.debt,
+    otherOwed: hasOwed ? sumWhere((item) => item.kind === 'Liability') : null,
+  };
+}
+
 /**
  * Home equity at a month: every Home item's value less every Mortgage debt's balance, read from the projection
  * so it moves with the home's yearly change and the loan's paydown. Null when there is no Home item.

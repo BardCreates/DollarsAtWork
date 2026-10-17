@@ -22,10 +22,9 @@ import { CheckInDialog } from './CheckInDialog';
 import { NetWorthCard } from './NetWorthCard';
 import { ReportDialog } from './ReportDialog';
 import type { NetWorthData } from './networth';
-import { OtherItemsDialog } from './OtherItemsDialog';
 import { ProjectionChart } from './ProjectionChart';
 import { TimelineCard } from './TimelineCard';
-import { buildProjectionInput, homeEquityAt, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
+import { buildProjectionInput, homeEquityAt, netWorthBreakdownAt, outlookOf, useDashboardData, useDashboardProjection, type DashboardData } from './useDashboard';
 
 const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financial advice.';
 
@@ -78,7 +77,7 @@ function Dashboard({ data }: { data: DashboardData }) {
 
   const [year, setYear] = useState(10);
   const [todaysDollars, setTodaysDollars] = useState(false);
-  const [dialog, setDialog] = useState<'assumptions' | 'items' | 'check-in' | 'report' | null>(null);
+  const [dialog, setDialog] = useState<'assumptions' | 'check-in' | 'report' | null>(null);
 
   const { result, timeline } = useDashboardProjection(data, todaysDollars);
   const { remaining } = planTotals(data.plan);
@@ -184,7 +183,7 @@ function Dashboard({ data }: { data: DashboardData }) {
 
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.7fr) minmax(0, 1fr)' } }}>
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
-          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={todaysDollars} homeEquity={homeEquityAt(data, result, year * 12)} />
+          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={todaysDollars} homeEquity={homeEquityAt(data, result, year * 12)} breakdown={netWorthBreakdownAt(data, result, year * 12)} />
           <DashCard title="Projection">
             <ProjectionChart result={result} year={year} />
             {result.warnings.investingWithoutAccounts && (
@@ -193,7 +192,7 @@ function Dashboard({ data }: { data: DashboardData }) {
               </Typography>
             )}
           </DashCard>
-          <AssetsLiabilitiesCard data={data} readOnly={readOnly} onManage={() => setDialog('items')} />
+          <AssetsLiabilitiesCard data={data} />
           <HistoryCard snapshots={data.netWorth.snapshots} />
         </Box>
 
@@ -211,7 +210,6 @@ function Dashboard({ data }: { data: DashboardData }) {
       </Typography>
 
       <AssumptionsDialog open={dialog === 'assumptions'} settings={data.netWorth.settings} onClose={() => setDialog(null)} />
-      <OtherItemsDialog open={dialog === 'items'} items={data.netWorth.items} onClose={() => setDialog(null)} />
       <CheckInDialog open={dialog === 'check-in'} data={data} onClose={() => setDialog(null)} onSaved={checkInSaved} />
       <ReportDialog open={dialog === 'report'} data={data} onClose={() => setDialog(null)} />
 

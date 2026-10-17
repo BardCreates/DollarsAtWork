@@ -184,7 +184,7 @@ interface Bar {
 }
 
 /** Totals by type: what is owned in green, what is owed in red. */
-export function AssetsLiabilitiesCard({ data, readOnly, onManage }: { data: DashboardData; readOnly: boolean; onManage: () => void }) {
+export function AssetsLiabilitiesCard({ data }: { data: DashboardData }) {
   const add = (bars: Map<string, number>, label: string, amount: number) => {
     if (amount > 0) bars.set(label, (bars.get(label) ?? 0) + amount);
   };
@@ -229,12 +229,12 @@ export function AssetsLiabilitiesCard({ data, readOnly, onManage }: { data: Dash
   );
 
   return (
-    <DashCard title="Assets vs liabilities">
+    <DashCard title="Assets vs liabilities" to="/assets" linkLabel="Assets">
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
         {group('What you own', assetBars, 'success.main', 'Nothing yet.')}
         {group('What you owe', liabilityBars, 'error.main', 'Nothing. Nice.')}
       </Box>
-      <Button size="small" variant="outlined" sx={{ mt: 2.5 }} disabled={readOnly} onClick={onManage}>
+      <Button size="small" variant="outlined" component={RouterLink} to="/assets" sx={{ mt: 2.5 }}>
         Add a home, car or other item
       </Button>
     </DashCard>

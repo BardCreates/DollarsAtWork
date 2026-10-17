@@ -146,6 +146,11 @@ and decisions already made. Don't re-ask decided questions.
   the timeline, Debt page and dashboard say "Debt-free (except Mortgage)" (lib/timeline debtFreeExcept). The net worth card
   shows Home equity (useDashboard homeEquityAt: Home items less Mortgage balances at the slider year). Mortgage payments are
   principal and interest only (escrow never touches the balance): the dialog and help say so.
+- Assets page (Oct 17, R19): /assets ("Assets" in the nav, features/assets) lists the Other items (what you own, and anything owed
+  outside the Debt page) with value and yearly change; AssetDialog adds or edits one item and is reused by the welcome walkthrough
+  ("A home or car"). The dashboard's Other items dialog is gone; its Assets vs liabilities card links to /assets. The net worth card's
+  breakdown (useDashboard netWorthBreakdownAt) splits owned items into Home and Other, and shows a "Debt page · Other owed" line when
+  an "I owe" item exists; both "Other" words link to /assets. Help article "assets"; hint id "assets".
 - Amount from the page (Oct 17, R20): PlanAmountBanner with `kind` is editable on Savings, Debt and Invest. It writes to the plan's
   built-in category through plan.ts useSetModuleAmount (useUpdateCategory + invalidating the module query, so the module's own
   monthly amount refreshes); no second copy. When the plan ends up over income the banner turns to a warning with the amount over
@@ -227,6 +232,7 @@ client/src/
   lib/usage.ts            recordUsage / useRecordVisit / useRecordOnce: the anonymous usage counts; describeChange for the table
   features/account/       account.ts + AccountCards (change email/password, export, delete) shown on the Profile page
   features/setup/         WelcomePage: the first-run walkthrough at /welcome
+  features/assets/        Assets page: AssetsPage (/assets, the Other items list) + AssetDialog (add/edit one item; also used by /welcome)
   features/dashboard/     (also) TimelineCard: the roadmap and the mascot celebration; ReportDialog: the check-in recap
   features/scenarios/     What if page: scenarios.ts (query, mutations, useComparison), ScenarioDialog, CompareView
   features/billing/       billing.ts (prices, checkout, portal, sync) + BillingCard shown on the Profile page

@@ -179,6 +179,25 @@ Every month, each debt gets its minimum. Whatever is left of your Debt amount go
 The **Schedule** tab shows every month's payment, interest, what went toward the balance and what's still owed.`,
   },
   {
+    slug: 'assets',
+    title: 'Your home, car and other assets',
+    section: 'Savings, debt and investing',
+    summary: 'Add what you own at today\'s value, give it a yearly change, and keep loans on the Debt page.',
+    keywords: 'assets home house car vehicle value appreciation equity mortgage own owe family loan cash valuables business net worth',
+    body: `The [Assets](/assets) page is for things worth money that aren't a savings goal or an investment account: your home, a car, cash outside the app, valuables, a business. They count toward your net worth from the day you add them.
+
+## Adding something
+- **Name** and **Type** (home, vehicle, cash, valuables, business, loan or other).
+- **This is something I own**, or **I owe (no monthly payment)**, for the odd thing like a loan from family. A loan with a monthly payment belongs on [Debt](/debt), where it pays down month by month.
+- **Value**: what it would sell for today.
+- **Changes by, each year**: how the projection moves it. A home starts at a cautious 3% a year (US homes have averaged about 4.5% a year since 1975), a vehicle at −10%, and everything else at 0, which keeps the value where it is. Change any of them; they're guesses, not promises.
+
+Up to 50 items. The monthly check-in lists them so you can correct a value when it changes.
+
+## A house and its mortgage are two things
+The house goes here as something you own. The mortgage goes on the [Debt](/debt) page with its balance, rate and payment; it's marked **minimum only** so your extra money skips it. Net worth counts both from day one, so your equity (the value less what's left on the loan) is always in the picture, not only once the loan is gone. The dashboard's net worth card shows that **Home equity** line when you have a home.`,
+  },
+  {
     slug: 'invest',
     title: 'Investment accounts',
     section: 'Savings, debt and investing',
@@ -220,11 +239,7 @@ The chart stacks your savings, investments and other assets above the line and y
 A dated roadmap of what's coming: each debt paid off, the day you're debt-free, each goal reached, and your next net-worth milestones. When a milestone is close, the mascot celebrates. Tap the mascot any time for confetti.
 
 ## Homes, cars and other things
-Press **Add a home, car or other item** to include things that count toward your net worth but don't belong on the other pages, such as a house you own or a loan from family. Up to 50 items.
-
-Each item has a **Changes by, each year** rate. A home starts at a cautious 3% a year (US homes have averaged about 4.5% a year since 1975), a vehicle at −10%, and everything else at 0, which keeps the value where it is. Change any of them; they're guesses, not promises, and the projection moves the value month by month.
-
-**A house and its mortgage are two things.** The house goes here as something you own, at what you think it would sell for. The mortgage goes on the [Debt](/debt) page with its balance, rate and payment, where it pays down month by month. Net worth counts both from day one, so your equity is always in the picture, not only once the loan is gone.
+Your home, car and anything else you own live on the [Assets](/assets) page. Under the net worth figure, **Home** is your home's value and **Other** is everything else you own there; if you've recorded something you owe outside the Debt page, a second line splits your debts into **Debt page** and **Other**. Both "Other" words link to the Assets page.
 
 ## Warnings
 If your plan is over-allocated, or your Debt amount doesn't cover your minimum payments, the dashboard tells you and links to Plan to fix it.`,
