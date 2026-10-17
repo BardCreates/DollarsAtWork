@@ -14,6 +14,7 @@ import { IMPACT_YEARS } from '../../lib/planImpact';
 import { AddCategoryForm } from './AddCategoryForm';
 import { AllocationDonut } from './AllocationDonut';
 import { CategoryRow } from './CategoryRow';
+import { FundingNudge } from './FundingNudge';
 import { ImpactPanel } from './ImpactPanel';
 import { plansDiffer, usePlanImpact } from './usePlanImpact';
 import {
@@ -200,6 +201,8 @@ function PlanEditor({ plan }: { plan: Plan }) {
           Your income changed from {formatMoney(scaleFrom)} to {formatMoney(income)}. Category amounts stayed the same.
         </Alert>
       )}
+
+      <FundingNudge plan={livePlan} />
 
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.7fr) minmax(280px, 1fr)' } }}>
         <Card>

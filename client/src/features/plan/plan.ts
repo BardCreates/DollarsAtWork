@@ -60,6 +60,8 @@ function usePlanCache() {
     },
     replace: (plan: Plan) => queryClient.setQueryData<Plan>(planQueryKey, plan),
     reload: () => queryClient.invalidateQueries({ queryKey: planQueryKey }),
+    /** Savings sizes its emergency fund from the everyday categories, so any category change refreshes it. */
+    refreshSavings: () => queryClient.invalidateQueries({ queryKey: ['savings'] }),
   };
 }
 
@@ -81,7 +83,10 @@ export function useScaleCategories() {
   return useMutation({
     ...saveOptions,
     mutationFn: (fromIncome: number) => api.post<Plan>('/plan/scale', { fromIncome }),
-    onSuccess: cache.replace,
+    onSuccess: (plan) => {
+      cache.replace(plan);
+      cache.refreshSavings();
+    },
     onError: cache.reload,
   });
 }
@@ -99,7 +104,10 @@ export function useAddCategory() {
   return useMutation({
     ...saveOptions,
     mutationFn: (category: NewCategory) => api.post<Plan>('/plan/categories', category),
-    onSuccess: cache.replace,
+    onSuccess: (plan) => {
+      cache.replace(plan);
+      cache.refreshSavings();
+    },
   });
 }
 
@@ -116,6 +124,7 @@ export function useUpdateCategory() {
         ...plan,
         categories: plan.categories.map((c) => (c.id === id ? { ...c, ...changes } : c)),
       })),
+    onSuccess: cache.refreshSavings,
     onError: cache.reload,
   });
 }
@@ -155,6 +164,7 @@ export function useDeleteCategory() {
     ...saveOptions,
     mutationFn: (id: string) => api.delete(`/plan/categories/${id}`),
     onMutate: (id) => cache.changeNow((plan) => ({ ...plan, categories: plan.categories.filter((c) => c.id !== id) })),
+    onSuccess: cache.refreshSavings,
     onError: cache.reload,
   });
 }
