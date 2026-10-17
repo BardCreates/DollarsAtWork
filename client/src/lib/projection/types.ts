@@ -28,7 +28,8 @@ export interface GoalInput {
   /**
    * A sinking fund for a bill that comes back: at the end of month firstMonth, and every everyMonths after it, the
    * bill (the target) is paid from the goal and it starts filling again. A balance short of the target pays what it
-   * has. Left out for an ordinary goal.
+   * has. firstMonth 0 means due later this month: that bill is paid in month 1, and the next ones every everyMonths
+   * from month 0. Left out for an ordinary goal.
    */
   repeat?: { firstMonth: number; everyMonths: number };
 }
@@ -96,7 +97,8 @@ export interface AccountInput {
   matchSalaryMonthly?: number;
   /**
    * What already goes in straight from the paycheck each month (a 401(k) deferral). It never passes through
-   * take-home pay, so it's added on top of the plan's Investments amount. Default 0.
+   * take-home pay, so it's added on top of the plan's Investments amount. It grows with the yearly raise, like the
+   * percent of pay it usually is. Default 0.
    */
   payrollMonthly?: number;
 }

@@ -33,7 +33,7 @@ import { formatMoney, formatPercent } from '../../lib/money';
 import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
 import { goalRollovers } from '../../lib/rollover';
 import { RolloverList } from '../../components/RolloverList';
-import { useNetWorth } from '../dashboard/networth';
+import { toWindfallInputs, useNetWorth } from '../dashboard/networth';
 import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import { GoalDialog } from './GoalDialog';
 import { GoalList } from './GoalList';
@@ -99,8 +99,15 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
   const { data: netWorth } = useNetWorth();
   const doneDestination = (netWorth?.settings.savingsDoneDestination ?? 'Investments').toLowerCase() as FreedMoneyDestination;
   const rollovers = useMemo(
-    () => goalRollovers(projection.result, data.splitMode === 'Percent' ? 'percent' : 'priority', doneDestination),
-    [projection.result, data.splitMode, doneDestination],
+    () =>
+      goalRollovers(
+        projection.result,
+        data.splitMode === 'Percent' ? 'percent' : 'priority',
+        doneDestination,
+        toWindfallInputs(netWorth?.windfalls ?? []).map((w) => w.month),
+        data.goals.map((g) => !!g.repeatMonths),
+      ),
+    [projection.result, data.splitMode, doneDestination, netWorth?.windfalls, data.goals],
   );
 
   const setSplitMode = useSetSplitMode();

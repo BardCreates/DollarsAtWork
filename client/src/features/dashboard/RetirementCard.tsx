@@ -107,7 +107,7 @@ const moneyOrNull = (value: string) => (value.trim() === '' ? null : parseMoneyI
 
 function RetirementDialog({ open, settings, planSpending, onClose }: { open: boolean; settings: RetirementSettings; planSpending: number; onClose: () => void }) {
   const save = useSaveRetirement();
-  const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, reset, watch, formState: { errors, isDirty } } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   useEffect(() => {
     if (!open) return;
@@ -143,7 +143,7 @@ function RetirementDialog({ open, settings, planSpending, onClose }: { open: boo
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             {save.isError && !serverError?.problem.errors && <Alert severity="error">{errorMessage(save.error)}</Alert>}
-            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: '1fr 1fr' } }}>
               <TextField
                 label="Year you were born"
                 placeholder="1990"
@@ -157,7 +157,12 @@ function RetirementDialog({ open, settings, planSpending, onClose }: { open: boo
                 placeholder="65"
                 {...muiField(register, 'retirementAge')}
                 error={!!fieldError('retirementAge')}
-                helperText={fieldError('retirementAge') ?? 'To see if you’re on track.'}
+                helperText={
+                  fieldError('retirementAge') ??
+                  ((watch('retirementAge') ?? '').trim() !== '' && (watch('birthYear') ?? '').trim() === ''
+                    ? 'Add the year you were born too, or we can’t tell when that is.'
+                    : 'To see if you’re on track.')
+                }
                 slotProps={{ htmlInput: { inputMode: 'numeric' } }}
               />
             </Box>

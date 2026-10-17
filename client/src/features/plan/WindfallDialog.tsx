@@ -32,7 +32,7 @@ const schema = z.object({
     if (problem) ctx.addIssue({ code: z.ZodIssueCode.custom, message: problem });
     else if ((parseMoneyInput(text) ?? 0) <= 0) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter an amount above $0.' });
   }),
-  month: z.string().regex(/^\d{4}-\d{2}$/, 'Pick the month the money arrives.'),
+  month: z.string().regex(/^\d{4}-\d{2}$/, 'Pick the month the money arrives, like 2027-03.'),
   destination: z.enum(destinations),
 });
 type FormValues = z.infer<typeof schema>;
@@ -101,7 +101,7 @@ export function WindfallDialog({ open, windfall, onClose }: { open: boolean; win
               {...muiField(register, 'month')}
               error={!!fieldError('month')}
               helperText={fieldError('month') ?? 'A best guess is fine. Move it if it comes early or late.'}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: thisMonth } }}
+              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: thisMonth, placeholder: 'YYYY-MM, e.g. 2027-03' } }}
             />
             <Controller
               name="destination"

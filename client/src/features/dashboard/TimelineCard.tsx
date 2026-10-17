@@ -42,13 +42,14 @@ function celebrate() {
 }
 
 function whenText(month: number): string {
+  if (month === 0) return 'this month';
   return month === 1 ? 'next month' : `in ${formatDuration(month)}`;
 }
 
 /** What the mascot says: the next milestone, or what to do to get some. */
 function headline(items: TimelineItem[]): string {
   const next = nextUp(items);
-  if (next && next.month !== null) return `Next up: ${next.label}, ${whenText(next.month)}.`;
+  if (next && next.month !== null) return `Next up: ${next.label}, ${whenText(next.shownMonth ?? next.month)}.`;
   if (items.some(isDone)) return "You've hit every milestone on your roadmap. Nice work!";
   return 'Add a debt, a goal or an investment account and your roadmap appears here.';
 }
@@ -119,7 +120,7 @@ export function TimelineCard({ items, links = true }: { items: TimelineItem[]; /
                       'Not within 40 years at this pace'
                     ) : (
                       <>
-                        {formatMonthFromNow(item.month)} · {whenText(item.month)}
+                        {formatMonthFromNow(item.shownMonth ?? item.month)} · {whenText(item.shownMonth ?? item.month)}
                       </>
                     )}
                     {link && (

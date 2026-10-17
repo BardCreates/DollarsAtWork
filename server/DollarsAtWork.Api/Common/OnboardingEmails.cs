@@ -43,7 +43,7 @@ public static class OnboardingEmails
     {
         var ahead = new List<EmailLayout.Row>();
         if (netWorthIn10Years is { } ten)
-            ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)}"));
+            ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)} in today's dollars"));
         if (debtFreeMonth is { } months and > 0)
             ahead.Add(new EmailLayout.Row("Debt-free", EmailDates.MonthFromNow(months, debtFreeOn, now)));
 

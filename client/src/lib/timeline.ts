@@ -16,6 +16,11 @@ export interface TimelineItem {
   month: number | null;
   /** Position in the debt or goal list the projection was run with, for linking back to it. */
   index?: number;
+  /**
+   * The calendar month to show, in months from now, when it differs from `month`: one-time money arriving this
+   * month counts in the projection's month 1 but is shown as this month (0).
+   */
+  shownMonth?: number;
 }
 
 /** Net-worth steps worth celebrating, smallest first. */
@@ -34,8 +39,8 @@ export interface TimelineNames {
   goals: string[];
   /** Per debt, in the same order: true for a minimum-only debt (a mortgage), which "Debt-free" leaves out. */
   minimumOnly?: boolean[];
-  /** Upcoming one-time money, with the projection month it lands in. */
-  windfalls?: { id: string; name: string; amount: number; month: number }[];
+  /** Upcoming one-time money, with the projection month it lands in and (when different) the month it arrives. */
+  windfalls?: { id: string; name: string; amount: number; month: number; arrives?: number }[];
   /** The retirement number and the month invested money reaches it (worked out in today's dollars by the caller). */
   retirement?: { amount: number; month: number | null };
 }
@@ -73,7 +78,9 @@ export function buildTimeline(result: ProjectionResult, names: TimelineNames): T
 
   for (const windfall of names.windfalls ?? []) {
     if (windfall.month < 1 || windfall.month >= result.points.length) continue;
-    items.push({ key: `windfall-${windfall.id}`, kind: 'windfall', label: `${windfall.name} arrives (${formatMoney(windfall.amount)})`, month: windfall.month });
+    const item: TimelineItem = { key: `windfall-${windfall.id}`, kind: 'windfall', label: `${windfall.name} arrives (${formatMoney(windfall.amount)})`, month: windfall.month };
+    if (windfall.arrives !== undefined && windfall.arrives !== windfall.month) item.shownMonth = windfall.arrives;
+    items.push(item);
   }
 
   if (names.retirement && names.retirement.amount > 0 && names.retirement.month !== 0) {

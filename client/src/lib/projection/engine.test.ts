@@ -625,13 +625,13 @@ describe('rule 9: paycheck contributions and a match on salary before taxes', ()
     expect(project(plan({ months: 1, accounts: [noSalary] })).points[1].investments).toBeCloseTo(750, 6);
   });
 
-  it('the salary the match is capped on grows with the raise', () => {
+  it('the salary the match is capped on, and the paycheck money, grow with the raise', () => {
     // Salary 5,000 a month, 10% raise from month 13: 5,500. Match 100% up to 10%: cap 500 in year one, 550 in year two.
-    // Contributing 1,000 a month: month 1 adds 1,000 + 500, month 13 adds 1,000 + 550.
+    // Paycheck 1,000 a month, 1,100 from month 13: month 1 adds 1,000 + 500, month 13 adds 1,100 + 550 = 1,650.
     const account = { ...cashAccount, payrollMonthly: 1_000, matchPercent: 100, matchLimitPercent: 10, matchSalaryMonthly: 5_000 };
     const { points } = project(plan({ months: 13, incomeGrowthRate: 10, accounts: [account] }));
     expect(points[1].investments).toBeCloseTo(1_500, 6);
-    expect(points[13].investments - points[12].investments).toBeCloseTo(1_550, 6);
+    expect(points[13].investments - points[12].investments).toBeCloseTo(1_650, 6);
   });
 });
 
@@ -735,6 +735,58 @@ describe('rule 12: one-time money (windfalls)', () => {
     expect(points[3].investedToDate).toBeCloseTo(1_250, 6);
   });
 
+  it('is never dropped: with no debt left and "remaining" chosen, a debt windfall is invested', () => {
+    // No debts, debt money done = remaining. 50 a month to debt is left over and dropped (it's monthly spending
+    // money), but the 1,000 windfall in month 1 is invested: investments = 1,000 exactly.
+    const { points } = project(
+      plan({
+        months: 2,
+        debtMonthly: 50,
+        debtDoneDestination: 'remaining',
+        accounts: [cashAccount],
+        windfalls: [{ id: 'refund', month: 1, amount: 1_000, destination: 'debt' }],
+      }),
+    );
+    expect(points[1].investments).toBeCloseTo(1_000, 6);
+    expect(points[2].investments).toBeCloseTo(1_000, 6);
+  });
+
+  it('is never dropped: only the part a debt doesn’t need is invested, the monthly leftover stays dropped', () => {
+    // 300 owed at 0%, 100 a month, 500 windfall in month 1, remaining chosen. Budget 600 pays 300; 300 is left.
+    // The windfall is the last money in, so all 300 left is windfall (≤ 500) and is invested.
+    // Month 2: no debt, 100 left over, none of it windfall: dropped. Investments stay 300.
+    const { points } = project(
+      plan({
+        months: 2,
+        debtMonthly: 100,
+        debtDoneDestination: 'remaining',
+        debts: [{ id: 'loan', balance: 300, apr: 0, minPayment: 50 }],
+        accounts: [cashAccount],
+        windfalls: [{ id: 'bonus', month: 1, amount: 500, destination: 'debt' }],
+      }),
+    );
+    expect(points[1].debt).toBeCloseTo(0, 6);
+    expect(points[1].investments).toBeCloseTo(300, 6);
+    expect(points[2].investments).toBeCloseTo(300, 6);
+  });
+
+  it('is never dropped: a savings windfall with every goal full is invested even when "remaining" is chosen', () => {
+    // Goal already full (1,000 of 1,000), 100 a month, 800 windfall in month 1, savings done = remaining.
+    // 900 can't be placed: 800 is windfall → invested; the 100 a month is dropped.
+    const { points } = project(
+      plan({
+        months: 1,
+        savingsMonthly: 100,
+        savingsDoneDestination: 'remaining',
+        goals: [{ id: 'fund', target: 1_000, balance: 1_000 }],
+        accounts: [cashAccount],
+        windfalls: [{ id: 'gift', month: 1, amount: 800, destination: 'savings' }],
+      }),
+    );
+    expect(points[1].savings).toBeCloseTo(1_000, 6);
+    expect(points[1].investments).toBeCloseTo(800, 6);
+  });
+
   it('ignores months outside the projection', () => {
     const { points } = project(
       plan({
@@ -775,9 +827,29 @@ describe('rule 13: a promotional rate that ends', () => {
     expect(result.promoEndBalances).toEqual([null]);
   });
 
-  it('avalanche goes by the rate charged that month', () => {
-    // A: 1,000 at 0% for 6 months (25% after). B: 1,000 at 10%. Minimums 20 each, budget 140, so 100 extra.
-    // Month 1: B charges 1,000 × 0.10 / 12 = 8.3333 and gets the extra: 1,008.3333 − 20 − 100 = 888.3333. A: 980.
+  it('avalanche goes by the rate charged that month when the minimums clear the promotion in time', () => {
+    // A: 100 at 0% for 6 months (25% after), min 20: after month 1's minimum 80 is left, and 5 more minimums
+    // (100) clear it before the promotion ends, so it ranks at 0%. B: 1,000 at 10%, min 20. Budget 140, 100 extra.
+    // Month 1: B charges 1,000 × 0.10 / 12 = 8.3333 and gets the extra: 1,008.3333 − 20 − 100 = 888.3333. A: 80.
+    const result = project(
+      plan({
+        months: 1,
+        debtMonthly: 140,
+        debtStrategy: 'avalanche',
+        debts: [
+          { id: 'A', balance: 100, apr: 25, minPayment: 20, promoApr: 0, promoMonths: 6 },
+          { id: 'B', balance: 1_000, apr: 10, minPayment: 20 },
+        ],
+      }),
+    );
+    expect(result.points[1].debtBalances[0]).toBeCloseTo(80, 6);
+    expect(result.points[1].debtBalances[1]).toBeCloseTo(888.3333333, 6);
+  });
+
+  it('avalanche ranks a promotional balance by its later APR when the minimums would leave some at the end', () => {
+    // A: 1,000 at 0% for 6 months (25% after), min 20: after month 1's minimum 980 is left and 5 more minimums (100)
+    // won't clear it, so it ranks at 25%, above B's 10%, and gets the extra.
+    // Month 1: A 1,000 − 20 − 100 = 880. B: 1,008.3333 − 20 = 988.3333.
     const result = project(
       plan({
         months: 1,
@@ -789,12 +861,32 @@ describe('rule 13: a promotional rate that ends', () => {
         ],
       }),
     );
-    expect(result.points[1].debtBalances[0]).toBeCloseTo(980, 6);
-    expect(result.points[1].debtBalances[1]).toBeCloseTo(888.3333333, 6);
+    expect(result.points[1].debtBalances[0]).toBeCloseTo(880, 6);
+    expect(result.points[1].debtBalances[1]).toBeCloseTo(988.3333333, 6);
   });
 });
 
 describe('rule 14: sinking funds for bills that come back', () => {
+  it('pays a bill due later this month (firstMonth 0) in month 1, then keeps the yearly schedule from month 0', () => {
+    // Has 1,200 for a 1,200 bill due this month; 100 a month. Month 1: the fund is full, so the 100 can't go in
+    // (it moves on to Investments), then the bill is paid: 0. Months 2–12: 11 × 100 = 1,100 when the next bill is due
+    // in month 12, which is short: it pays 1,100, leaving 0.
+    const result = project(
+      plan({
+        months: 13,
+        savingsMonthly: 100,
+        goals: [{ id: 'insurance', target: 1_200, balance: 1_200, repeat: { firstMonth: 0, everyMonths: 12 } }],
+        accounts: [cashAccount],
+      }),
+    );
+    expect(result.points[1].savings).toBe(0);
+    expect(result.points[2].savings).toBeCloseTo(100, 6);
+    expect(result.points[11].savings).toBeCloseTo(1_000, 6);
+    expect(result.points[12].savings).toBe(0);
+    expect(result.points[13].savings).toBeCloseTo(100, 6);
+    expect(result.warnings.shortBills).toEqual([true]);
+  });
+
   it('pays the bill in its month, then fills again', () => {
     // A 1,200 yearly bill due in month 12, 100 a month: 1,200 by month 12, paid, so 0. Month 13: 100.
     const result = project(

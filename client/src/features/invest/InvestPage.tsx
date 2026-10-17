@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -37,6 +37,8 @@ import { useMe } from '../../auth/auth';
 import { formatMoney } from '../../lib/money';
 import { LIMITS_YEAR, overLimit } from '../../lib/contributionLimits';
 import { useNetWorth } from '../dashboard/networth';
+import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
+import type { ProjectionInput } from '../../lib/projection';
 import { AccountDialog } from './AccountDialog';
 import { GrowthChart } from './GrowthChart';
 import { SplitDialog } from './SplitDialog';
@@ -56,8 +58,15 @@ const DISCLAIMER = 'Estimates based on your plan and assumed returns, not financ
 
 export function InvestPage() {
   const { data, isPending, isError, error, refetch } = useInvestments();
+  // The rest of the plan, so this page projects exactly what the dashboard does. If it fails to load,
+  // the page still works, projecting the accounts alone.
+  const whole = useDashboardData();
+  const wholeInput = useMemo(
+    () => (whole.data && data ? buildProjectionInput({ ...whole.data, investments: data }, false) : undefined),
+    [whole.data, data],
+  );
 
-  if (isPending) {
+  if (isPending || whole.isPending) {
     return (
       <>
         <PageHeader title="Invest" subtitle={SUBTITLE} />
@@ -79,15 +88,15 @@ export function InvestPage() {
     );
   }
 
-  return <InvestModule data={data} />;
+  return <InvestModule data={data} whole={wholeInput} />;
 }
 
-function InvestModule({ data }: { data: InvestmentsData }) {
+function InvestModule({ data, whole }: { data: InvestmentsData; whole?: ProjectionInput }) {
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
   // The yearly raise (Dashboard > Assumptions) lifts the match cap, as on the dashboard.
   const { data: netWorth } = useNetWorth();
-  const projection = useInvestmentProjection(data, netWorth?.settings.incomeGrowthRate ?? 0, netWorth?.settings.raiseToInvestments ?? false);
+  const projection = useInvestmentProjection(data, netWorth?.settings.incomeGrowthRate ?? 0, netWorth?.settings.raiseToInvestments ?? false, whole);
   const remove = useDeleteAccount();
 
   const [tab, setTab] = useState<'overview' | 'growth'>('overview');
@@ -150,10 +159,12 @@ function InvestModule({ data }: { data: InvestmentsData }) {
             </Alert>
           )}
           {limitWarnings.map((warning) => (
-            <Alert key={warning.group} severity="warning" sx={{ mb: 3 }}>
+            <Alert key={warning.group} severity={warning.together ? 'info' : 'warning'} sx={{ mb: 3 }}>
               Your plan puts about {formatMoney(Math.round(warning.yearly))} a year into your {warning.label}. The {LIMITS_YEAR} limit is{' '}
-              {formatMoney(warning.limit)} ({warning.higher}). Money over the limit can't go in, so move the extra to another account with Change
-              split.
+              {formatMoney(warning.limit)} per person ({warning.higher}).{' '}
+              {warning.together
+                ? "No one account is over it, so this is fine if they belong to two people. If they're all yours, move the extra to another account with Change split."
+                : "Money over the limit can't go in, so move the extra to another account with Change split."}
             </Alert>
           ))}
 

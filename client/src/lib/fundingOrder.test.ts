@@ -70,7 +70,14 @@ describe('nextFundingStep', () => {
     const step = nextFundingStep(
       onTrack({ investmentsMonthly: 400, accounts: [{ name: 'Roth', monthly: 400, fromPlan: 400, matchPercent: null, matchLimitPercent: null, salaryMonthly: null }] }),
     );
-    expect(step).toEqual({ kind: 'retirement', sharePercent: 8, target: 750 });
+    expect(step).toEqual({ kind: 'retirement', sharePercent: 8, target: 750, ofSalary: false });
+  });
+
+  it('measures the 15% against pay before taxes when an account knows the salary', () => {
+    // Paycheck 750 into a 401(k), salary 7,500 a month, take-home 5,000. 750 of 5,000 would look like 15%, but of
+    // 7,500 it's 10%; 15% of 7,500 is 1,125. Match 50% up to 6% of 7,500 = 450 cap, met by the 750.
+    const step = nextFundingStep(onTrack({ accounts: [{ name: '401(k)', monthly: 750, fromPlan: 0, matchPercent: 50, matchLimitPercent: 6, salaryMonthly: 7_500 }] }));
+    expect(step).toEqual({ kind: 'retirement', sharePercent: 10, target: 1_125, ofSalary: true });
   });
 
   it('counts paycheck money toward the match and the 15%', () => {

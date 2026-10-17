@@ -3,7 +3,7 @@ import { Box, Chip, IconButton, LinearProgress, Tooltip, Typography } from '@mui
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import { formatMonthFromNow } from '../../lib/dates';
+import { formatMonthFromNow, localToday } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
 import { repeatChoices, type Goal, type GoalOutlook } from './savings';
 
@@ -113,7 +113,9 @@ function GoalSummary({ goal, outlook, showShare }: { goal: Goal; outlook: GoalOu
             variant="outlined"
             label={
               outlook.deadline.months <= 0
-                ? 'Target date has passed'
+                ? !goal.repeatMonths && goal.targetDate !== null && goal.targetDate < localToday()
+                  ? 'Target date has passed'
+                  : `Due this month: ${formatMoney(Math.ceil(Math.max(0, goal.targetAmount - goal.currentBalance)))} to go`
                 : `Needs about ${formatMoney(Math.ceil(outlook.deadline.extraNeeded))}/month more`
             }
           />

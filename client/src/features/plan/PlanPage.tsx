@@ -115,9 +115,14 @@ function PlanEditor({ plan }: { plan: Plan }) {
   const { allocated } = planTotals(plan);
   const income = plan.monthlyIncome;
 
-  const changeIncome = (next: number) => {
-    const plannedAgainst = scaleFrom ?? income;
+  /** Offers "Scale all to new income" when the income moves, measured from the income the categories were planned against. */
+  const noteIncomeChange = (from: number, next: number) => {
+    const plannedAgainst = scaleFrom ?? from;
     setScaleFrom(plannedAgainst > 0 && allocated > 0 && next > 0 && next !== plannedAgainst ? plannedAgainst : null);
+  };
+
+  const changeIncome = (next: number) => {
+    noteIncomeChange(income, next);
     updateIncome.mutate(next, { onError });
   };
 
@@ -155,7 +160,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
           }}
         >
           <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-            <IncomeBox income={income} readOnly={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} />
+            <IncomeBox income={income} readOnly={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} onSourcesChanged={noteIncomeChange} />
           </Box>
           <Figure
             label="Allocated"

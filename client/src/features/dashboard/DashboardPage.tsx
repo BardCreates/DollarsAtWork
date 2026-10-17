@@ -98,9 +98,10 @@ function Dashboard({ data }: { data: DashboardData }) {
     projectionCounted = true;
     recordUsage('first_projection');
   }, [blank]);
-  // The welcome email goes out the first time there is a real plan to show, in actual dollars whatever the toggle says.
+  // The welcome email goes out the first time there is a real plan to show, in today's dollars (the dashboard's
+  // default) whatever the toggle says, and the email says so.
   const welcomeOutlook = useMemo(
-    () => (blank ? null : todaysDollars ? outlookOf(project(buildProjectionInput(data, false))) : outlookOf(result)),
+    () => (blank ? null : todaysDollars ? outlookOf(result) : outlookOf(project(buildProjectionInput(data, true)))),
     [blank, data, todaysDollars, result],
   );
   useSendWelcomeEmail(me, welcomeOutlook);

@@ -206,6 +206,20 @@ and decisions already made. Don't re-ask decided questions.
   growth each month, payouts on the chosen schedule (payoutsPerYear 12/4/2/1) buy shares at that month's price, the
   dividend per share starts at today's yield and is raised by its own dividendGrowth once a year, and monthlyContribution
   goes in at each month's end. Rows add `contributed`; the screen shows yield on cost. Taxes left out.
+- Second audit fixes (Oct 17, audit doc "Second audit — Oct 17"): income sources need an amount above $0 (client and
+  server); the dialog says when the first source will replace the typed income, guards Done against losing a half-typed
+  source, is read-only for expired accounts, and every change to the total offers "Scale all to new income" on Plan
+  (IncomeBox onSourcesChanged). Emails and the check-in report send the 10-year number in today's dollars and say so.
+  Engine: a windfall is never dropped (the part with nowhere to go is invested when the finished-money setting is
+  Remaining); avalanche ranks a promo balance its minimums won't clear in time by the APR that follows; paycheck money
+  grows with the raise; a sinking fund with firstMonth 0 (due later this month) is paid in month 1. lib/sinkingFund
+  keeps a bill due later this month at 0; GoalList says "Due this month" instead of "Target date has passed". Rollover
+  sentences read the monthly amount from a month without one-time money and mark sinking funds "until its next bill is
+  due". The timeline shows a windfall arriving this month as this month (TimelineItem.shownMonth). Editing a windfall
+  keeps a passed month (server Apply `current`). The Invest page projects the whole plan (buildProjectionInput, like
+  Debt and Savings). IRS limits are per person: overLimit marks `together` when only the total is over. The 15% nudge
+  measures against salary when an account knows it; FundingNudge judges promo debts by their APR. CSV export writes
+  month fields as yyyy-MM.
 
 ## What we compete on
 

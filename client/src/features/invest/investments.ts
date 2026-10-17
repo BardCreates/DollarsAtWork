@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { project, type AccountInput, type ProjectionResult } from '../../lib/projection';
+import { project, type AccountInput, type ProjectionInput, type ProjectionResult } from '../../lib/projection';
 
 export type AccountType = 'Retirement401k' | 'Ira' | 'RothIra' | 'Brokerage' | 'Hsa' | 'Other';
 
@@ -128,14 +128,15 @@ export interface InvestmentProjection {
 }
 
 /**
- * Runs the shared projection engine for the investment accounts alone. `incomeGrowthRate` is the yearly raise
- * from Assumptions: the employer match is capped at a share of salary, so without it the match figures here would
- * fall behind the dashboard's from year two on. `raiseToInvestments` adds each raise to the monthly amount, as the
- * dashboard does when that assumption is on.
+ * Runs the shared projection engine. `whole` is the dashboard's input for the whole plan (built with this page's
+ * accounts swapped in), so money that arrives later (a paid-off debt's payment, a full goal's savings, one-time money)
+ * shows up here exactly as on the dashboard. Without it (the rest of the plan failed to load) it falls back to the
+ * accounts alone: `incomeGrowthRate` is the yearly raise from Assumptions (the match cap grows with salary) and
+ * `raiseToInvestments` adds each raise to the monthly amount.
  */
-export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate = 0, raiseToInvestments = false): InvestmentProjection {
+export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate = 0, raiseToInvestments = false, whole?: ProjectionInput): InvestmentProjection {
   return useMemo(() => {
-    const result = project({
+    const result = whole ? project({ ...whole, months: INVEST_HORIZON_YEARS * 12, todaysDollars: false }) : project({
       months: INVEST_HORIZON_YEARS * 12,
       monthlyIncome: data.monthlyIncome,
       incomeGrowthRate,
@@ -167,5 +168,5 @@ export function useInvestmentProjection(data: InvestmentsData, incomeGrowthRate 
       sharesTotal: data.accounts.reduce((sum, a) => sum + a.sharePercent, 0),
       matchNextMonth: result.points[1]?.matchedToDate ?? 0,
     };
-  }, [data, incomeGrowthRate, raiseToInvestments]);
+  }, [data, incomeGrowthRate, raiseToInvestments, whole]);
 }

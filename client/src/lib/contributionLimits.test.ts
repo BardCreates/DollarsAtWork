@@ -13,6 +13,16 @@ describe('overLimit', () => {
     expect(warnings).toHaveLength(1);
     expect(warnings[0].group).toBe('ira');
     expect(warnings[0].yearly).toBeCloseTo(8_400, 6);
+    // Neither account is over on its own (4,800 and 3,600): it's only too much if both are one person's.
+    expect(warnings[0].together).toBe(true);
+  });
+
+  it('says when a single account is over by itself', () => {
+    // 401(k)s at 2,500 (30,000 a year > 24,500) and 1,500 (18,000): one is over on its own.
+    const warnings = overLimit([{ type: 'Retirement401k', monthly: 2_500 }, { type: 'Retirement401k', monthly: 1_500 }]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].together).toBe(false);
+    expect(warnings[0].yearly).toBeCloseTo(48_000, 6);
   });
 
   it('flags an HSA over its self-only limit and ignores accounts with no limit', () => {

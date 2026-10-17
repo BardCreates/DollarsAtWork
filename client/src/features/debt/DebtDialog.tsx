@@ -91,7 +91,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
         return;
       }
       if (!/^\d{4}-\d{2}$/.test(values.promoEndsMonth)) {
-        setError('promoEndsMonth', { message: 'Pick the last month of the promotional rate.' });
+        setError('promoEndsMonth', { message: 'Pick the last month of the promotional rate, like 2027-06.' });
         return;
       }
       if (values.promoEndsMonth < yearMonthFromNow(0) && values.promoEndsMonth !== debt?.promoEndsMonth) {
@@ -185,7 +185,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
                   {...muiField(register, 'promoEndsMonth')}
                   error={!!fieldError('promoEndsMonth')}
                   helperText={fieldError('promoEndsMonth') ?? 'After it, the APR above applies.'}
-                  slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: yearMonthFromNow(0) } }}
+                  slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: yearMonthFromNow(0), placeholder: 'YYYY-MM, e.g. 2027-06' } }}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ gridColumn: '1 / -1' }}>
                   Some store cards charge "deferred interest": miss the deadline and the interest for the whole promotion is added at once.

@@ -105,6 +105,8 @@ public static class IncomeEndpoints
         var check = new Validation();
         source.Name = check.Name("name", request.Name);
         source.Amount = check.Amount("amount", request.Amount, "an amount");
+        if (!check.Errors.ContainsKey("amount") && source.Amount <= 0)
+            check.Add("amount", "Enter an amount above $0.");
         source.Frequency = check.Enum<IncomeFrequency>("frequency", request.Frequency, "Pick how often it pays.");
         source.UpdatedAt = now;
         return check;

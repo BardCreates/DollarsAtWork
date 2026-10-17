@@ -19,9 +19,21 @@ export interface Rollover {
   index: number;
   /** Months from now it finishes (1 or more). */
   month: number;
-  /** What it was receiving each month just before; null when it finishes next month and there is no full month to read. */
+  /**
+   * What it was receiving each month just before, read from the last month before it finishes that had no one-time
+   * money in it (a windfall would make one month's payment look like a monthly amount). Null when there is no such
+   * month to read (it finishes next month, say).
+   */
   amount: number | null;
   target: RolloverTarget;
+  /** A sinking fund: its money only moves until the next bill is due, then the fund takes it back. */
+  untilDue?: boolean;
+}
+
+/** The latest month before `month` (from 1) not in `skip`, or null. */
+function steadyMonth(month: number, skip: ReadonlySet<number>): number | null {
+  for (let m = month - 1; m >= 1; m--) if (!skip.has(m)) return m;
+  return null;
 }
 
 /**
@@ -35,13 +47,16 @@ export function debtRollovers(
   minPayments: number[],
   destination: FreedMoneyDestination,
   minimumOnly: boolean[] = [],
+  windfallMonths: number[] = [],
 ): Rollover[] {
   const rollovers: Rollover[] = [];
+  const skip = new Set(windfallMonths);
 
   result.debtPayoffMonths.forEach((month, index) => {
     if (month === null || month < 1) return;
 
-    const amount = month >= 2 ? result.points[month - 1].debtPayments[index] : null;
+    const read = steadyMonth(month, skip);
+    const amount = read === null ? null : result.points[read].debtPayments[index];
     if (amount !== null && amount < DUST) return;
 
     const open = result.debtPayoffMonths.flatMap((m, j) => ((m === null || m > month) && !minimumOnly[j] ? [j] : []));
@@ -75,22 +90,32 @@ export function debtRollovers(
 /**
  * For every goal that fills up, who receives its monthly amount: the next goal down the list in priority
  * mode, or every goal still open in percent mode. With none left it goes to `destination`.
- * Goals that were already full today, or that fill from interest alone, are left out.
+ * Goals that were already full today, or that fill from interest alone, are left out. A sinking fund
+ * (`repeating`) is marked `untilDue`: it takes its money back when the bill comes due.
  */
-export function goalRollovers(result: ProjectionResult, mode: 'priority' | 'percent', destination: FreedMoneyDestination): Rollover[] {
+export function goalRollovers(
+  result: ProjectionResult,
+  mode: 'priority' | 'percent',
+  destination: FreedMoneyDestination,
+  windfallMonths: number[] = [],
+  repeating: boolean[] = [],
+): Rollover[] {
   const rollovers: Rollover[] = [];
+  const skip = new Set(windfallMonths);
 
   result.goalFullMonths.forEach((month, index) => {
     if (month === null || month < 1) return;
 
-    const amount = month >= 2 ? result.points[month - 1].goalDeposits[index] : null;
+    const read = steadyMonth(month, skip);
+    const amount = read === null ? null : result.points[read].goalDeposits[index];
     if (amount !== null && amount < DUST) return;
 
     const open = result.goalFullMonths.flatMap((m, j) => (m === null || m > month ? [j] : []));
+    const untilDue = repeating[index] ? { untilDue: true } : {};
     if (open.length === 0) {
-      rollovers.push({ index, month, amount, target: { kind: 'destination', destination } });
+      rollovers.push({ index, month, amount, target: { kind: 'destination', destination }, ...untilDue });
     } else {
-      rollovers.push({ index, month, amount, target: { kind: 'items', indexes: mode === 'priority' ? [open[0]] : open } });
+      rollovers.push({ index, month, amount, target: { kind: 'items', indexes: mode === 'priority' ? [open[0]] : open }, ...untilDue });
     }
   });
 

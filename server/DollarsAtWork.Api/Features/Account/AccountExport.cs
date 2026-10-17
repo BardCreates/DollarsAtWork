@@ -37,11 +37,11 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             Add(zip, "savings-goals.csv", ["Name", "Target", "Balance", "TargetDate", "Apy", "Priority", "SharePercent", "RepeatMonths"],
                 data.SavingsGoals.Select(g => new object?[] { g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent, g.RepeatMonths }));
             Add(zip, "debts.csv", ["Name", "Type", "Balance", "Apr", "MinimumPayment", "MinimumOnly", "PromoApr", "PromoEndsMonth", "Order"],
-                data.Debts.Select(d => new object?[] { d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, d.PromoEndsMonth, d.SortOrder }));
+                data.Debts.Select(d => new object?[] { d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, YearMonth(d.PromoEndsMonth), d.SortOrder }));
             Add(zip, "investment-accounts.csv", ["Name", "Type", "Balance", "ExpectedReturn", "SharePercent", "MatchPercent", "MatchLimitPercent", "MatchSalaryYearly", "PayrollMonthly"],
                 data.InvestmentAccounts.Select(a => new object?[] { a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly }));
             Add(zip, "other-items.csv", ["Name", "Kind", "Type", "Value", "YearlyChangePercent"], data.OtherItems.Select(i => new object?[] { i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent }));
-            Add(zip, "one-time-amounts.csv", ["Name", "Amount", "Month", "GoesTo"], data.Windfalls.Select(w => new object?[] { w.Name, w.Amount, w.Month, w.Destination }));
+            Add(zip, "one-time-amounts.csv", ["Name", "Amount", "Month", "GoesTo"], data.Windfalls.Select(w => new object?[] { w.Name, w.Amount, YearMonth(w.Month), w.Destination }));
             Add(zip, "net-worth-history.csv", ["Date", "Assets", "Liabilities", "NetWorth", "Savings", "Investments", "Debts"],
                 data.NetWorthHistory.Select(s => new object?[] { s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts }));
             Add(zip, "scenarios.csv", ["Name", "Changes"], data.Scenarios.Select(s => new object?[] { s.Name, JsonSerializer.Serialize(s.Changes, Json) }));
@@ -88,6 +88,9 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
         foreach (var row in rows)
             writer.WriteLine(string.Join(',', row.Select(Cell)));
     }
+
+    /// <summary>A month field ("2027-06"): stored as its first day, but it means the whole month.</summary>
+    private static string? YearMonth(DateOnly? month) => month?.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
     private static string Cell(object? value)
     {

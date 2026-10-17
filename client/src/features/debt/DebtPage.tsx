@@ -32,7 +32,7 @@ import { listNames } from '../../lib/words';
 import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
 import { debtRollovers } from '../../lib/rollover';
 import { RolloverList } from '../../components/RolloverList';
-import { useNetWorth } from '../dashboard/networth';
+import { toWindfallInputs, useNetWorth } from '../dashboard/networth';
 import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import { DebtBalanceChart } from './DebtBalanceChart';
 import { DebtDialog } from './DebtDialog';
@@ -105,8 +105,15 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
   const { data: netWorth } = useNetWorth();
   const doneDestination = (netWorth?.settings.debtDoneDestination ?? 'Investments').toLowerCase() as FreedMoneyDestination;
   const rollovers = useMemo(
-    () => debtRollovers(projection.planned, data.debts.map((d) => d.minPayment), doneDestination, data.debts.map((d) => d.minimumOnly)),
-    [projection.planned, data.debts, doneDestination],
+    () =>
+      debtRollovers(
+        projection.planned,
+        data.debts.map((d) => d.minPayment),
+        doneDestination,
+        data.debts.map((d) => d.minimumOnly),
+        toWindfallInputs(netWorth?.windfalls ?? []).map((w) => w.month),
+      ),
+    [projection.planned, data.debts, doneDestination, netWorth?.windfalls],
   );
 
   const setStrategy = useSetDebtStrategy();

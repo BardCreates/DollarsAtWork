@@ -16,10 +16,13 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  * A sinking fund (a goal that repeats) pays its bill at the end of each due month, after that month's deposits, and
  * then fills again; its money never counts as finished.
  *
- * A windfall (one-time money) joins its month's savings, debt budget or investing, so it follows the same rules.
+ * A windfall (one-time money) joins its month's savings, debt budget or investing, so it follows the same rules,
+ * except that it is never dropped: the part with nowhere to go (no debt left to pay, every goal full) whose
+ * finished-money destination is "remaining" is invested instead, since one-time cash isn't monthly spending money.
  *
- * A debt with a promotional rate (a 0% balance transfer) is charged that rate in months 1 to promoMonths, then its APR;
- * avalanche orders debts by the rate they charge that month.
+ * A debt with a promotional rate (a 0% balance transfer) is charged that rate in months 1 to promoMonths, then its APR.
+ * Avalanche orders debts by the rate they charge that month, except that a promotional balance its minimums won't
+ * clear in time is ranked by the APR that follows: the balance left when the promotion ends is the costly part.
  *
  * A minimum-only debt (a mortgage) is paid its minimum every month and never receives the extra; the
  * payoff order and the debt-free month skip it.
@@ -74,6 +77,17 @@ export function project(input: ProjectionInput): ProjectionResult {
   const aprIn = (i: number, month: number) => {
     const debt = input.debts[i];
     return debt.promoMonths && debt.promoMonths > 0 && month <= debt.promoMonths ? Math.max(0, debt.promoApr ?? 0) : debt.apr;
+  };
+  /**
+   * The rate avalanche ranks a debt by. A promotional debt that its minimums won't clear before the promotion ends
+   * is ranked by the APR it will charge afterwards: that leftover balance is the expensive part. One the minimums
+   * will clear in time is ranked by the promotional rate. Called after the month's minimums are paid.
+   */
+  const avalancheRate = (i: number, month: number) => {
+    const debt = input.debts[i];
+    if (!debt.promoMonths || month > debt.promoMonths) return debt.apr;
+    const clearedByMinimums = debts[i] - Math.max(0, debt.minPayment) * (debt.promoMonths - month) <= DUST;
+    return clearedByMinimums ? aprIn(i, month) : Math.max(debt.apr, aprIn(i, month));
   };
   const promoEndBalances: (number | null)[] = input.debts.map(() => null);
   const payoffDone = () => debts.every((balance, i) => balance === 0 || !inPayoff(i));
@@ -190,7 +204,7 @@ export function project(input: ProjectionInput): ProjectionResult {
   const payoffOrder = (month: number): number[] => {
     const open = debts.map((_, i) => i).filter((i) => debts[i] > 0 && inPayoff(i));
     if (strategy === 'snowball') return open.sort((a, b) => debts[a] - debts[b] || a - b);
-    if (strategy === 'avalanche') return open.sort((a, b) => aprIn(b, month) - aprIn(a, month) || debts[a] - debts[b] || a - b);
+    if (strategy === 'avalanche') return open.sort((a, b) => avalancheRate(b, month) - avalancheRate(a, month) || debts[a] - debts[b] || a - b);
     return open;
   };
 
@@ -239,17 +253,24 @@ export function project(input: ProjectionInput): ProjectionResult {
     goals.forEach((balance, i) => {
       goals[i] = balance * (1 + goalRates[i]);
     });
-    let freedFromSavings = fillGoals(input.savingsMonthly + windfallIn(month, 'savings'));
+    const savingsWindfall = windfallIn(month, 'savings');
+    let freedFromSavings = fillGoals(input.savingsMonthly + savingsWindfall);
+    // The windfall counts as the last money in, so it is the first to be left over.
+    let windfallFreedFromSavings = Math.min(freedFromSavings, savingsWindfall);
 
     // 2. Debt
     const payments = zeros();
     const interest = zeros();
-    let debtBudget = input.debtMonthly + windfallIn(month, 'debt');
+    let debtWindfall = windfallIn(month, 'debt');
+    let debtBudget = input.debtMonthly + debtWindfall;
     if (savingsDoneDestination === 'debt') {
       debtBudget += freedFromSavings;
+      debtWindfall += windfallFreedFromSavings;
       freedFromSavings = 0;
+      windfallFreedFromSavings = 0;
     }
     let freedFromDebt = payDebts(debtBudget, payments, interest, month);
+    const windfallFreedFromDebt = Math.min(freedFromDebt, debtWindfall);
     debts.forEach((balance, i) => {
       if (input.debts[i].promoMonths === month && balance > DUST) promoEndBalances[i] = balance;
     });
@@ -257,16 +278,17 @@ export function project(input: ProjectionInput): ProjectionResult {
 
     // 3. Freed money moves on. Anything that can't be placed ends up invested.
     let toInvest = input.investmentsMonthly + (raiseInvested ? income - input.monthlyIncome : 0) + windfallIn(month, 'investments');
-    const send = (amount: number, destination: FreedMoneyDestination) => {
+    const send = (amount: number, destination: FreedMoneyDestination, windfallPart = 0) => {
       if (destination !== 'remaining') toInvest += amount;
+      else toInvest += windfallPart;
     };
     if (debtDoneDestination === 'savings') {
       freedFromDebt = fillGoals(freedFromDebt);
       send(freedFromDebt, 'investments');
     } else {
-      send(freedFromDebt, debtDoneDestination);
+      send(freedFromDebt, debtDoneDestination, windfallFreedFromDebt);
     }
-    send(freedFromSavings, savingsDoneDestination);
+    send(freedFromSavings, savingsDoneDestination, windfallFreedFromSavings);
 
     // 4. Investments
     if (accounts.length === 0) {
@@ -279,7 +301,8 @@ export function project(input: ProjectionInput): ProjectionResult {
       accounts.forEach((balance, i) => {
         const account = input.accounts[i];
         const growth = balance * accountRates[i];
-        const contribution = toInvest * accountWeights[i] + Math.max(0, account.payrollMonthly ?? 0);
+        // Paycheck money is usually a percent of pay, so it grows with the raise.
+        const contribution = toInvest * accountWeights[i] + Math.max(0, account.payrollMonthly ?? 0) * raiseFactor;
         // The match limit is a percent of salary before taxes when it's known, else of take-home pay.
         const salary = account.matchSalaryMonthly === undefined ? income : account.matchSalaryMonthly * raiseFactor;
         const matchable =
@@ -306,7 +329,10 @@ export function project(input: ProjectionInput): ProjectionResult {
     // Sinking funds pay their bill once the month's deposits are in.
     input.goals.forEach((goal, i) => {
       const repeat = goal.repeat;
-      if (!repeat || repeat.everyMonths < 1 || month < repeat.firstMonth || (month - repeat.firstMonth) % repeat.everyMonths !== 0) return;
+      if (!repeat || repeat.everyMonths < 1) return;
+      // A bill due this month (firstMonth 0) is paid in month 1, the first step; later ones keep their own schedule.
+      const due = (repeat.firstMonth === 0 && month === 1) || (month >= repeat.firstMonth && (month - repeat.firstMonth) % repeat.everyMonths === 0);
+      if (!due) return;
       if (goals[i] < goal.target - DUST) warnings.shortBills[i] = true;
       goals[i] = Math.max(0, goals[i] - goal.target);
       if (goals[i] <= DUST) goals[i] = 0;

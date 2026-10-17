@@ -13,11 +13,14 @@ export function IncomeBox({
   readOnly,
   onCommit,
   onDraft,
+  onSourcesChanged,
 }: {
   income: number;
   readOnly: boolean;
   onCommit: (dollars: number) => void;
   onDraft?: (dollars: number | null) => void;
+  /** Income sources changed the income from one total to another. */
+  onSourcesChanged?: (from: number, to: number) => void;
 }) {
   const { data } = useIncomes();
   const [open, setOpen] = useState(false);
@@ -25,7 +28,7 @@ export function IncomeBox({
 
   return (
     <Box>
-      <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly || count > 0} onCommit={onCommit} onDraft={onDraft} />
+      <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly || !data || count > 0} onCommit={onCommit} onDraft={onDraft} />
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', columnGap: 1, mt: 0.5 }}>
         {count > 0 && (
           <Typography variant="caption" color="text.secondary">
@@ -36,7 +39,7 @@ export function IncomeBox({
           {count > 0 ? 'Change sources' : 'Two paychecks, or pay that varies?'}
         </Button>
       </Box>
-      <IncomeSourcesDialog open={open} readOnly={readOnly} currentIncome={income} onClose={() => setOpen(false)} />
+      <IncomeSourcesDialog open={open} readOnly={readOnly} currentIncome={income} onClose={() => setOpen(false)} onIncomeChanged={onSourcesChanged} />
     </Box>
   );
 }

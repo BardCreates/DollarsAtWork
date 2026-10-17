@@ -41,7 +41,8 @@ export type FundingStep =
   | { kind: 'starter-fund'; target: number }
   | { kind: 'match'; account: string; matchPercent: number; limitPercent: number; missing: number; extraMatch: number }
   | { kind: 'high-interest'; debt: string; apr: number; expectedReturn: number }
-  | { kind: 'retirement'; sharePercent: number; target: number };
+  /** `ofSalary`: measured against pay before taxes (known from an account's salary), else take-home pay. */
+  | { kind: 'retirement'; sharePercent: number; target: number; ofSalary: boolean };
 
 /** The first step in the order that the plan hasn't covered yet, or null when it's on track. */
 export function nextFundingStep(input: FundingInput): FundingStep | null {
@@ -77,9 +78,13 @@ export function nextFundingStep(input: FundingInput): FundingStep | null {
 
   const openPayoffDebt = input.debts.some((d) => !d.minimumOnly && d.balance > 0 && d.apr >= HIGH_INTEREST_APR);
   const investing = input.accounts.reduce((sum, a) => sum + a.monthly, 0) + (input.accounts.length === 0 ? input.investmentsMonthly : 0);
-  const sharePercent = (investing / input.takeHome) * 100;
+  // The 15% rule of thumb is of pay before taxes; use it when an account knows the salary, else take-home pay.
+  const salaries = input.accounts.flatMap((a) => (a.salaryMonthly && a.salaryMonthly > 0 ? [a.salaryMonthly] : []));
+  const ofSalary = salaries.length > 0;
+  const pay = ofSalary ? Math.max(...salaries) : input.takeHome;
+  const sharePercent = (investing / pay) * 100;
   if (!openPayoffDebt && sharePercent < RETIREMENT_SHARE - 0.5) {
-    return { kind: 'retirement', sharePercent, target: (input.takeHome * RETIREMENT_SHARE) / 100 };
+    return { kind: 'retirement', sharePercent, target: (pay * RETIREMENT_SHARE) / 100, ofSalary };
   }
   return null;
 }
