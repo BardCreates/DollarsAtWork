@@ -84,12 +84,14 @@ describe('loan payment', () => {
 });
 
 describe('dividend reinvestment', () => {
-  // 10,000, price growth 5%, yield 4%, nothing added.
+  const base = { initial: 10_000, monthlyContribution: 0, priceGrowth: 5, dividendYield: 4, dividendGrowth: 5, payoutsPerYear: 1 as const, years: 2 };
+
+  // Paid once a year with the dividend growing as fast as the price, it's the old yearly sum:
   // Reinvesting:  year 1 = 10,000 × 1.05 + 400 = 10,900;  year 2 = 10,900 × 1.05 + 436 = 11,881
   // Taking cash:  year 1 shares 10,500 + cash 400 = 10,900; year 2 shares 11,025 + cash (400 + 420) = 11,845
-  it('matches the hand-worked two-year example', () => {
-    const rows = drip({ initial: 10_000, yearlyContribution: 0, priceGrowth: 5, dividendYield: 4, years: 2 });
-    expect(rows[0]).toEqual({ year: 0, reinvested: 10_000, notReinvested: 10_000, dividends: 0 });
+  it('matches the hand-worked two-year example for a yearly payout', () => {
+    const rows = drip(base);
+    expect(rows[0]).toEqual({ year: 0, reinvested: 10_000, notReinvested: 10_000, dividends: 0, contributed: 10_000 });
     expect(rows[1].reinvested).toBeCloseTo(10_900, 6);
     expect(rows[1].notReinvested).toBeCloseTo(10_900, 6);
     expect(rows[1].dividends).toBeCloseTo(400, 6);
@@ -98,22 +100,38 @@ describe('dividend reinvestment', () => {
     expect(rows[2].dividends).toBeCloseTo(436, 6);
   });
 
-  it('adds contributions at the end of each year', () => {
-    const rows = drip({ initial: 0, yearlyContribution: 1_200, priceGrowth: 0, dividendYield: 0, years: 3 });
-    expect(rows[3].reinvested).toBe(3_600);
-    expect(rows[3].notReinvested).toBe(3_600);
+  it('quarterly payouts compound within the year', () => {
+    // Flat price, 4% a year paid as 1% a quarter: reinvesting gives 10,000 × 1.01⁴ = 10,406.0401; cash gives 10,400.
+    const rows = drip({ ...base, priceGrowth: 0, dividendGrowth: 0, payoutsPerYear: 4, years: 1 });
+    expect(rows[1].reinvested).toBeCloseTo(10_406.0401, 6);
+    expect(rows[1].notReinvested).toBeCloseTo(10_400, 6);
+    // Dividends: 100 + 101 + 102.01 + 103.0301.
+    expect(rows[1].dividends).toBeCloseTo(406.0401, 6);
   });
 
-  it('with no dividends, reinvesting makes no difference', () => {
-    const rows = drip({ initial: 5_000, yearlyContribution: 600, priceGrowth: 6, dividendYield: 0, years: 15 });
-    expect(rows[15].reinvested).toBeCloseTo(rows[15].notReinvested, 6);
+  it('adds the monthly amount every month', () => {
+    // No growth, no dividends: 100 a month for 3 years is 3,600.
+    const rows = drip({ ...base, initial: 0, monthlyContribution: 100, priceGrowth: 0, dividendYield: 0, dividendGrowth: 0, years: 3 });
+    expect(rows[3].reinvested).toBeCloseTo(3_600, 6);
+    expect(rows[3].contributed).toBe(3_600);
+  });
+
+  it('lets the dividend grow faster than the price', () => {
+    // Flat price, 4% paid yearly, dividend raised 10% a year. Cash: 400 in year 1, 440 in year 2, so 10,000 + 840.
+    const rows = drip({ ...base, priceGrowth: 0, dividendGrowth: 10 });
+    expect(rows[2].notReinvested).toBeCloseTo(10_840, 6);
   });
 
   it('handles a falling share price', () => {
-    // 10,000, price −10%, yield 2%: reinvesting gives 10,000 × 0.9 + 200 = 9,200; cash gives 9,000 + 200 = 9,200.
-    const rows = drip({ initial: 10_000, yearlyContribution: 0, priceGrowth: -10, dividendYield: 2, years: 1 });
+    // 10,000, price −10%, yield 2%, yearly: shares are worth 9,000 and the dividend is 200 either way.
+    const rows = drip({ ...base, priceGrowth: -10, dividendYield: 2, dividendGrowth: 0, years: 1 });
     expect(rows[1].reinvested).toBeCloseTo(9_200, 6);
     expect(rows[1].notReinvested).toBeCloseTo(9_200, 6);
+  });
+
+  it('with no dividends, reinvesting makes no difference', () => {
+    const rows = drip({ ...base, initial: 5_000, monthlyContribution: 50, priceGrowth: 6, dividendYield: 0, years: 15 });
+    expect(rows[15].reinvested).toBeCloseTo(rows[15].notReinvested, 6);
   });
 });
 
