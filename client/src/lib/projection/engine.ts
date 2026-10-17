@@ -13,6 +13,9 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *     amount plus anything paid in straight from the paycheck) and employer match.
  *  5. Other items (a home, a car) move by their own yearly change.
  *
+ * A sinking fund (a goal that repeats) pays its bill at the end of each due month, after that month's deposits, and
+ * then fills again; its money never counts as finished.
+ *
  * A windfall (one-time money) joins its month's savings, debt budget or investing, so it follows the same rules.
  *
  * A debt with a promotional rate (a 0% balance transfer) is charged that rate in months 1 to promoMonths, then its APR;
@@ -92,6 +95,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     debtGrowing: false,
     investingWithoutAccounts: false,
     growingDebts: input.debts.map(() => false),
+    shortBills: input.goals.map(() => false),
   };
 
   /** What each goal has received so far this month. */
@@ -297,6 +301,15 @@ export function project(input: ProjectionInput): ProjectionResult {
     // Milestones
     goals.forEach((_, i) => {
       if (goalFullMonths[i] === null && goalNeed(i) <= DUST) goalFullMonths[i] = month;
+    });
+
+    // Sinking funds pay their bill once the month's deposits are in.
+    input.goals.forEach((goal, i) => {
+      const repeat = goal.repeat;
+      if (!repeat || repeat.everyMonths < 1 || month < repeat.firstMonth || (month - repeat.firstMonth) % repeat.everyMonths !== 0) return;
+      if (goals[i] < goal.target - DUST) warnings.shortBills[i] = true;
+      goals[i] = Math.max(0, goals[i] - goal.target);
+      if (goals[i] <= DUST) goals[i] = 0;
     });
     debts.forEach((balance, i) => {
       if (debtPayoffMonths[i] === null && balance === 0) debtPayoffMonths[i] = month;
