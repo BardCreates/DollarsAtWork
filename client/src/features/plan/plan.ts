@@ -120,6 +120,35 @@ export function useUpdateCategory() {
   });
 }
 
+/**
+ * Changes a built-in category's amount from its own page (Savings, Debt, Invest). Writes to the plan, the one place
+ * the amount lives, then reloads the module so its banner and projection pick the new amount up.
+ */
+export function useSetModuleAmount(kind: Exclude<CategoryKind, 'Custom'>) {
+  const update = useUpdateCategory();
+  const queryClient = useQueryClient();
+  const { data: plan } = usePlan();
+  const category = plan?.categories.find((c) => c.kind === kind);
+  return {
+    category,
+    isPending: update.isPending,
+    set: (amount: number) => {
+      if (!category) return;
+      update.mutate(
+        { id: category.id, changes: { amount } },
+        { onSettled: () => queryClient.invalidateQueries({ queryKey: moduleQueryKeys[kind] }) },
+      );
+    },
+  };
+}
+
+/** The module query each built-in category feeds; its monthly amount comes back from that endpoint. */
+const moduleQueryKeys: Record<Exclude<CategoryKind, 'Custom'>, readonly string[]> = {
+  Savings: ['savings'],
+  Debt: ['debts'],
+  Investment: ['investments'],
+};
+
 export function useDeleteCategory() {
   const cache = usePlanCache();
   return useMutation({

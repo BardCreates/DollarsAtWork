@@ -31,7 +31,7 @@ export interface Account {
 }
 
 export interface InvestmentsData {
-  /** The plan's Investments category amount. Edited in Plan, never here. */
+  /** The plan's Investments category amount, read from the plan; the banner writes changes back to that category. */
   monthlyAmount: number;
   monthlyIncome: number;
   accounts: Account[];

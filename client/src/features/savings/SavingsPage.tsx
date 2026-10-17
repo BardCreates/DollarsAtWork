@@ -127,7 +127,7 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
     <>
       <PageHeader title="Savings" subtitle={SUBTITLE} actions={hasGoals ? addButton : undefined} />
       <SavingsHint />
-      <PlanAmountBanner amount={data.monthlyAmount} />
+      <PlanAmountBanner amount={data.monthlyAmount} kind="Savings" />
 
       {!hasGoals ? (
         <EmergencyFundStarter plannedExpenses={data.plannedExpenses} readOnly={readOnly} onStart={(starter) => setEditing({ starter })} addButton={addButton} />

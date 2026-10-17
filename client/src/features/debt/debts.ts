@@ -36,7 +36,7 @@ export interface Debt {
 
 export interface DebtsData {
   strategy: DebtStrategy;
-  /** The plan's Debt category amount. Edited in Plan, never here. */
+  /** The plan's Debt category amount, read from the plan; the banner writes changes back to that category. */
   monthlyBudget: number;
   debts: Debt[];
 }

@@ -109,7 +109,7 @@ function InvestModule({ data }: { data: InvestmentsData }) {
     <>
       <PageHeader title="Invest" subtitle={SUBTITLE} actions={hasAccounts ? addButton : undefined} />
       <InvestHint />
-      <PlanAmountBanner amount={data.monthlyAmount} />
+      <PlanAmountBanner amount={data.monthlyAmount} kind="Investment" />
 
       {!hasAccounts ? (
         <Card>
