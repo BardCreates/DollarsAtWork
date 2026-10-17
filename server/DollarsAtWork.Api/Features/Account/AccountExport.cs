@@ -40,6 +40,7 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             Add(zip, "investment-accounts.csv", ["Name", "Type", "Balance", "ExpectedReturn", "SharePercent", "MatchPercent", "MatchLimitPercent", "MatchSalaryYearly", "PayrollMonthly"],
                 data.InvestmentAccounts.Select(a => new object?[] { a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly }));
             Add(zip, "other-items.csv", ["Name", "Kind", "Type", "Value", "YearlyChangePercent"], data.OtherItems.Select(i => new object?[] { i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent }));
+            Add(zip, "one-time-amounts.csv", ["Name", "Amount", "Month", "GoesTo"], data.Windfalls.Select(w => new object?[] { w.Name, w.Amount, w.Month, w.Destination }));
             Add(zip, "net-worth-history.csv", ["Date", "Assets", "Liabilities", "NetWorth", "Savings", "Investments", "Debts"],
                 data.NetWorthHistory.Select(s => new object?[] { s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts }));
             Add(zip, "scenarios.csv", ["Name", "Changes"], data.Scenarios.Select(s => new object?[] { s.Name, JsonSerializer.Serialize(s.Changes, Json) }));
@@ -68,6 +69,8 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
                 .Select(a => new ExportInvestmentAccount(a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly)).ToListAsync(ct),
             await db.OtherItems.AsNoTracking().Where(i => i.UserId == id).OrderBy(i => i.SortOrder)
                 .Select(i => new ExportOtherItem(i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent)).ToListAsync(ct),
+            await db.Windfalls.AsNoTracking().Where(w => w.UserId == id).OrderBy(w => w.Month)
+                .Select(w => new ExportWindfall(w.Name, w.Amount, w.Month, w.Destination)).ToListAsync(ct),
             await db.NetWorthSnapshots.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.Date)
                 .Select(s => new ExportSnapshot(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts)).ToListAsync(ct),
             (await db.Scenarios.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.SortOrder)
@@ -110,6 +113,7 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
         List<ExportDebt> Debts,
         List<ExportInvestmentAccount> InvestmentAccounts,
         List<ExportOtherItem> OtherItems,
+        List<ExportWindfall> Windfalls,
         List<ExportSnapshot> NetWorthHistory,
         List<ExportScenario> Scenarios);
 
@@ -120,6 +124,7 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
     private record ExportDebt(string Name, DebtType Type, decimal Balance, decimal Apr, decimal MinPayment, bool MinimumOnly, int SortOrder);
     private record ExportInvestmentAccount(string Name, InvestmentAccountType Type, decimal Balance, decimal ExpectedReturn, decimal SharePercent, decimal? MatchPercent, decimal? MatchLimitPercent, decimal? MatchSalaryYearly, decimal PayrollMonthly);
     private record ExportOtherItem(string Name, OtherItemKind Kind, OtherItemType Type, decimal Value, decimal YearlyChangePercent);
+    private record ExportWindfall(string Name, decimal Amount, DateOnly Month, WindfallDestination Destination);
     private record ExportScenario(string Name, ScenarioOverrides Changes);
     private record ExportSnapshot(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth, decimal? Savings, decimal? Investments, decimal? Debts);
 }

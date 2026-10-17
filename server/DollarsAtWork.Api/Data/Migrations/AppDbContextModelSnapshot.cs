@@ -671,6 +671,45 @@ namespace DollarsAtWork.Api.Data.Migrations
                     b.ToTable("WaitlistEntries");
                 });
 
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.Windfall", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly>("Month")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Month");
+
+                    b.ToTable("Windfalls");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -875,6 +914,15 @@ namespace DollarsAtWork.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("DollarsAtWork.Api.Domain.Subscription", b =>
+                {
+                    b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DollarsAtWork.Api.Domain.Windfall", b =>
                 {
                     b.HasOne("DollarsAtWork.Api.Domain.AppUser", null)
                         .WithMany()

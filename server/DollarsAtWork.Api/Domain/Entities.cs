@@ -265,6 +265,34 @@ public class OtherItem
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
+/// <summary>Where a one-time amount goes in the month it arrives.</summary>
+public enum WindfallDestination
+{
+    /// <summary>An extra payment on debt, to whichever debt the payoff order targets.</summary>
+    Debt = 0,
+    /// <summary>Into the savings goals, the same way the monthly savings amount is shared.</summary>
+    Savings = 1,
+    /// <summary>Into the investment accounts, by their split.</summary>
+    Investments = 2,
+}
+
+/// <summary>
+/// One-time money expected in a given month (a tax refund, a bonus, a sale) and the job it gets. Projected once,
+/// in that month; after the month has gone by it is kept as a record but no longer projected.
+/// </summary>
+public class Windfall
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string Name { get; set; } = "";
+    public decimal Amount { get; set; }
+    /// <summary>The first day of the month the money arrives.</summary>
+    public DateOnly Month { get; set; }
+    public WindfallDestination Destination { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 /// <summary>Net worth as confirmed at a monthly check-in. One per calendar month.</summary>
 public class NetWorthSnapshot
 {

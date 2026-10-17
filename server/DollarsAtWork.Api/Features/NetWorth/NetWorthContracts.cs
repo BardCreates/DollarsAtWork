@@ -9,6 +9,9 @@ public record SaveSettingsRequest(string? DebtDoneDestination, string? SavingsDo
 
 public record BalanceUpdate(Guid Id, decimal? Balance);
 
+/// <summary>Used to add a windfall and to replace one. Month is "YYYY-MM"; Destination is Debt, Savings or Investments.</summary>
+public record SaveWindfallRequest(string? Name, decimal? Amount, string? Month, string? Destination);
+
 /// <summary>
 /// The monthly check-in: the balances the user has just confirmed. Anything left out keeps its balance.
 /// Saving it also records this month's net-worth snapshot. Today is the browser's own calendar date, so a check-in
@@ -32,4 +35,14 @@ public record SettingsResponse(string DebtDoneDestination, string SavingsDoneDes
         new(p.DebtDoneDestination.ToString(), p.SavingsDoneDestination.ToString(), p.InflationRate, p.IncomeGrowthRate, p.RaiseToInvestments);
 }
 
-public record NetWorthResponse(SettingsResponse Settings, IReadOnlyList<OtherItemResponse> Items, IReadOnlyList<SnapshotResponse> Snapshots);
+/// <summary>Month is "YYYY-MM", the month the money arrives.</summary>
+public record WindfallResponse(Guid Id, string Name, decimal Amount, string Month, string Destination)
+{
+    public static WindfallResponse From(Windfall w) => new(w.Id, w.Name, w.Amount, w.Month.ToString("yyyy-MM"), w.Destination.ToString());
+}
+
+public record NetWorthResponse(
+    SettingsResponse Settings,
+    IReadOnlyList<OtherItemResponse> Items,
+    IReadOnlyList<SnapshotResponse> Snapshots,
+    IReadOnlyList<WindfallResponse> Windfalls);
