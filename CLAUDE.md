@@ -139,6 +139,13 @@ and decisions already made. Don't re-ask decided questions.
   debtGrowing warning when a payment misses the interest (shown on the Debt page). The Invest page passes the raise.
   formatMoney never prints -$0. Production refuses an Email:ResendApiKey without "re_"; RetentionService (hourly, via
   TrialEmailWorker) deletes UsageEvents after 400 days and ProcessedStripeEvents after 90; LogMask hides email addresses in logs.
+- Home and mortgage (Oct 17, R18): OtherItem.YearlyChangePercent (migration AddHomeAndMortgage) moves each item's value in the
+  engine month by month (`otherItems` input, `otherItemValues` per point; the flat `otherAssets`/`otherLiabilities` still add on
+  top); the Other items dialog suggests 3% for a Home and −10% for a Vehicle on a new item. Debt.MinimumOnly (default on for a new
+  Mortgage): the engine pays its minimum, keeps it out of the payoff order and out of `debtFreeMonth`; rollovers skip it;
+  the timeline, Debt page and dashboard say "Debt-free (except Mortgage)" (lib/timeline debtFreeExcept). The net worth card
+  shows Home equity (useDashboard homeEquityAt: Home items less Mortgage balances at the slider year). Mortgage payments are
+  principal and interest only (escrow never touches the balance): the dialog and help say so.
 
 ## What we compete on
 

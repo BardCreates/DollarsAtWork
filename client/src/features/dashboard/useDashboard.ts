@@ -54,7 +54,6 @@ const categoryAmount = (plan: Plan, kind: CategoryKind) => plan.categories.find(
 /** The whole picture as one input for the projection engine. */
 export function buildProjectionInput(data: DashboardData, todaysDollars: boolean): ProjectionInput {
   const { plan, debts, savings, investments, netWorth } = data;
-  const otherTotal = (kind: 'Asset' | 'Liability') => netWorth.items.filter((i) => i.kind === kind).reduce((sum, i) => sum + i.value, 0);
 
   return {
     months: DASHBOARD_YEARS * 12,
@@ -65,7 +64,7 @@ export function buildProjectionInput(data: DashboardData, todaysDollars: boolean
     investmentsMonthly: categoryAmount(plan, 'Investment'),
     goals: savings.goals.map((g) => ({ id: g.id, target: g.targetAmount, balance: g.currentBalance, apy: g.apy, sharePercent: g.sharePercent })),
     savingsSplitMode: savings.splitMode.toLowerCase() as SavingsSplitMode,
-    debts: debts.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment })),
+    debts: debts.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment, minimumOnly: d.minimumOnly })),
     debtStrategy: debts.strategy.toLowerCase() as DebtStrategy,
     accounts: investments.accounts.map((a) => ({
       id: a.id,
@@ -75,8 +74,7 @@ export function buildProjectionInput(data: DashboardData, todaysDollars: boolean
       matchPercent: a.matchPercent ?? undefined,
       matchLimitPercent: a.matchLimitPercent ?? undefined,
     })),
-    otherAssets: otherTotal('Asset'),
-    otherLiabilities: otherTotal('Liability'),
+    otherItems: netWorth.items.map((i) => ({ id: i.id, value: i.value, kind: (i.kind === 'Asset' ? 'asset' : 'liability') as 'asset' | 'liability', yearlyChange: i.yearlyChangePercent })),
     debtDoneDestination: netWorth.settings.debtDoneDestination.toLowerCase() as FreedMoneyDestination,
     savingsDoneDestination: netWorth.settings.savingsDoneDestination.toLowerCase() as FreedMoneyDestination,
     todaysDollars,
@@ -97,9 +95,22 @@ export function useDashboardProjection(data: DashboardData, todaysDollars: boole
     const timeline = buildTimeline(result, {
       debts: data.debts.debts.map((d) => d.name),
       goals: data.savings.goals.map((g) => g.name),
+      minimumOnly: data.debts.debts.map((d) => d.minimumOnly),
     });
     return { result, timeline };
   }, [data, todaysDollars]);
+}
+
+/**
+ * Home equity at a month: every Home item's value less every Mortgage debt's balance, read from the projection
+ * so it moves with the home's yearly change and the loan's paydown. Null when there is no Home item.
+ */
+export function homeEquityAt(data: DashboardData, result: ProjectionResult, month: number): number | null {
+  const point = result.points[Math.min(month, result.points.length - 1)];
+  const homes = data.netWorth.items.flatMap((item, i) => (item.type === 'Home' && item.kind === 'Asset' ? [point.otherItemValues[i]] : []));
+  if (homes.length === 0) return null;
+  const mortgages = data.debts.debts.flatMap((debt, i) => (debt.type === 'Mortgage' ? [point.debtBalances[i]] : []));
+  return homes.reduce((sum, v) => sum + v, 0) - mortgages.reduce((sum, v) => sum + v, 0);
 }
 
 /** The forward-looking numbers the emails and the check-in recap share, always in actual dollars. */

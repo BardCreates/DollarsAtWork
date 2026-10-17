@@ -7,7 +7,20 @@ const marks = [0, 10, 20, 30, 40].map((value) => ({ value, label: value === 0 ? 
 const whole = (value: number) => formatMoney(Math.round(value));
 
 /** Net worth today, and what the plan projects at the year picked on the slider. */
-export function NetWorthCard({ result, year, onYearChange, todaysDollars }: { result: ProjectionResult; year: number; onYearChange: (year: number) => void; todaysDollars: boolean }) {
+export function NetWorthCard({
+  result,
+  year,
+  onYearChange,
+  todaysDollars,
+  homeEquity,
+}: {
+  result: ProjectionResult;
+  year: number;
+  onYearChange: (year: number) => void;
+  todaysDollars: boolean;
+  /** Home value less what's left on the mortgage at the slider year; null when there is no home. */
+  homeEquity: number | null;
+}) {
   const today = result.points[0];
   const then = result.points[year * 12];
   const change = then.netWorth - today.netWorth;
@@ -73,6 +86,11 @@ export function NetWorthCard({ result, year, onYearChange, todaysDollars }: { re
               Savings {whole(then.savings)} · Investments {whole(then.investments)}
               {then.otherAssets > 0 ? ` · Other ${whole(then.otherAssets)}` : ''}
             </Typography>
+            {homeEquity !== null && (
+              <Typography variant="caption" color="text.secondary" component="div">
+                Home equity {whole(homeEquity)}: what your home is worth, less what's left on the mortgage
+              </Typography>
+            )}
           </Box>
         </Box>
       </CardContent>

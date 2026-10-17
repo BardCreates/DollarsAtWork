@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,10 +17,30 @@ const schema = z.object({
   kind: z.enum(['Asset', 'Liability']),
   type: z.enum(itemTypes),
   value: z.string().refine((text) => text.trim() !== '' && parseMoneyInput(text) !== null, 'Enter a value in dollars.'),
+  yearlyChange: z.string().refine((text) => parseSignedPercent(text) !== null, 'Enter a yearly change between −50% and 50%.'),
 });
 type FormValues = z.infer<typeof schema>;
 
-const blank: FormValues = { name: '', kind: 'Asset', type: 'Home', value: '' };
+/** Reads "3", "-10" or "3%" as a percent from −50 to 50; an empty box means 0. */
+function parseSignedPercent(text: string): number | null {
+  const cleaned = text.replace(/[\s%]/g, '').replace('−', '-');
+  if (cleaned === '') return 0;
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(cleaned)) return null;
+  const percent = Number(cleaned);
+  return Math.abs(percent) <= 50 ? percent : null;
+}
+
+/**
+ * A starting guess for how an item's value moves each year. Homes: a cautious 3% (US homes have averaged about
+ * 4.5% a year since 1975). Cars lose value. Everything else is left flat until the user says otherwise.
+ */
+const suggestedChange: Partial<Record<OtherItemType, number>> = { Home: 3, Vehicle: -10 };
+const changeHint: Partial<Record<OtherItemType, string>> = {
+  Home: 'A guess, not a promise. Homes have averaged about 4.5% a year since 1975; 3% is the cautious estimate.',
+  Vehicle: 'Cars lose value. −10% a year is typical; a classic you expect to hold its value can be 0.',
+};
+
+const blank: FormValues = { name: '', kind: 'Asset', type: 'Home', value: '', yearlyChange: String(suggestedChange.Home) };
 
 /** Things owned or owed that aren't goals, debts or investment accounts: a home, a car, a family loan. */
 export function OtherItemsDialog({ open, items, onClose }: { open: boolean; items: OtherItem[]; onClose: () => void }) {
@@ -30,7 +50,7 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
   const [editing, setEditing] = useState<OtherItem | null>(null);
   const saving = editing ? save : add;
 
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -39,8 +59,16 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
     add.reset();
     save.reset();
     setEditing(item);
-    reset(item ? { name: item.name, kind: item.kind, type: item.type, value: String(item.value) } : blank);
+    reset(item ? { name: item.name, kind: item.kind, type: item.type, value: String(item.value), yearlyChange: String(item.yearlyChangePercent) } : blank);
   };
+
+  // Picking a type on a new item fills in its usual yearly change. Editing never changes a saved rate on its own.
+  const type = watch('type');
+  const lastType = useRef(type);
+  useEffect(() => {
+    if (!editing && lastType.current !== type) setValue('yearlyChange', String(suggestedChange[type] ?? 0));
+    lastType.current = type;
+  }, [type, editing, setValue]);
 
   useEffect(() => {
     if (open) startOver(null);
@@ -51,7 +79,13 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
   const hasFieldError = (Object.keys(blank) as (keyof FormValues)[]).some((field) => fieldError(field));
 
   const onSubmit = handleSubmit((values) => {
-    const item = { name: values.name, kind: values.kind, type: values.type, value: parseMoneyInput(values.value) ?? 0 };
+    const item = {
+      name: values.name,
+      kind: values.kind,
+      type: values.type,
+      value: parseMoneyInput(values.value) ?? 0,
+      yearlyChangePercent: parseSignedPercent(values.yearlyChange) ?? 0,
+    };
     const done = { onSuccess: () => startOver(null) };
     if (editing) save.mutate({ id: editing.id, item }, done);
     else add.mutate(item, done);
@@ -73,6 +107,7 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
                   <Typography noWrap>{item.name}</Typography>
                   <Typography variant="caption" color="text.secondary">
                     {item.kind === 'Asset' ? 'You own' : 'You owe'} · {otherItemTypeLabels[item.type]}
+                    {item.yearlyChangePercent !== 0 ? ` · ${item.yearlyChangePercent > 0 ? '+' : '−'}${Math.abs(item.yearlyChangePercent)}% a year` : ''}
                   </Typography>
                 </Box>
                 <Typography color={item.kind === 'Asset' ? 'success.main' : 'error.main'} sx={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -140,6 +175,16 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
                 ))}
               </TextField>
             )}
+          />
+          <TextField
+            size="small"
+            label="Changes by, each year"
+            placeholder="%"
+            {...muiField(register, 'yearlyChange')}
+            error={!!fieldError('yearlyChange')}
+            helperText={fieldError('yearlyChange') ?? changeHint[type] ?? '0 keeps the value where it is. Use a minus sign for something that loses value.'}
+            slotProps={{ htmlInput: { inputMode: 'decimal' }, inputLabel: { shrink: true } }}
+            sx={{ gridColumn: '1 / -1' }}
           />
           <Box sx={{ gridColumn: '1 / -1', display: 'flex', gap: 1 }}>
             <Button type="submit" variant="contained" disabled={saving.isPending}>

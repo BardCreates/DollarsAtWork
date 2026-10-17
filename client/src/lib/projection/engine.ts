@@ -10,6 +10,10 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *     budget goes to the target debt (and on to the next one if the target is cleared).
  *  3. Money whose job is finished (all goals full, all debt paid) moves to its chosen destination.
  *  4. Investments: every account grows on what it held, then receives contributions and employer match.
+ *  5. Other items (a home, a car) move by their own yearly change.
+ *
+ * A minimum-only debt (a mortgage) is paid its minimum every month and never receives the extra; the
+ * payoff order and the debt-free month skip it.
  *
  * Deposits and payments land at the end of the month, so a new deposit earns nothing in its first month.
  */
@@ -33,8 +37,13 @@ export function project(input: ProjectionInput): ProjectionResult {
   const strategy = input.debtStrategy ?? 'snowball';
   const debtDoneDestination = input.debtDoneDestination ?? 'investments';
   const savingsDoneDestination = input.savingsDoneDestination ?? 'investments';
-  const otherAssets = input.otherAssets ?? 0;
-  const otherLiabilities = input.otherLiabilities ?? 0;
+  const flatAssets = input.otherAssets ?? 0;
+  const flatLiabilities = input.otherLiabilities ?? 0;
+  const otherItems = input.otherItems ?? [];
+  const itemValues = otherItems.map((item) => Math.max(0, item.value));
+  // Nothing can lose more than all of itself in a year.
+  const itemRates = otherItems.map((item) => monthlyRate(Math.max(-100, item.yearlyChange ?? 0)));
+  const itemTotal = (kind: 'asset' | 'liability') => sum(itemValues.filter((_, i) => otherItems[i].kind === kind));
   const startingRemaining = input.remaining ?? 0;
   const raise = (input.incomeGrowthRate ?? 0) / 100;
 
@@ -43,6 +52,9 @@ export function project(input: ProjectionInput): ProjectionResult {
   const goalNeed = (i: number) => Math.max(0, input.goals[i].target - goals[i]);
 
   const debts = input.debts.map((debt) => (debt.balance > DUST ? debt.balance : 0));
+  /** Debts that count toward "debt-free": everything except the minimum-only ones. */
+  const inPayoff = (i: number) => !input.debts[i].minimumOnly;
+  const payoffDone = () => debts.every((balance, i) => balance === 0 || !inPayoff(i));
   const accounts = input.accounts.map((account) => Math.max(0, account.balance));
   const accountRates = input.accounts.map((account) => monthlyRate(account.expectedReturn ?? DEFAULT_EXPECTED_RETURN));
   const accountWeights = shareWeights(input.accounts.map((account) => account.sharePercent));
@@ -50,7 +62,7 @@ export function project(input: ProjectionInput): ProjectionResult {
 
   const goalFullMonths: (number | null)[] = input.goals.map((_, i) => (goalNeed(i) <= DUST ? 0 : null));
   const debtPayoffMonths: (number | null)[] = debts.map((balance) => (balance === 0 ? 0 : null));
-  let debtFreeMonth: number | null = debts.every((balance) => balance === 0) ? 0 : null;
+  let debtFreeMonth: number | null = payoffDone() ? 0 : null;
 
   let interestPaidToDate = 0;
   let investedToDate = 0;
@@ -141,9 +153,9 @@ export function project(input: ProjectionInput): ProjectionResult {
     return left > DUST ? left : 0;
   };
 
-  /** Open debts in the order the extra money should reach them. */
+  /** Open debts in the order the extra money should reach them. Minimum-only debts never get it. */
   const payoffOrder = (): number[] => {
-    const open = debts.map((_, i) => i).filter((i) => debts[i] > 0);
+    const open = debts.map((_, i) => i).filter((i) => debts[i] > 0 && inPayoff(i));
     if (strategy === 'snowball') return open.sort((a, b) => debts[a] - debts[b] || a - b);
     if (strategy === 'avalanche') return open.sort((a, b) => input.debts[b].apr - input.debts[a].apr || debts[a] - debts[b] || a - b);
     return open;
@@ -153,6 +165,8 @@ export function project(input: ProjectionInput): ProjectionResult {
     const savings = sum(goals);
     const investments = sum(accounts) + unassignedInvestments;
     const debt = sum(debts);
+    const otherAssets = flatAssets + itemTotal('asset');
+    const otherLiabilities = flatLiabilities + itemTotal('liability');
     return {
       month,
       income,
@@ -166,6 +180,7 @@ export function project(input: ProjectionInput): ProjectionResult {
       goalBalances: [...goals],
       debtBalances: [...debts],
       accountBalances: [...accounts],
+      otherItemValues: [...itemValues],
       unassignedInvestments,
       goalDeposits: deposits,
       debtPayments: payments,
@@ -238,6 +253,11 @@ export function project(input: ProjectionInput): ProjectionResult {
       });
     }
 
+    // 5. Other items
+    itemValues.forEach((value, i) => {
+      itemValues[i] = value * (1 + itemRates[i]);
+    });
+
     // Milestones
     goals.forEach((_, i) => {
       if (goalFullMonths[i] === null && goalNeed(i) <= DUST) goalFullMonths[i] = month;
@@ -245,7 +265,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     debts.forEach((balance, i) => {
       if (debtPayoffMonths[i] === null && balance === 0) debtPayoffMonths[i] = month;
     });
-    if (debtFreeMonth === null && debts.every((balance) => balance === 0)) debtFreeMonth = month;
+    if (debtFreeMonth === null && payoffDone()) debtFreeMonth = month;
 
     points.push(snapshot(month, income, payments, interest));
   }
@@ -304,6 +324,7 @@ function inTodaysDollars(point: MonthPoint, inflationRate: number): MonthPoint {
     goalBalances: point.goalBalances.map(scale),
     debtBalances: point.debtBalances.map(scale),
     accountBalances: point.accountBalances.map(scale),
+    otherItemValues: point.otherItemValues.map(scale),
     unassignedInvestments: scale(point.unassignedInvestments),
   };
 }

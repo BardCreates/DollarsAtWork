@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
 import { ApiError, errorMessage } from '../../api/client';
 import { parseMoneyInput, parsePercentInput } from '../../lib/money';
@@ -17,10 +17,11 @@ const schema = z.object({
   balance: z.string().refine(isAmount, 'Enter the balance in dollars.'),
   apr: z.string().refine((text) => parsePercentInput(text) !== null, 'Enter an APR between 0% and 100%.'),
   minPayment: z.string().refine(isAmount, 'Enter the minimum payment in dollars.'),
+  minimumOnly: z.boolean(),
 });
 type FormValues = z.infer<typeof schema>;
 
-const blank: FormValues = { name: '', type: 'CreditCard', balance: '', apr: '', minPayment: '' };
+const blank: FormValues = { name: '', type: 'CreditCard', balance: '', apr: '', minPayment: '', minimumOnly: false };
 
 /** Add a debt, or edit one when `debt` is given. */
 export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt; onClose: () => void }) {
@@ -28,7 +29,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
   const update = useUpdateDebt();
   const saving = debt ? update : add;
 
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -38,8 +39,20 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
     if (!open) return;
     add.reset();
     update.reset();
-    reset(debt ? { name: debt.name, type: debt.type, balance: String(debt.balance), apr: String(debt.apr), minPayment: String(debt.minPayment) } : blank);
+    reset(
+      debt
+        ? { name: debt.name, type: debt.type, balance: String(debt.balance), apr: String(debt.apr), minPayment: String(debt.minPayment), minimumOnly: debt.minimumOnly }
+        : blank,
+    );
   }, [open, debt]);
+
+  // A new mortgage starts as minimum-only; switching away from Mortgage switches it back off. Editing never changes it on its own.
+  const type = watch('type');
+  const lastType = useRef(type);
+  useEffect(() => {
+    if (!debt && lastType.current !== type) setValue('minimumOnly', type === 'Mortgage');
+    lastType.current = type;
+  }, [type, debt, setValue]);
 
   const serverError = saving.error instanceof ApiError ? saving.error : undefined;
   const fieldError = (field: keyof FormValues) => errors[field]?.message ?? serverError?.fieldErrors(field)[0];
@@ -52,6 +65,7 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
       balance: parseMoneyInput(values.balance) ?? 0,
       apr: parsePercentInput(values.apr) ?? 0,
       minPayment: parseMoneyInput(values.minPayment) ?? 0,
+      minimumOnly: values.minimumOnly,
     };
     if (debt) update.mutate({ id: debt.id, changes: fields }, { onSuccess: onClose });
     else add.mutate(fields, { onSuccess: onClose });
@@ -99,8 +113,24 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
               placeholder="$ per month"
               {...muiField(register, 'minPayment')}
               error={!!fieldError('minPayment')}
-              helperText={fieldError('minPayment')}
+              helperText={fieldError('minPayment') ?? (type === 'Mortgage' ? 'Principal and interest only, not escrow (taxes and insurance).' : undefined)}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+            />
+            <Controller
+              name="minimumOnly"
+              control={control}
+              render={({ field }) => (
+                <Box>
+                  <FormControlLabel
+                    control={<Switch checked={field.value} onChange={(_, checked) => field.onChange(checked)} />}
+                    label="Minimum only, keep it out of the payoff order"
+                  />
+                  <Typography variant="caption" color="text.secondary" component="p" sx={{ pl: 0.5 }}>
+                    For a mortgage or a long loan you pay on its own schedule. It still counts against your net worth, but your extra money
+                    skips it and "debt-free" means everything else.
+                  </Typography>
+                </Box>
+              )}
             />
           </Stack>
         </DialogContent>

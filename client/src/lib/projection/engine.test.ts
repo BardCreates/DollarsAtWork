@@ -466,6 +466,87 @@ describe('what a goal gets and needs each month', () => {
   });
 });
 
+describe('rule 6: other items move by their own yearly change', () => {
+  it('grows a home by its yearly change, compounding monthly', () => {
+    const { points } = project(plan({ months: 12, otherItems: [{ id: 'home', value: 200_000, kind: 'asset', yearlyChange: ONE_PERCENT_A_MONTH }] }));
+    expect(points[0].otherAssets).toBe(200_000);
+    expect(points[1].otherAssets).toBeCloseTo(202_000, 5); // 200,000 × 1.01
+    expect(points[12].otherAssets).toBeCloseTo(225_365.006, 3); // 200,000 × 1.01^12 = 200,000 × 1.12682503
+    expect(points[12].netWorth).toBeCloseTo(225_365.006, 3);
+    expect(points[12].otherItemValues[0]).toBeCloseTo(225_365.006, 3);
+  });
+
+  it('shrinks a car by a negative yearly change', () => {
+    // 0.99^12 = 0.8863848717, so losing 11.36151283% a year is exactly 1% a month.
+    const { points } = project(plan({ months: 12, otherItems: [{ id: 'car', value: 10_000, kind: 'asset', yearlyChange: -11.36151283 }] }));
+    expect(points[1].otherAssets).toBeCloseTo(9_900, 5);
+    expect(points[12].otherAssets).toBeCloseTo(8_863.848717, 4);
+  });
+
+  it('keeps an item with no yearly change flat, subtracts liabilities, and adds the flat totals on top', () => {
+    const { points } = project(
+      plan({
+        months: 12,
+        otherItems: [
+          { id: 'home', value: 200_000, kind: 'asset' },
+          { id: 'family-loan', value: 5_000, kind: 'liability' },
+        ],
+        otherAssets: 1_000,
+        otherLiabilities: 300,
+      }),
+    );
+    expect(points[12].otherAssets).toBe(201_000);
+    expect(points[12].otherLiabilities).toBe(5_300);
+    expect(points[12].netWorth).toBe(195_700);
+  });
+
+  it("restates item values in today's dollars with everything else", () => {
+    const { points } = project(plan({ months: 12, otherItems: [{ id: 'home', value: 100_000, kind: 'asset' }], todaysDollars: true, inflationRate: ONE_PERCENT_A_MONTH }));
+    expect(points[12].otherAssets).toBeCloseTo(88_744.9225, 3); // 100,000 / 1.12682503
+    expect(points[12].otherItemValues[0]).toBeCloseTo(88_744.9225, 3);
+  });
+});
+
+describe('rule 7: a minimum-only debt (a mortgage) stays out of the payoff order', () => {
+  // The card gets its $100 minimum plus the $100 left after the mortgage's $500: $200 a month, gone in month 5.
+  const mortgagePlan = plan({
+    months: 8,
+    debtMonthly: 700,
+    debts: [
+      { id: 'mortgage', balance: 100_000, apr: 0, minPayment: 500, minimumOnly: true },
+      { id: 'card', balance: 1_000, apr: 0, minPayment: 100 },
+    ],
+    accounts: [cashAccount],
+  });
+
+  it('pays only the minimum on it, even when there is extra to give', () => {
+    const { points } = project(mortgagePlan);
+    expect(points[1].debtPayments).toEqual([500, 200]);
+    expect(points[1].debtBalances).toEqual([99_500, 800]);
+    expect(points[6].debtBalances[0]).toBe(97_000); // 100,000 − 6 × 500
+  });
+
+  it('reaches debt-free when the other debts are gone, and the mortgage stays open', () => {
+    const result = project(mortgagePlan);
+    expect(result.debtPayoffMonths).toEqual([null, 5]);
+    expect(result.debtFreeMonth).toBe(5);
+  });
+
+  it('sends the extra to the debt destination once only the mortgage is left', () => {
+    const { points } = project(mortgagePlan);
+    expect(points[5].investments).toBe(0); // month 5: 500 + 100 minimum + 100 extra clears the card, nothing left
+    expect(points[6].investments).toBe(200); // 700 − 500
+    expect(points[7].investments).toBe(400);
+  });
+
+  it('is debt-free today when the mortgage is the only debt, and frees the extra straight away', () => {
+    const result = project(plan({ months: 2, debtMonthly: 700, debts: [{ id: 'mortgage', balance: 100_000, apr: 0, minPayment: 500, minimumOnly: true }], accounts: [cashAccount] }));
+    expect(result.debtFreeMonth).toBe(0);
+    expect(result.points[1].investments).toBe(200);
+    expect(result.points[2].debtBalances[0]).toBe(99_000);
+  });
+});
+
 describe('milestones', () => {
   it('finds the first month net worth reaches an amount', () => {
     const result = project(plan({ months: 12, investmentsMonthly: 1_000, accounts: [cashAccount] }));

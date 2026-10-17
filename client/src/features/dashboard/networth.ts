@@ -39,6 +39,8 @@ export interface OtherItem {
   kind: OtherItemKind;
   type: OtherItemType;
   value: number;
+  /** How the value moves each year, as a percent: 3 gains 3% a year, −10 loses 10%. 0 keeps it flat. */
+  yearlyChangePercent: number;
   sortOrder: number;
 }
 

@@ -3,7 +3,7 @@ using DollarsAtWork.Api.Domain;
 namespace DollarsAtWork.Api.Features.NetWorth;
 
 /// <summary>Used to add an item and to replace one.</summary>
-public record SaveOtherItemRequest(string? Name, string? Kind, string? Type, decimal? Value);
+public record SaveOtherItemRequest(string? Name, string? Kind, string? Type, decimal? Value, decimal? YearlyChangePercent);
 
 public record SaveSettingsRequest(string? DebtDoneDestination, string? SavingsDoneDestination, decimal? InflationRate, decimal? IncomeGrowthRate);
 
@@ -16,9 +16,9 @@ public record BalanceUpdate(Guid Id, decimal? Balance);
 /// </summary>
 public record CheckInRequest(BalanceUpdate[]? Goals, BalanceUpdate[]? Debts, BalanceUpdate[]? Accounts, BalanceUpdate[]? Items, DateOnly? Today = null);
 
-public record OtherItemResponse(Guid Id, string Name, string Kind, string Type, decimal Value, int SortOrder)
+public record OtherItemResponse(Guid Id, string Name, string Kind, string Type, decimal Value, decimal YearlyChangePercent, int SortOrder)
 {
-    public static OtherItemResponse From(OtherItem i) => new(i.Id, i.Name, i.Kind.ToString(), i.Type.ToString(), i.Value, i.SortOrder);
+    public static OtherItemResponse From(OtherItem i) => new(i.Id, i.Name, i.Kind.ToString(), i.Type.ToString(), i.Value, i.YearlyChangePercent, i.SortOrder);
 }
 
 public record SnapshotResponse(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth, decimal? Savings, decimal? Investments, decimal? Debts)

@@ -42,6 +42,14 @@ public class Validation
         return value ?? 0m;
     }
 
+    /// <summary>A percent that may be negative, such as a yearly change in value: from -max to +max.</summary>
+    public decimal SignedPercent(string field, decimal? value, string what, decimal max)
+    {
+        if (value is not { } percent || percent < -max || percent > max)
+            Add(field, $"Enter {what} between -{max:0.##}% and {max:0.##}%.");
+        return value ?? 0m;
+    }
+
     public TEnum Enum<TEnum>(string field, string? value, string message) where TEnum : struct, Enum
     {
         // Names only: "2" must not slip through as a valid enum value.

@@ -3,6 +3,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button, Card, CardContent, LinearProgress, Link, Typography, useTheme } from '@mui/material';
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
+import { debtFreeExcept } from '../../lib/timeline';
 import { formatMoney, formatMoneyCompact } from '../../lib/money';
 import type { ProjectionResult } from '../../lib/projection';
 import { brand } from '../../theme';
@@ -64,7 +65,9 @@ export function DebtPayoffCard({ data, result }: { data: DashboardData; result: 
     );
   }
 
-  const lastMonth = Math.min(result.debtFreeMonth ?? 120, result.points.length - 1);
+  // The chart runs to the debt-free month, or 10 years while a mortgage on minimums only is still being paid.
+  const except = debtFreeExcept(result, { debts: data.debts.debts.map((d) => d.name), goals: [], minimumOnly: data.debts.debts.map((d) => d.minimumOnly) });
+  const lastMonth = Math.min(result.debtFreeMonth || 120, result.points.length - 1);
   const rows = result.points.slice(0, lastMonth + 1).map((point) => ({ month: point.month, debt: point.debt }));
 
   return (
@@ -73,8 +76,17 @@ export function DebtPayoffCard({ data, result }: { data: DashboardData; result: 
         {whole(total)} today
       </Typography>
       <Typography variant="h6" color={result.debtFreeMonth === null ? 'warning.main' : 'success.main'} sx={{ mb: 1 }}>
-        {result.debtFreeMonth === null ? 'Not paid off within 40 years' : `Debt-free ${formatMonthFromNow(result.debtFreeMonth)} · ${formatDuration(result.debtFreeMonth)}`}
+        {result.debtFreeMonth === null
+          ? 'Not paid off within 40 years'
+          : result.debtFreeMonth === 0
+            ? 'Debt-free now'
+            : `Debt-free ${formatMonthFromNow(result.debtFreeMonth)} · ${formatDuration(result.debtFreeMonth)}`}
       </Typography>
+      {except.length > 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: -1, mb: 1 }}>
+          Except {except.join(' and ')}, paid on its own schedule.
+        </Typography>
+      )}
       <Box sx={{ height: 140 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={rows} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
