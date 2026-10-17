@@ -35,9 +35,9 @@ function EditableBanner({ amount, kind }: { amount: number; kind: Exclude<Catego
   const { data: me } = useMe();
   const readOnly = !me?.access.hasFullAccess;
   const { data: plan } = usePlan();
-  const module = useSetModuleAmount(kind);
+  const setter = useSetModuleAmount(kind);
   // The plan is the truth as soon as it loads; the module's own copy covers the moment before.
-  const shown = module.category?.amount ?? amount;
+  const shown = setter.category?.amount ?? amount;
   const remaining = plan ? planTotals(plan).remaining : 0;
 
   return (
@@ -48,12 +48,12 @@ function EditableBanner({ amount, kind }: { amount: number; kind: Exclude<Catego
             value={shown}
             percentOf={plan?.monthlyIncome}
             ariaLabel={`${kind === 'Investment' ? 'Investments' : kind} amount per month`}
-            disabled={readOnly || !module.category}
-            onCommit={module.set}
+            disabled={readOnly || !setter.category}
+            onCommit={setter.set}
           />
         </Box>
         <Typography component="span">
-          a month from your plan{module.isPending ? ', saving…' : ''}
+          a month from your plan{setter.isPending ? ', saving…' : ''}
         </Typography>
         <Button component={RouterLink} to="/plan" color="inherit" size="small" sx={{ ml: 'auto' }}>
           Open Plan
