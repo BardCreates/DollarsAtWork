@@ -54,7 +54,11 @@ export function ReportDialog({ open, data, onClose }: { open: boolean; data: Das
   const outlook = useMemo(() => {
     if (!open) return null;
     const result = project(buildProjectionInput(data, false));
-    const timeline = buildTimeline(result, { debts: data.debts.debts.map((d) => d.name), goals: data.savings.goals.map((g) => g.name) });
+    const timeline = buildTimeline(result, {
+      debts: data.debts.debts.map((d) => d.name),
+      goals: data.savings.goals.map((g) => g.name),
+      minimumOnly: data.debts.debts.map((d) => d.minimumOnly),
+    });
     return { ...outlookOf(result), next: nextUp(timeline) };
   }, [open, data]);
 

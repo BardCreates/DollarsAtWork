@@ -60,6 +60,40 @@ describe('building the roadmap', () => {
     expect(labels).toEqual(['Debt-free']);
   });
 
+  it('names a minimum-only mortgage that is still open at debt-free, and lists its own payoff when it comes', () => {
+    // Mortgage 100,000 at 0%, 500 a month, minimum only: never paid off within 60 months.
+    // Card 1,000 at 0%, min 100: gets 100 + the 100 left after the mortgage = 200 a month, gone in month 5.
+    const result = project(
+      plan({
+        debtMonthly: 700,
+        debts: [
+          { id: 'M', balance: 100_000, apr: 0, minPayment: 500, minimumOnly: true },
+          { id: 'C', balance: 1_000, apr: 0, minPayment: 100 },
+        ],
+      }),
+    );
+    const labels = buildTimeline(result, { debts: ['Mortgage', 'Card'], goals: [], minimumOnly: [true, false] }).map((i) => [i.label, i.month]);
+    expect(labels).toEqual([['Debt-free (except Mortgage)', 5]]);
+
+    // A small loan on minimums only, 1,200 at 0% paid 100 a month, is gone in month 12: that payoff is listed on its own.
+    const paidOff = project(
+      plan({
+        debtMonthly: 300,
+        debtDoneDestination: 'remaining',
+        debts: [
+          { id: 'L', balance: 1_200, apr: 0, minPayment: 100, minimumOnly: true },
+          { id: 'C', balance: 400, apr: 0, minPayment: 100 },
+        ],
+      }),
+    );
+    // The card gets 100 + 200 = 300 a month: 400 is gone in month 2.
+    const later = buildTimeline(paidOff, { debts: ['Loan', 'Card'], goals: [], minimumOnly: [true, false] }).map((i) => [i.label, i.month]);
+    expect(later).toEqual([
+      ['Debt-free (except Loan)', 2],
+      ['Loan paid off', 12],
+    ]);
+  });
+
   it('lists goals with their month, including ones already full and ones that never fill', () => {
     // Savings 500 a month. Emergency: target 1,000, has 400 -> full in month 2 (400 + 500 + 100).
     // Car: target 5,000 has 0; six months in it has 400 + 4 × 500 = 2,400, so it is not full within 6 months.

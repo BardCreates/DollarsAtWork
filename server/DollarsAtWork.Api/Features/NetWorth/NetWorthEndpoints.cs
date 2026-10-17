@@ -16,6 +16,8 @@ public static class NetWorthEndpoints
 {
     public const int MaxItems = 50;
     private const decimal MaxRate = 20m;
+    /// <summary>A home or car can't gain or lose more than this a year; wilder guesses say more about the guess than the asset.</summary>
+    private const decimal MaxYearlyChange = 50m;
 
     public static RouteGroupBuilder MapNetWorthEndpoints(this RouteGroupBuilder api)
     {
@@ -122,6 +124,7 @@ public static class NetWorthEndpoints
         item.Kind = check.Enum<OtherItemKind>("kind", request.Kind, "Pick asset or liability.");
         item.Type = check.Enum<OtherItemType>("type", request.Type, "Pick a type.");
         item.Value = check.Amount("value", request.Value, "a value");
+        item.YearlyChangePercent = check.SignedPercent("yearlyChangePercent", request.YearlyChangePercent ?? 0m, "a yearly change", MaxYearlyChange);
         item.UpdatedAt = now;
         return check;
     }

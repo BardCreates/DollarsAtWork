@@ -158,7 +158,8 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
 - **Name** and **Type** (credit card, auto loan, student loan, mortgage, medical or other).
 - **Balance**: what you owe today.
 - **APR**: the yearly interest rate, like 19.99.
-- **Minimum payment**: what you must pay each month.
+- **Minimum payment**: what you must pay each month. For a mortgage, enter the principal and interest only, not the escrow part (taxes and insurance), since that never touches the balance.
+- **Minimum only**: on by default for a mortgage. The debt is paid on its own schedule and still counts against your net worth, but your extra money skips it and "debt-free" means everything else. Turn it on for any long loan you'd rather not snowball, or off to throw your extra at the mortgage too.
 
 You can have up to 50 debts. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.
 
@@ -171,7 +172,7 @@ Every month, each debt gets its minimum. Whatever is left of your Debt amount go
 - **Custom**: your own order. Drag the debts to set it.
 
 ## The numbers
-- **Debt-free**: the month your last debt is paid off.
+- **Debt-free**: the month your last debt is paid off. A minimum-only mortgage doesn't count, so you'll see "Debt-free, except…" with its name.
 - **Interest you'll pay**: total interest from now until then.
 - **Saved vs minimums only**: how much interest (and time) your plan saves compared with paying only the minimums.
 
@@ -206,11 +207,11 @@ The **Growth** tab shows what you put in, your employer's match, and growth over
     title: 'The dashboard',
     section: 'Dashboard',
     summary: 'Your net worth today, the years slider, the projection chart and your money timeline.',
-    keywords: 'net worth slider projection chart milestones timeline roadmap assets liabilities home car confetti history',
+    keywords: 'net worth slider projection chart milestones timeline roadmap assets liabilities home car house mortgage equity appreciation value confetti history',
     body: `The Dashboard brings everything together: where you stand today and where your plan takes you.
 
 ## Net worth and the years slider
-**Net worth = savings + investments + other assets − debts − other things you owe.** Drag the slider anywhere from today to 40 years out to see the projected value and how much it changed.
+**Net worth = savings + investments + other assets − debts − other things you owe.** Drag the slider anywhere from today to 40 years out to see the projected value and how much it changed. If you've added a home, a **Home equity** line shows what it's worth less what's left on your mortgage.
 
 ## Projection
 The chart stacks your savings, investments and other assets above the line and your debt below it, with your net worth drawn on top. A dashed line marks the year on the slider.
@@ -220,6 +221,10 @@ A dated roadmap of what's coming: each debt paid off, the day you're debt-free, 
 
 ## Homes, cars and other things
 Press **Add a home, car or other item** to include things that count toward your net worth but don't belong on the other pages, such as a house you own or a loan from family. Up to 50 items.
+
+Each item has a **Changes by, each year** rate. A home starts at a cautious 3% a year (US homes have averaged about 4.5% a year since 1975), a vehicle at −10%, and everything else at 0, which keeps the value where it is. Change any of them; they're guesses, not promises, and the projection moves the value month by month.
+
+**A house and its mortgage are two things.** The house goes here as something you own, at what you think it would sell for. The mortgage goes on the [Debt](/debt) page with its balance, rate and payment, where it pays down month by month. Net worth counts both from day one, so your equity is always in the picture, not only once the loan is gone.
 
 ## Warnings
 If your plan is over-allocated, or your Debt amount doesn't cover your minimum payments, the dashboard tells you and links to Plan to fix it.`,

@@ -142,6 +142,13 @@ and decisions already made. Don't re-ask decided questions.
 - Money note box removed (Oct 16, Hannah's call): WaitlistForm is gone from home, the calculators, the demo and the
   blog, so every visitor ask is the trial. POST /api/waitlist and WaitlistEntries stay: /affiliates "Ask for my link" uses
   them, and addresses already collected are kept. The Privacy Policy says so.
+- Home and mortgage (Oct 17, R18): OtherItem.YearlyChangePercent (migration AddHomeAndMortgage) moves each item's value in the
+  engine month by month (`otherItems` input, `otherItemValues` per point; the flat `otherAssets`/`otherLiabilities` still add on
+  top); the Other items dialog suggests 3% for a Home and −10% for a Vehicle on a new item. Debt.MinimumOnly (default on for a new
+  Mortgage): the engine pays its minimum, keeps it out of the payoff order and out of `debtFreeMonth`; rollovers skip it;
+  the timeline, Debt page and dashboard say "Debt-free (except Mortgage)" (lib/timeline debtFreeExcept). The net worth card
+  shows Home equity (useDashboard homeEquityAt: Home items less Mortgage balances at the slider year). Mortgage payments are
+  principal and interest only (escrow never touches the balance): the dialog and help say so.
 
 ## What we compete on
 

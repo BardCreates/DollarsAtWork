@@ -71,6 +71,8 @@ public static class DebtsEndpoints
             Balance = balance,
             Apr = apr,
             MinPayment = minPayment,
+            // A mortgage is paid on its own schedule unless the user says otherwise.
+            MinimumOnly = request.MinimumOnly ?? type == DebtType.Mortgage,
             SortOrder = (existing.Max() ?? -1) + 1,
             CreatedAt = now,
             UpdatedAt = now,
@@ -94,6 +96,7 @@ public static class DebtsEndpoints
         if (request.Balance is not null) debt.Balance = check.Amount("balance", request.Balance, "a balance");
         if (request.Apr is not null) debt.Apr = check.Percent("apr", request.Apr, "an APR", MaxApr);
         if (request.MinPayment is not null) debt.MinPayment = check.Amount("minPayment", request.MinPayment, "a minimum payment");
+        if (request.MinimumOnly is not null) debt.MinimumOnly = request.MinimumOnly.Value;
         if (check.Failed)
             return check.ToResult();
 

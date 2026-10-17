@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { project, type DebtStrategy as EngineStrategy, type ProjectionInput, type ProjectionResult } from '../../lib/projection';
+import { debtFreeExcept } from '../../lib/timeline';
 
 export type DebtType = 'CreditCard' | 'Auto' | 'Student' | 'Mortgage' | 'Medical' | 'Other';
 export type DebtStrategy = 'Snowball' | 'Avalanche' | 'Custom';
@@ -28,6 +29,8 @@ export interface Debt {
   balance: number;
   apr: number;
   minPayment: number;
+  /** Pay only the minimum and keep it out of the payoff order (a mortgage). "Debt-free" skips it. */
+  minimumOnly: boolean;
   sortOrder: number;
 }
 
@@ -115,6 +118,8 @@ export interface DebtProjection {
   minimumsOnly: ProjectionResult;
   totalDebt: number;
   minimumsDue: number;
+  /** Minimum-only debts (a mortgage) still open when "debt-free" arrives, by name. */
+  debtFreeExcept: string[];
 }
 
 /**
@@ -133,16 +138,18 @@ export function useDebtProjection(data: DebtsData, whole?: ProjectionInput): Deb
       debtMonthly: data.monthlyBudget,
       goals: [],
       accounts: [],
-      debts: data.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment })),
+      debts: data.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment, minimumOnly: d.minimumOnly })),
       debtStrategy: data.strategy.toLowerCase() as EngineStrategy,
       // Fallback only (the rest of the plan failed to load): the debts alone.
       debtDoneDestination: 'remaining' as const,
     };
+    const planned = project(whole ? { ...whole, months: DEBT_HORIZON_MONTHS, todaysDollars: false } : input);
     return {
-      planned: project(whole ? { ...whole, months: DEBT_HORIZON_MONTHS, todaysDollars: false } : input),
+      planned,
       minimumsOnly: project({ ...input, minimumsOnly: true }),
       totalDebt: data.debts.reduce((sum, d) => sum + d.balance, 0),
       minimumsDue: data.debts.reduce((sum, d) => sum + Math.min(d.minPayment, d.balance), 0),
+      debtFreeExcept: debtFreeExcept(planned, { debts: data.debts.map((d) => d.name), goals: [], minimumOnly: data.debts.map((d) => d.minimumOnly) }),
     };
   }, [data, whole]);
 }

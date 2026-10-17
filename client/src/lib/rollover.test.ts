@@ -53,6 +53,22 @@ describe('debt rollovers', () => {
     expect(debtRollovers(three, minimums, 'remaining')[2].target).toEqual({ kind: 'destination', destination: 'remaining' });
   });
 
+  it('skips a minimum-only mortgage: the last card sends its money to the destination, not the mortgage', () => {
+    // Mortgage 100,000 at 0%, 500 a month, minimum only. Card 1,000 at 0%, min 100.
+    // Budget 700: minimums 600, so 100 extra goes to the card. It pays 200 a month and is gone in month 5.
+    const result = project(
+      plan({
+        debtMonthly: 700,
+        debts: [
+          { id: 'M', balance: 100_000, apr: 0, minPayment: 500, minimumOnly: true },
+          { id: 'C', balance: 1_000, apr: 0, minPayment: 100 },
+        ],
+      }),
+    );
+    const rollovers = debtRollovers(result, [500, 100], 'savings', [true, false]);
+    expect(rollovers).toEqual([{ index: 1, month: 5, amount: 200, target: { kind: 'destination', destination: 'savings' } }]);
+  });
+
   it('follows the strategy: avalanche passes money to the highest APR, not the smallest balance', () => {
     // Budget 300, avalanche (highest APR first).
     //   A: 100 at 0%, min 20.   B: 300 at 0%, min 50.   C: 5,000 at 12% (1% a month), min 100.

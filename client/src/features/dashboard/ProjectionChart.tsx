@@ -29,7 +29,7 @@ export function ProjectionChart({ result, year }: { result: ProjectionResult; ye
   return (
     <Box sx={{ height: 340 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={rows} stackOffset="sign" margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={theme.palette.divider} vertical={false} />
           <XAxis
             dataKey="year"
@@ -58,7 +58,8 @@ export function ProjectionChart({ result, year }: { result: ProjectionResult; ye
           <Area type="monotone" dataKey="savings" name="Savings" stackId="all" stroke={brand.green} fill={brand.green} fillOpacity={0.4} />
           <Area type="monotone" dataKey="investments" name="Investments" stackId="all" stroke={brand.blue} fill={brand.blue} fillOpacity={0.4} />
           {hasOther && <Area type="monotone" dataKey="other" name="Other assets" stackId="all" stroke={brand.neutral} fill={brand.neutral} fillOpacity={0.4} />}
-          {hasDebt && <Area type="monotone" dataKey="debt" name="Debt" stackId="all" stroke={brand.red} fill={brand.red} fillOpacity={0.4} />}
+          {/* Debt stands alone below zero. Stacked with "sign" offset, a debt of exactly 0 counts as positive and jumps to the top of the assets. */}
+          {hasDebt && <Area type="monotone" dataKey="debt" name="Debt" stroke={brand.red} fill={brand.red} fillOpacity={0.4} />}
           <Line type="monotone" dataKey="netWorth" name="Net worth" stroke={brand.yellow} strokeWidth={2.5} dot={false} />
           {year > 0 && <ReferenceLine x={year} stroke={theme.palette.text.primary} strokeDasharray="4 4" />}
         </ComposedChart>
