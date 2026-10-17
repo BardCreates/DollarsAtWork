@@ -19,7 +19,7 @@ export function NetWorthCard({
   onYearChange: (year: number) => void;
   todaysDollars: boolean;
   /** Home value less what's left on the mortgage at the slider year; null when there is no home. */
-  homeEquity: number | null;
+  homeEquity?: number | null;
 }) {
   const today = result.points[0];
   const then = result.points[year * 12];
@@ -86,7 +86,7 @@ export function NetWorthCard({
               Savings {whole(then.savings)} · Investments {whole(then.investments)}
               {then.otherAssets > 0 ? ` · Other ${whole(then.otherAssets)}` : ''}
             </Typography>
-            {homeEquity !== null && (
+            {homeEquity != null && (
               <Typography variant="caption" color="text.secondary" component="div">
                 Home equity {whole(homeEquity)}: what your home is worth, less what's left on the mortgage
               </Typography>
