@@ -23,3 +23,15 @@ public record CategoryResponse(Guid Id, string Name, string Kind, decimal Amount
 }
 
 public record PlanResponse(decimal MonthlyIncome, string Currency, IReadOnlyList<CategoryResponse> Categories);
+
+/// <summary>Used to add an income source and to replace one.</summary>
+public record SaveIncomeSourceRequest(string? Name, decimal? Amount, string? Frequency);
+
+public record IncomeSourceResponse(Guid Id, string Name, decimal Amount, string Frequency, decimal MonthlyAmount, int SortOrder)
+{
+    public static IncomeSourceResponse From(IncomeSource i) =>
+        new(i.Id, i.Name, i.Amount, i.Frequency.ToString(), Math.Round(i.MonthlyAmount, 2, MidpointRounding.AwayFromZero), i.SortOrder);
+}
+
+/// <summary>The plan's income and the sources it adds up from (empty when it's one number typed on Plan).</summary>
+public record IncomesResponse(decimal MonthlyIncome, IReadOnlyList<IncomeSourceResponse> Sources);

@@ -59,6 +59,9 @@ public static partial class PlanEndpoints
         var plan = await db.Plans.SingleOrDefaultAsync(p => p.UserId == userId, ct);
         if (plan is null)
             return PlanMissing();
+        // With income sources, the income is their total; a typed number would be overwritten by the next change.
+        if (await db.IncomeSources.AnyAsync(s => s.UserId == userId, ct))
+            return Invalid("monthlyIncome", "Your income adds up from your income sources. Change those instead.");
 
         plan.MonthlyIncome = income;
         plan.UpdatedAt = clock.GetUtcNow();

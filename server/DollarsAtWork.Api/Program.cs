@@ -197,6 +197,7 @@ api.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 api.MapAuthEndpoints();
 api.MapAccountEndpoints();
 api.MapPlanEndpoints();
+api.MapIncomeEndpoints();
 api.MapDebtsEndpoints();
 api.MapSavingsEndpoints();
 api.MapInvestmentsEndpoints();
