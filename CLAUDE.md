@@ -146,6 +146,10 @@ and decisions already made. Don't re-ask decided questions.
   the timeline, Debt page and dashboard say "Debt-free (except Mortgage)" (lib/timeline debtFreeExcept). The net worth card
   shows Home equity (useDashboard homeEquityAt: Home items less Mortgage balances at the slider year). Mortgage payments are
   principal and interest only (escrow never touches the balance): the dialog and help say so.
+- Amount from the page (Oct 17, R20): PlanAmountBanner with `kind` is editable on Savings, Debt and Invest. It writes to the plan's
+  built-in category through plan.ts useSetModuleAmount (useUpdateCategory + invalidating the module query, so the module's own
+  monthly amount refreshes); no second copy. When the plan ends up over income the banner turns to a warning with the amount over
+  and points to Plan. Without `kind` the banner is the old read-only one.
 
 ## What we compete on
 
