@@ -29,11 +29,26 @@ public record SnapshotResponse(DateOnly Date, decimal Assets, decimal Liabilitie
     public static SnapshotResponse From(NetWorthSnapshot s) => new(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts);
 }
 
-public record SettingsResponse(string DebtDoneDestination, string SavingsDoneDestination, decimal InflationRate, decimal IncomeGrowthRate, bool RaiseToInvestments)
+public record SettingsResponse(
+    string DebtDoneDestination,
+    string SavingsDoneDestination,
+    decimal InflationRate,
+    decimal IncomeGrowthRate,
+    bool RaiseToInvestments,
+    RetirementResponse Retirement)
 {
     public static SettingsResponse From(Domain.Plan p) =>
-        new(p.DebtDoneDestination.ToString(), p.SavingsDoneDestination.ToString(), p.InflationRate, p.IncomeGrowthRate, p.RaiseToInvestments);
+        new(p.DebtDoneDestination.ToString(), p.SavingsDoneDestination.ToString(), p.InflationRate, p.IncomeGrowthRate, p.RaiseToInvestments, RetirementResponse.From(p));
 }
+
+/// <summary>The retirement number's inputs; every one is optional. Amounts are monthly, in today's dollars.</summary>
+public record RetirementResponse(int? BirthYear, int? RetirementAge, decimal? SpendingMonthly, decimal? OtherIncomeMonthly)
+{
+    public static RetirementResponse From(Domain.Plan p) => new(p.BirthYear, p.RetirementAge, p.RetirementSpendingMonthly, p.RetirementIncomeMonthly);
+}
+
+/// <summary>Replaces the retirement number's inputs. Leaving a field out (null) clears it.</summary>
+public record SaveRetirementRequest(int? BirthYear, int? RetirementAge, decimal? SpendingMonthly, decimal? OtherIncomeMonthly);
 
 /// <summary>Month is "YYYY-MM", the month the money arrives.</summary>
 public record WindfallResponse(Guid Id, string Name, decimal Amount, string Month, string Destination)

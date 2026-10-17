@@ -94,6 +94,14 @@ public class Plan
     public decimal IncomeGrowthRate { get; set; }
     /// <summary>True: each raise is added to the Investments amount. False: it lands in Remaining and isn't projected.</summary>
     public bool RaiseToInvestments { get; set; }
+    /// <summary>The year the person was born, for ages on the retirement number. Null until they set it up.</summary>
+    public int? BirthYear { get; set; }
+    /// <summary>The age they'd like to retire at. Null means not chosen.</summary>
+    public int? RetirementAge { get; set; }
+    /// <summary>Monthly spending in retirement, in today's dollars. Null means the plan's everyday categories.</summary>
+    public decimal? RetirementSpendingMonthly { get; set; }
+    /// <summary>Other monthly income in retirement (Social Security, a pension), in today's dollars. Null means none.</summary>
+    public decimal? RetirementIncomeMonthly { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
