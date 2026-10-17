@@ -108,7 +108,16 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
               {errorMessage(saving.error)}
             </Alert>
           )}
-          <TextField size="small" label="Name" placeholder="House, car…" {...muiField(register, 'name')} error={!!fieldError('name')} helperText={fieldError('name')} />
+          {/* The boxes are filled by reset() when editing, which the label doesn't see; keep it raised so it never sits on the text. */}
+          <TextField
+            size="small"
+            label="Name"
+            placeholder="House, car…"
+            {...muiField(register, 'name')}
+            error={!!fieldError('name')}
+            helperText={fieldError('name')}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
           <TextField
             size="small"
             label="Value"
@@ -116,7 +125,7 @@ export function OtherItemsDialog({ open, items, onClose }: { open: boolean; item
             {...muiField(register, 'value')}
             error={!!fieldError('value')}
             helperText={fieldError('value')}
-            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+            slotProps={{ htmlInput: { inputMode: 'decimal' }, inputLabel: { shrink: true } }}
           />
           <Controller
             name="kind"
