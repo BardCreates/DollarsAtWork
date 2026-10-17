@@ -33,6 +33,10 @@ export interface DebtInput {
   balance: number;
   /** Annual percentage rate, charged monthly as apr / 12. */
   apr: number;
+  /** A promotional rate (0 for a 0% balance transfer) charged instead of apr in months 1 to promoMonths. */
+  promoApr?: number;
+  /** How many months the promotional rate lasts; after that, apr applies. Left out or 0 means no promotion. */
+  promoMonths?: number;
   minPayment: number;
   /**
    * Pay only this debt's minimum and keep it out of the payoff order (a mortgage). It still pays down on its
@@ -216,4 +220,10 @@ export interface ProjectionResult {
     /** Money was invested with no investment accounts set up. */
     investingWithoutAccounts: boolean;
   };
+
+  /**
+   * Per debt, in input order: what is still owed the month its promotional rate ends, when that's more than nothing,
+   * so the page can say so before the full APR starts. Null for a debt with no promotion or one cleared in time.
+   */
+  promoEndBalances: (number | null)[];
 }
