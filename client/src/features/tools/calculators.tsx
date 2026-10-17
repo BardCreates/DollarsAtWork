@@ -1,8 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Alert, Box, Card, CardContent, Typography, useTheme } from '@mui/material';
+import { Alert, Box, Card, CardContent, MenuItem, TextField, Typography, useTheme } from '@mui/material';
 import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Figure } from '../../components/Figure';
-import { compoundGrowth, drip, loanCost, loanPayoff, type GrowthYear } from '../../lib/calculators';
+import { compoundGrowth, drip, loanCost, loanPayoff, type GrowthYear, type PayoutFrequency } from '../../lib/calculators';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney, formatMoneyCompact } from '../../lib/money';
 import { useRecordOnce } from '../../lib/usage';
@@ -223,27 +223,38 @@ export function LoanCompareCalculator() {
   );
 }
 
+const payoutChoices: { value: PayoutFrequency; label: string }[] = [
+  { value: 4, label: 'Quarterly' },
+  { value: 12, label: 'Monthly' },
+  { value: 2, label: 'Twice a year' },
+  { value: 1, label: 'Once a year' },
+];
+
 export function DripCalculator() {
   const [initial, setInitial] = useState(10_000);
-  const [yearlyContribution, setYearlyContribution] = useState(1_200);
+  const [monthlyContribution, setMonthlyContribution] = useState(100);
   const [priceGrowth, setPriceGrowth] = useState(5);
   const [dividendYield, setDividendYield] = useState(3);
+  const [dividendGrowth, setDividendGrowth] = useState(5);
+  const [payoutsPerYear, setPayoutsPerYear] = useState<PayoutFrequency>(4);
   const [years, setYears] = useState(20);
   const counted = useCountedInputs();
   const style = useChartStyle();
 
   const rows = useMemo(
-    () => drip({ initial, yearlyContribution, priceGrowth, dividendYield, years }),
-    [initial, yearlyContribution, priceGrowth, dividendYield, years],
+    () => drip({ initial, monthlyContribution, priceGrowth, dividendYield, dividendGrowth, payoutsPerYear, years }),
+    [initial, monthlyContribution, priceGrowth, dividendYield, dividendGrowth, payoutsPerYear, years],
   );
   const last = rows[rows.length - 1];
+  // A year of dividends as a share of everything put in: rises over time when the dividend grows.
+  const yieldOnCost = last.contributed > 0 ? (last.dividends / last.contributed) * 100 : 0;
 
   return (
     <Calculator
       inputs={
         <>
           <NumberField label="Starting investment" prefix="$" value={initial} onChange={counted(setInitial)} />
-          <NumberField label="Added each year" prefix="$" max={10_000_000} value={yearlyContribution} onChange={counted(setYearlyContribution)} />
+          <NumberField label="Added each month" prefix="$" max={1_000_000} value={monthlyContribution} onChange={counted(setMonthlyContribution)} />
           <NumberField
             label="Share price growth"
             suffix="% a year"
@@ -253,7 +264,36 @@ export function DripCalculator() {
             onChange={counted(setPriceGrowth)}
             helperText="Can be negative for a falling price."
           />
-          <NumberField label="Dividend yield" suffix="% a year" max={20} value={dividendYield} onChange={counted(setDividendYield)} />
+          <NumberField
+            label="Dividend yield today"
+            suffix="% a year"
+            max={20}
+            value={dividendYield}
+            onChange={counted(setDividendYield)}
+            helperText="A year of dividends as a percent of today's share price."
+          />
+          <NumberField
+            label="Dividend growth"
+            suffix="% a year"
+            min={-50}
+            max={30}
+            value={dividendGrowth}
+            onChange={counted(setDividendGrowth)}
+            helperText="How much the dividend per share is raised each year."
+          />
+          <TextField
+            select
+            size="small"
+            label="Dividends paid"
+            value={payoutsPerYear}
+            onChange={(event) => counted(setPayoutsPerYear)(Number(event.target.value) as PayoutFrequency)}
+          >
+            {payoutChoices.map((choice) => (
+              <MenuItem key={choice.value} value={choice.value}>
+                {choice.label}
+              </MenuItem>
+            ))}
+          </TextField>
           <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }
@@ -263,6 +303,10 @@ export function DripCalculator() {
         <Figure label="Taking them as cash" value={whole(last.notReinvested)} note="Shares plus the cash collected." />
         <Figure label="Reinvesting adds" value={whole(last.reinvested - last.notReinvested)} color="success.main" note={`Dividends in the last year: ${whole(last.dividends)}.`} />
       </Figures>
+      <Typography variant="body2" color="text.secondary">
+        You'd put in {whole(last.contributed)} in all. In the last year, reinvested dividends pay about {Number(yieldOnCost.toFixed(1))}% of that ("yield on cost"). Taxes on
+        dividends are left out.
+      </Typography>
       <Card>
         <CardContent>
           <Box sx={{ height: 300 }}>

@@ -370,16 +370,16 @@ Like your plan, these are estimates, not advice.`,
     title: 'Free calculators',
     section: 'Tools and what-ifs',
     summary: 'Five quick calculators anyone can use, with or without an account. Nothing is saved.',
-    keywords: 'calculator compound interest early payoff loan comparison drip dividend reinvest habit',
+    keywords: 'calculator compound interest early payoff loan comparison drip dividend reinvest habit quarterly dividend growth yield on cost',
     body: `The [Tools](/tools) page has five calculators. They're free to use without an account, results update as you type, and nothing you enter is saved or changes your plan.
 
 - [Cost of a habit](/tools?tool=habit): what a monthly expense could grow to if you invested it instead.
 - [Compound interest](/tools?tool=compound): what a starting amount plus regular monthly additions grows into.
 - [Early payoff](/tools?tool=payoff): how much time and interest an extra monthly payment saves on a loan.
 - [Loan comparison](/tools?tool=compare): two offers for the same amount, side by side: monthly payment, total interest and total paid.
-- [DRIP](/tools?tool=drip): what reinvesting dividends adds compared with taking them as cash.
+- [DRIP](/tools?tool=drip): what reinvesting dividends adds compared with taking them as cash, month by month. Choose how often dividends are paid (quarterly, monthly, twice a year or yearly), how fast the dividend itself grows (it can grow faster than the price), and what you add each month. It also shows your yield on cost: a year of dividends as a share of everything you put in.
 
-The boxes stop at believable limits (a 30% yearly return at most, for example), since bigger guesses say more about the guess than the money. The DRIP calculator takes a negative price growth for a falling share, and leaves out tax on dividends.
+The boxes stop at believable limits (a 30% yearly return at most, for example), since bigger guesses say more about the guess than the money. The DRIP calculator takes a negative price or dividend growth for a falling share, and leaves out tax on dividends.
 
 Every result is an estimate based on the numbers you enter, not financial advice.`,
   },

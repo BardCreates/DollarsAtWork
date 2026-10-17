@@ -202,6 +202,10 @@ and decisions already made. Don't re-ask decided questions.
   fund, a $1,800 tax refund on debt (SAMPLE_WINDFALL), paycheck 401(k) money with a salary-based match, the ±2-point range
   and a retirement number (SAMPLE_RETIREMENT). The home page lists the new features and says plainly there's no bank
   linking or transaction import.
+- DRIP calculator v2 (Oct 17): lib/calculators drip() simulates month by month: the price moves a twelfth of its yearly
+  growth each month, payouts on the chosen schedule (payoutsPerYear 12/4/2/1) buy shares at that month's price, the
+  dividend per share starts at today's yield and is raised by its own dividendGrowth once a year, and monthlyContribution
+  goes in at each month's end. Rows add `contributed`; the screen shows yield on cost. Taxes left out.
 
 ## What we compete on
 
