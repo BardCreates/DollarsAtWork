@@ -749,3 +749,47 @@ describe('rule 12: one-time money (windfalls)', () => {
     expect(points[2].investments).toBe(0);
   });
 });
+
+describe('rule 13: a promotional rate that ends', () => {
+  it('charges the promotional rate until it ends, then the APR, and reports what was left when it ended', () => {
+    // 1,200 at 0% for 3 months, then 24% (2% a month); 100 a month.
+    // Months 1–3: 1,100, 1,000, 900. Month 4: 900 × 1.02 − 100 = 818.
+    const result = project(
+      plan({
+        months: 4,
+        debtMonthly: 100,
+        debts: [{ id: 'transfer', balance: 1_200, apr: 24, minPayment: 100, promoApr: 0, promoMonths: 3 }],
+      }),
+    );
+    expect(result.points[3].debt).toBeCloseTo(900, 6);
+    expect(result.points[4].debt).toBeCloseTo(818, 6);
+    expect(result.promoEndBalances).toEqual([900]);
+  });
+
+  it('reports nothing when the balance is cleared before the promotion ends', () => {
+    // 300 at 0% for 3 months, 100 a month: gone in month 3.
+    const result = project(
+      plan({ months: 4, debtMonthly: 100, debts: [{ id: 'transfer', balance: 300, apr: 24, minPayment: 100, promoApr: 0, promoMonths: 3 }] }),
+    );
+    expect(result.debtFreeMonth).toBe(3);
+    expect(result.promoEndBalances).toEqual([null]);
+  });
+
+  it('avalanche goes by the rate charged that month', () => {
+    // A: 1,000 at 0% for 6 months (25% after). B: 1,000 at 10%. Minimums 20 each, budget 140, so 100 extra.
+    // Month 1: B charges 1,000 × 0.10 / 12 = 8.3333 and gets the extra: 1,008.3333 − 20 − 100 = 888.3333. A: 980.
+    const result = project(
+      plan({
+        months: 1,
+        debtMonthly: 140,
+        debtStrategy: 'avalanche',
+        debts: [
+          { id: 'A', balance: 1_000, apr: 25, minPayment: 20, promoApr: 0, promoMonths: 6 },
+          { id: 'B', balance: 1_000, apr: 10, minPayment: 20 },
+        ],
+      }),
+    );
+    expect(result.points[1].debtBalances[0]).toBeCloseTo(980, 6);
+    expect(result.points[1].debtBalances[1]).toBeCloseTo(888.3333333, 6);
+  });
+});

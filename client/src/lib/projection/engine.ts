@@ -15,6 +15,9 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *
  * A windfall (one-time money) joins its month's savings, debt budget or investing, so it follows the same rules.
  *
+ * A debt with a promotional rate (a 0% balance transfer) is charged that rate in months 1 to promoMonths, then its APR;
+ * avalanche orders debts by the rate they charge that month.
+ *
  * A minimum-only debt (a mortgage) is paid its minimum every month and never receives the extra; the
  * payoff order and the debt-free month skip it.
  *
@@ -64,6 +67,12 @@ export function project(input: ProjectionInput): ProjectionResult {
   const debts = input.debts.map((debt) => (debt.balance > DUST ? debt.balance : 0));
   /** Debts that count toward "debt-free": everything except the minimum-only ones. */
   const inPayoff = (i: number) => !input.debts[i].minimumOnly;
+  /** The APR a debt charges in a month: its promotional rate until the promotion ends. */
+  const aprIn = (i: number, month: number) => {
+    const debt = input.debts[i];
+    return debt.promoMonths && debt.promoMonths > 0 && month <= debt.promoMonths ? Math.max(0, debt.promoApr ?? 0) : debt.apr;
+  };
+  const promoEndBalances: (number | null)[] = input.debts.map(() => null);
   const payoffDone = () => debts.every((balance, i) => balance === 0 || !inPayoff(i));
   const accounts = input.accounts.map((account) => Math.max(0, account.balance));
   const accountRates = input.accounts.map((account) => adjustedRate(account.expectedReturn ?? DEFAULT_EXPECTED_RETURN));
@@ -123,8 +132,8 @@ export function project(input: ProjectionInput): ProjectionResult {
   };
 
   /** Charges interest, makes this month's payments, and returns what the debts didn't need. */
-  const payDebts = (budget: number, payments: number[], interest: number[]): number => {
-    const left = payDebtsOnce(budget, payments, interest);
+  const payDebts = (budget: number, payments: number[], interest: number[], month: number): number => {
+    const left = payDebtsOnce(budget, payments, interest, month);
     // A debt that got less than this month's interest grew: say so, since "never paid off" alone doesn't explain why.
     interest.forEach((charged, i) => {
       if (charged > DUST && payments[i] < charged - DUST) {
@@ -135,10 +144,10 @@ export function project(input: ProjectionInput): ProjectionResult {
     return left;
   };
 
-  const payDebtsOnce = (budget: number, payments: number[], interest: number[]): number => {
+  const payDebtsOnce = (budget: number, payments: number[], interest: number[], month: number): number => {
     debts.forEach((balance, i) => {
       if (balance === 0) return;
-      interest[i] = (balance * input.debts[i].apr) / 100 / 12;
+      interest[i] = (balance * aprIn(i, month)) / 100 / 12;
       debts[i] = balance + interest[i];
     });
 
@@ -164,7 +173,7 @@ export function project(input: ProjectionInput): ProjectionResult {
 
     minimums.forEach((minimum, i) => pay(i, minimum));
     let left = budget - minimumsDue;
-    for (const i of payoffOrder()) {
+    for (const i of payoffOrder(month)) {
       if (left <= 0) break;
       const extra = Math.min(debts[i], left);
       pay(i, extra);
@@ -174,10 +183,10 @@ export function project(input: ProjectionInput): ProjectionResult {
   };
 
   /** Open debts in the order the extra money should reach them. Minimum-only debts never get it. */
-  const payoffOrder = (): number[] => {
+  const payoffOrder = (month: number): number[] => {
     const open = debts.map((_, i) => i).filter((i) => debts[i] > 0 && inPayoff(i));
     if (strategy === 'snowball') return open.sort((a, b) => debts[a] - debts[b] || a - b);
-    if (strategy === 'avalanche') return open.sort((a, b) => input.debts[b].apr - input.debts[a].apr || debts[a] - debts[b] || a - b);
+    if (strategy === 'avalanche') return open.sort((a, b) => aprIn(b, month) - aprIn(a, month) || debts[a] - debts[b] || a - b);
     return open;
   };
 
@@ -236,7 +245,10 @@ export function project(input: ProjectionInput): ProjectionResult {
       debtBudget += freedFromSavings;
       freedFromSavings = 0;
     }
-    let freedFromDebt = payDebts(debtBudget, payments, interest);
+    let freedFromDebt = payDebts(debtBudget, payments, interest, month);
+    debts.forEach((balance, i) => {
+      if (input.debts[i].promoMonths === month && balance > DUST) promoEndBalances[i] = balance;
+    });
     interestPaidToDate += sum(interest);
 
     // 3. Freed money moves on. Anything that can't be placed ends up invested.
@@ -301,6 +313,7 @@ export function project(input: ProjectionInput): ProjectionResult {
     goalFullMonths,
     totalInterest: interestPaidToDate,
     warnings,
+    promoEndBalances,
   };
 }
 

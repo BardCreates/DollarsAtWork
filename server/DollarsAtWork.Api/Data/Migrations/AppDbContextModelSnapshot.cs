@@ -191,6 +191,13 @@ namespace DollarsAtWork.Api.Data.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<decimal?>("PromoApr")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<DateOnly?>("PromoEndsMonth")
+                        .HasColumnType("date");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 

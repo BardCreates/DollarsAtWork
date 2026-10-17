@@ -179,6 +179,11 @@ and decisions already made. Don't re-ask decided questions.
   finished-money settings. networth.ts toWindfallInputs maps months (this month counts as month 1; passed ones drop
   out). Plan page "One-time money" card (WindfallsCard, WindfallDialog) shows each one's effect against the plan
   without it; the timeline lists them (kind 'windfall'). Export adds one-time-amounts.csv.
+- Promotional rates (Oct 17): Debt.PromoApr + PromoEndsMonth (migration AddDebtPromo; "YYYY-MM", the last month at the
+  promo rate; an update with PromoEndsMonth "" removes it). Engine DebtInput promoApr/promoMonths (months 1..promoMonths
+  at the promo rate; avalanche orders by the rate charged that month) and result promoEndBalances (what's owed when a
+  promotion ends). debts.ts toDebtInput maps every debt for the engine. The Debt page warns when a promotion ends with a
+  balance and says about how much more a month clears it; deferred interest is explained, not modelled.
 
 ## What we compete on
 

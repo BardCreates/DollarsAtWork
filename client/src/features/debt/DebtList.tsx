@@ -3,7 +3,7 @@ import { Box, Chip, IconButton, Tooltip, Typography } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import { formatMonthFromNow } from '../../lib/dates';
+import { formatMonthFromNow, formatYearMonth, monthsUntilYearMonth } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
 import type { ProjectionResult } from '../../lib/projection';
 import { debtTypeLabels, type Debt } from './debts';
@@ -89,7 +89,10 @@ export function DebtList({ debts, planned, canReorder, readOnly, onReorder, onEd
                           {formatMoney(debt.balance)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {debt.apr}% APR · {formatMoney(debt.minPayment)} minimum{debt.minimumOnly ? ' · minimum only' : ''}
+                          {debt.promoEndsMonth && (monthsUntilYearMonth(debt.promoEndsMonth) ?? -1) >= 0
+                            ? `${debt.promoApr ?? 0}% until ${formatYearMonth(debt.promoEndsMonth)}, then ${debt.apr}%`
+                            : `${debt.apr}% APR`}{' '}
+                          · {formatMoney(debt.minPayment)} minimum{debt.minimumOnly ? ' · minimum only' : ''}
                         </Typography>
                       </Box>
 

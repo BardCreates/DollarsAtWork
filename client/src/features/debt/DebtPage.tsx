@@ -26,7 +26,7 @@ import { DebtHint } from '../hints/PageHints';
 import { PlanAmountBanner } from '../../components/PlanAmountBanner';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
-import { formatDuration, formatMonthFromNow } from '../../lib/dates';
+import { formatDuration, formatMonthFromNow, formatYearMonth, monthsUntilYearMonth } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
 import { listNames } from '../../lib/words';
 import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
@@ -93,6 +93,13 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
   const readOnly = !me?.access.hasFullAccess;
   const projection = useDebtProjection(data, whole);
   const growingNames = data.debts.filter((_, i) => projection.planned.warnings.growingDebts[i]).map((d) => d.name);
+  // A promotion that ends with money still owed: say so while there's time to clear it.
+  const promoWarnings = data.debts.flatMap((debt, i) => {
+    const left = projection.planned.promoEndBalances[i];
+    const months = debt.promoEndsMonth ? monthsUntilYearMonth(debt.promoEndsMonth) : null;
+    if (left === null || left === undefined || !debt.promoEndsMonth || months === null || months < 1) return [];
+    return [{ id: debt.id, name: debt.name, apr: debt.apr, endsMonth: debt.promoEndsMonth, left, perMonth: left / months }];
+  });
 
   // Where the money goes once every debt is gone is the user's own setting (Dashboard > Assumptions).
   const { data: netWorth } = useNetWorth();
@@ -161,6 +168,12 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
               Check the minimum payment, or give Debt more in Plan.
             </Alert>
           )}
+          {promoWarnings.map((warning) => (
+            <Alert key={warning.id} severity="warning" sx={{ mb: 3 }}>
+              {warning.name}'s promotional rate ends after {formatYearMonth(warning.endsMonth)} with about {formatMoney(Math.round(warning.left))} still
+              owed, and then it charges {warning.apr}%. About {formatMoney(Math.ceil(warning.perMonth))} more a month on it would clear it in time.
+            </Alert>
+          ))}
 
           <Card sx={{ mb: 3 }}>
             <CardContent sx={{ display: 'grid', gap: { xs: 2, md: 4 }, alignItems: 'start', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
