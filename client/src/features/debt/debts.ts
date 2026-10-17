@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { project, type DebtStrategy as EngineStrategy, type ProjectionInput, type ProjectionResult } from '../../lib/projection';
 import { debtFreeExcept } from '../../lib/timeline';
+import { savingsQueryKey } from '../savings/savings';
 
 export type DebtType = 'CreditCard' | 'Auto' | 'Student' | 'Mortgage' | 'Medical' | 'Other';
 export type DebtStrategy = 'Snowball' | 'Avalanche' | 'Custom';
@@ -59,6 +60,8 @@ function useDebtsCache() {
       queryClient.setQueryData<DebtsData>(debtsQueryKey, (data) => (data ? update(data) : data));
     },
     reload: () => queryClient.invalidateQueries({ queryKey: debtsQueryKey }),
+    /** The emergency fund starter on Savings counts every debt's minimum, so a changed debt changes it too. */
+    refreshSavings: () => queryClient.invalidateQueries({ queryKey: savingsQueryKey }),
   };
 }
 
@@ -66,7 +69,10 @@ export function useAddDebt() {
   const cache = useDebtsCache();
   return useMutation({
     mutationFn: (debt: DebtFields) => api.post<Debt>('/debts', debt),
-    onSuccess: (debt) => cache.change((data) => ({ ...data, debts: [...data.debts, debt] })),
+    onSuccess: (debt) => {
+      cache.change((data) => ({ ...data, debts: [...data.debts, debt] }));
+      cache.refreshSavings();
+    },
   });
 }
 
@@ -74,7 +80,10 @@ export function useUpdateDebt() {
   const cache = useDebtsCache();
   return useMutation({
     mutationFn: ({ id, changes }: { id: string; changes: Partial<DebtFields> }) => api.patch<Debt>(`/debts/${id}`, changes),
-    onSuccess: (debt) => cache.change((data) => ({ ...data, debts: data.debts.map((d) => (d.id === debt.id ? debt : d)) })),
+    onSuccess: (debt) => {
+      cache.change((data) => ({ ...data, debts: data.debts.map((d) => (d.id === debt.id ? debt : d)) }));
+      cache.refreshSavings();
+    },
   });
 }
 
@@ -82,7 +91,10 @@ export function useDeleteDebt() {
   const cache = useDebtsCache();
   return useMutation({
     mutationFn: (id: string) => api.delete(`/debts/${id}`),
-    onSuccess: (_, id) => cache.change((data) => ({ ...data, debts: data.debts.filter((d) => d.id !== id) })),
+    onSuccess: (_, id) => {
+      cache.change((data) => ({ ...data, debts: data.debts.filter((d) => d.id !== id) }));
+      cache.refreshSavings();
+    },
   });
 }
 

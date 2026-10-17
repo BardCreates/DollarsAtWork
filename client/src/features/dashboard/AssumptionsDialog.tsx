@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
 import { ApiError, errorMessage } from '../../api/client';
 import { parsePercentInput } from '../../lib/money';
@@ -16,6 +16,7 @@ const schema = z.object({
   incomeGrowthRate: z.string().refine(isRate, `Enter a rate between 0% and ${MAX_RATE}%.`),
   debtDoneDestination: z.enum(['Investments', 'Savings', 'Remaining']),
   savingsDoneDestination: z.enum(['Investments', 'Debt', 'Remaining']),
+  raiseToInvestments: z.boolean(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -35,6 +36,7 @@ export function AssumptionsDialog({ open, settings, onClose }: { open: boolean; 
       incomeGrowthRate: String(settings.incomeGrowthRate),
       debtDoneDestination: settings.debtDoneDestination as FormValues['debtDoneDestination'],
       savingsDoneDestination: settings.savingsDoneDestination as FormValues['savingsDoneDestination'],
+      raiseToInvestments: settings.raiseToInvestments,
     });
   }, [open, settings]);
 
@@ -48,6 +50,7 @@ export function AssumptionsDialog({ open, settings, onClose }: { open: boolean; 
         incomeGrowthRate: parsePercentInput(values.incomeGrowthRate, MAX_RATE) ?? 0,
         debtDoneDestination: values.debtDoneDestination,
         savingsDoneDestination: values.savingsDoneDestination,
+        raiseToInvestments: values.raiseToInvestments,
       },
       { onSuccess: onClose },
     ),
@@ -96,8 +99,24 @@ export function AssumptionsDialog({ open, settings, onClose }: { open: boolean; 
               placeholder="%"
               {...muiField(register, 'incomeGrowthRate')}
               error={!!fieldError('incomeGrowthRate')}
-              helperText={fieldError('incomeGrowthRate') ?? 'Extra income is added to Remaining and lifts any employer-match cap.'}
+              helperText={fieldError('incomeGrowthRate') ?? 'How much your pay grows each year. It also lifts any employer-match cap.'}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+            />
+            <Controller
+              name="raiseToInvestments"
+              control={control}
+              render={({ field }) => (
+                <Box>
+                  <FormControlLabel
+                    control={<Switch checked={!!field.value} onChange={(_, checked) => field.onChange(checked)} />}
+                    label="Invest each raise"
+                  />
+                  <Typography variant="caption" color="text.secondary" component="p" sx={{ pl: 0.5 }}>
+                    On: every raise is added to your Investments amount, so what you invest grows with your pay. Off: the extra lands in
+                    Remaining, where it isn't projected until you give it a job.
+                  </Typography>
+                </Box>
+              )}
             />
           </Stack>
         </DialogContent>

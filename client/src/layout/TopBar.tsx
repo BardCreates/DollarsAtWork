@@ -87,7 +87,7 @@ export function TopBar() {
         </Box>
 
         <Tooltip title="Help">
-          <IconButton component={RouterLink} to="/help" color="primary" size="large" aria-label="Help" sx={{ ml: 1, display: { xs: 'none', sm: 'inline-flex' } }}>
+          <IconButton component={RouterLink} to="/help" color="primary" size="large" aria-label="Help" sx={{ ml: { xs: 0, sm: 1 } }}>
             <HelpOutlineIcon />
           </IconButton>
         </Tooltip>
@@ -97,7 +97,7 @@ export function TopBar() {
           aria-label="Account"
           aria-haspopup="menu"
           onClick={(e) => setAccountAnchor(e.currentTarget)}
-          sx={{ ml: 1 }}
+          sx={{ ml: { xs: 0, sm: 1 } }}
         >
           <AccountCircleIcon fontSize="large" />
         </IconButton>
@@ -155,6 +155,9 @@ export function TopBar() {
             </ListItemButton>
             <ListItemButton component={RouterLink} to="/blog" selected={pathname.startsWith('/blog')} onClick={() => setDrawerOpen(false)}>
               <ListItemText primary="Blog" />
+            </ListItemButton>
+            <ListItemButton component={RouterLink} to="/profile" selected={pathname.startsWith('/profile')} onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Profile & billing" />
             </ListItemButton>
           </List>
         </Box>

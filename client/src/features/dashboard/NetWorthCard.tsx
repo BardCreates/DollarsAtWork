@@ -7,6 +7,9 @@ import { DASHBOARD_YEARS, type NetWorthBreakdown } from './useDashboard';
 const marks = [0, 10, 20, 30, 40].map((value) => ({ value, label: value === 0 ? 'Today' : `${value}y` }));
 const whole = (value: number) => formatMoney(Math.round(value));
 
+/** How far returns are moved down and up for the range under the estimate, in percentage points. */
+export const RANGE_POINTS = 2;
+
 /** Net worth today, and what the plan projects at the year picked on the slider. */
 export function NetWorthCard({
   result,
@@ -15,6 +18,7 @@ export function NetWorthCard({
   todaysDollars,
   homeEquity,
   breakdown,
+  range,
 }: {
   result: ProjectionResult;
   year: number;
@@ -24,6 +28,11 @@ export function NetWorthCard({
   homeEquity?: number | null;
   /** What makes up "Other" on each side, at the slider year. Left out on the demo. */
   breakdown?: NetWorthBreakdown;
+  /**
+   * The same plan with every return RANGE_POINTS lower and higher, so the estimate reads as a range, not a promise.
+   * Left out where there's nothing invested to vary.
+   */
+  range?: { low: ProjectionResult; high: ProjectionResult };
 }) {
   const assetsLink = (
     <Link component={RouterLink} to="/assets" underline="hover" color="inherit">
@@ -37,6 +46,9 @@ export function NetWorthCard({
   const owed = then.debt + then.otherLiabilities;
   const assetShare = assets + owed > 0 ? (assets / (assets + owed)) * 100 : 100;
   const calendarYear = new Date().getFullYear() + year;
+  const low = range?.low.points[year * 12].netWorth;
+  const high = range?.high.points[year * 12].netWorth;
+  const showRange = year > 0 && low !== undefined && high !== undefined && Math.round(high) !== Math.round(low);
 
   return (
     <Card>
@@ -73,7 +85,13 @@ export function NetWorthCard({
             {year > 0 && (
               <Typography variant="body2" color={change >= 0 ? 'success.main' : 'error.main'}>
                 {change >= 0 ? '+' : '−'}
-                {whole(Math.abs(change))} from today{todaysDollars ? ", in today's dollars" : ''}
+                {whole(Math.abs(change))} from today{todaysDollars ? ", in today's dollars" : ' (future dollars)'}
+              </Typography>
+            )}
+            {showRange && (
+              <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.5 }}>
+                Somewhere between {whole(low ?? 0)} and {whole(high ?? 0)} if returns run {RANGE_POINTS} points lower or higher each year. Real
+                markets swing more than that from year to year.
               </Typography>
             )}
           </Box>

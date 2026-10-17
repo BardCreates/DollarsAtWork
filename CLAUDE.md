@@ -158,6 +158,21 @@ and decisions already made. Don't re-ask decided questions.
   built-in category through plan.ts useSetModuleAmount (useUpdateCategory + invalidating the module query, so the module's own
   monthly amount refreshes); no second copy. When the plan ends up over income the banner turns to a warning with the amount over
   and points to Plan. Without `kind` the banner is the old read-only one.
+- Usability audit fixes (Oct 17, audit doc "Usability & accuracy audit — Oct 17"): new accounts start with four deletable
+  Custom categories at $0 (AccountSetup.Essentials: Housing, Groceries, Utilities, Transportation). /welcome is five steps
+  (income, everyday spending, debts, the three amounts with Debt prefilled to the minimums, what you have) and keeps the step
+  in the URL (?step=N). Engine: `growingDebts` per debt, `payrollMonthly` and `matchSalaryMonthly` on accounts (paycheck money
+  is added on top of the plan; the match cap is a percent of salary before taxes, growing with the raise), `raiseDestination`
+  ('investments' when Plan.RaiseToInvestments, "Invest each raise" in Assumptions) and `returnAdjustment` (the dashboard's
+  ±2-point range under the net worth). Migration AddPayrollAndRaise (InvestmentAccount.PayrollMonthly, MatchSalaryYearly;
+  Plan.RaiseToInvestments). Every page maps accounts through investments.ts toAccountInput. Dashboard opens in today's
+  dollars. Savings' PlannedExpenses now adds every open debt's minimum; a $1,000 starter goal is offered. lib/fundingOrder
+  (the "next step" note on Plan, help article what-to-fund-first), lib/contributionLimits (IRS limits, update each
+  November; warning on Invest), lib/words listNames, components/useGuardedClose (confirm before a dirty dialog closes, plus
+  beforeunload), money.ts moneyInputProblem (specific messages, e.g. negatives). Calculators have believable limits
+  (NumberField min/max/positive); DRIP takes negative price growth; the loan comparison needs a real term. Goal target dates
+  can't be in the past (an old goal keeps its own). Help is in the phone header; Profile & billing is in the drawer.
+  Deferred to the features round: light theme, windfalls, 0% promo APRs, retirement number, sinking funds, two incomes.
 
 ## What we compete on
 

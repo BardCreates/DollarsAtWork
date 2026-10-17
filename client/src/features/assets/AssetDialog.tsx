@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
+import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
 import { parseMoneyInput } from '../../lib/money';
 import { otherItemTypeLabels, useAddOtherItem, useSaveOtherItem, type OtherItem, type OtherItemType } from '../dashboard/networth';
@@ -46,7 +47,7 @@ export function AssetDialog({ open, item, onClose }: { open: boolean; item?: Oth
   const save = useSaveOtherItem();
   const saving = item ? save : add;
 
-  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
   });
@@ -72,6 +73,8 @@ export function AssetDialog({ open, item, onClose }: { open: boolean; item?: Oth
   const fieldError = (field: keyof FormValues) => errors[field]?.message ?? serverError?.fieldErrors(field)[0];
   const hasFieldError = (Object.keys(blank) as (keyof FormValues)[]).some((field) => fieldError(field));
 
+  const guardedClose = useGuardedClose(open, isDirty, onClose);
+
   const onSubmit = handleSubmit((values) => {
     const fields = {
       name: values.name,
@@ -85,7 +88,7 @@ export function AssetDialog({ open, item, onClose }: { open: boolean; item?: Oth
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog open={open} onClose={guardedClose} fullWidth maxWidth="xs">
       <Box component="form" onSubmit={onSubmit} noValidate>
         <DialogTitle>{item ? `Edit ${item.name}` : 'Add something you own'}</DialogTitle>
         <DialogContent>
@@ -149,7 +152,7 @@ export function AssetDialog({ open, item, onClose }: { open: boolean; item?: Oth
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} color="inherit">
+          <Button onClick={guardedClose} color="inherit">
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={saving.isPending}>

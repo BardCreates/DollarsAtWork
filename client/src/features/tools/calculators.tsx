@@ -97,8 +97,8 @@ export function CompoundCalculator() {
       inputs={
         <>
           <NumberField label="Starting amount" prefix="$" value={initial} onChange={counted(setInitial)} />
-          <NumberField label="Added each month" prefix="$" value={monthly} onChange={counted(setMonthly)} />
-          <NumberField label="Yearly return" suffix="%" max={50} value={annualRate} onChange={counted(setAnnualRate)} />
+          <NumberField label="Added each month" prefix="$" max={1_000_000} value={monthly} onChange={counted(setMonthly)} />
+          <NumberField label="Yearly return" suffix="%" max={30} value={annualRate} onChange={counted(setAnnualRate)} />
           <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }
@@ -129,8 +129,8 @@ export function PayoffCalculator() {
         <>
           <NumberField label="Loan balance" prefix="$" value={balance} onChange={counted(setBalance)} />
           <NumberField label="APR" suffix="%" max={100} value={apr} onChange={counted(setApr)} />
-          <NumberField label="Monthly payment" prefix="$" value={payment} onChange={counted(setPayment)} />
-          <NumberField label="Extra each month" prefix="$" value={extra} onChange={counted(setExtra)} helperText="What you could add on top." />
+          <NumberField label="Monthly payment" prefix="$" max={1_000_000} value={payment} onChange={counted(setPayment)} />
+          <NumberField label="Extra each month" prefix="$" max={1_000_000} value={extra} onChange={counted(setExtra)} helperText="What you could add on top." />
         </>
       }
     >
@@ -173,7 +173,9 @@ export function LoanCompareCalculator() {
 
   const a = useMemo(() => loanCost({ amount, apr: aprA, years: yearsA }), [amount, aprA, yearsA]);
   const b = useMemo(() => loanCost({ amount, apr: aprB, years: yearsB }), [amount, aprB, yearsB]);
-  const cheaper = a.totalInterest === b.totalInterest ? null : a.totalInterest < b.totalInterest ? 'A' : 'B';
+  // Compare only real loans: a term too short to make one payment has nothing to compare.
+  const comparable = a.payment > 0 && b.payment > 0;
+  const cheaper = !comparable || a.totalInterest === b.totalInterest ? null : a.totalInterest < b.totalInterest ? 'A' : 'B';
 
   const loan = (name: string, cost: typeof a, best: boolean) => (
     <Card sx={best ? { outline: 2, outlineStyle: 'solid', outlineColor: 'success.main' } : undefined}>
@@ -202,10 +204,10 @@ export function LoanCompareCalculator() {
           <NumberField label="Loan amount" prefix="$" value={amount} onChange={counted(setAmount)} />
           <Typography variant="subtitle2">Loan A</Typography>
           <NumberField label="APR" suffix="%" max={100} value={aprA} onChange={counted(setAprA)} />
-          <NumberField label="Term" suffix="years" max={50} value={yearsA} onChange={counted(setYearsA)} />
+          <NumberField label="Term" suffix="years" positive max={50} value={yearsA} onChange={counted(setYearsA)} />
           <Typography variant="subtitle2">Loan B</Typography>
           <NumberField label="APR" suffix="%" max={100} value={aprB} onChange={counted(setAprB)} />
-          <NumberField label="Term" suffix="years" max={50} value={yearsB} onChange={counted(setYearsB)} />
+          <NumberField label="Term" suffix="years" positive max={50} value={yearsB} onChange={counted(setYearsB)} />
         </>
       }
     >
@@ -241,9 +243,17 @@ export function DripCalculator() {
       inputs={
         <>
           <NumberField label="Starting investment" prefix="$" value={initial} onChange={counted(setInitial)} />
-          <NumberField label="Added each year" prefix="$" value={yearlyContribution} onChange={counted(setYearlyContribution)} />
-          <NumberField label="Share price growth" suffix="% a year" max={50} value={priceGrowth} onChange={counted(setPriceGrowth)} />
-          <NumberField label="Dividend yield" suffix="% a year" max={50} value={dividendYield} onChange={counted(setDividendYield)} />
+          <NumberField label="Added each year" prefix="$" max={10_000_000} value={yearlyContribution} onChange={counted(setYearlyContribution)} />
+          <NumberField
+            label="Share price growth"
+            suffix="% a year"
+            min={-50}
+            max={30}
+            value={priceGrowth}
+            onChange={counted(setPriceGrowth)}
+            helperText="Can be negative for a falling price."
+          />
+          <NumberField label="Dividend yield" suffix="% a year" max={20} value={dividendYield} onChange={counted(setDividendYield)} />
           <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }
@@ -288,8 +298,8 @@ export function HabitCalculator() {
     <Calculator
       inputs={
         <>
-          <NumberField label="Spent each month" prefix="$" value={monthly} onChange={counted(setMonthly)} helperText="Dining out, subscriptions, a daily coffee." />
-          <NumberField label="Yearly return if invested" suffix="%" max={50} value={annualRate} onChange={counted(setAnnualRate)} helperText="7% is a common long-run figure for stocks. It's an assumption, not a promise." />
+          <NumberField label="Spent each month" prefix="$" max={1_000_000} value={monthly} onChange={counted(setMonthly)} helperText="Dining out, subscriptions, a daily coffee." />
+          <NumberField label="Yearly return if invested" suffix="%" max={30} value={annualRate} onChange={counted(setAnnualRate)} helperText="7% is a common long-run figure for stocks. It's an assumption, not a promise." />
           <NumberField label="For" suffix="years" max={60} value={years} onChange={counted(setYears)} />
         </>
       }

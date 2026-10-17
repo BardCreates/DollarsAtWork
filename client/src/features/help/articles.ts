@@ -46,12 +46,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
 - **Tools**: quick calculators for one-off questions.
 
 ## Your first five minutes
-When you sign up, the walkthrough at [Set up your plan](/welcome) asks three things: your income, how much goes to Savings, Debt and Investments, and (optionally) a debt, a goal, an account or your home. You can skip any step and change everything later.
+When you sign up, the walkthrough at [Set up your plan](/welcome) takes five short steps: your income; the basics (your plan starts with Housing, Groceries, Utilities and Transportation at $0, ready for your numbers); your debts; how much goes to Savings, Debt and Investments (Debt starts at your debts' minimums); and, if you like, a goal, an account or your home. You can skip any step and change everything later, and refreshing the page keeps your place.
 
-After that, add your everyday categories (rent, groceries and so on) on [Plan](/plan) until Remaining reaches $0. Then add the rest of your debts, goals, accounts and assets on their pages.
+After that, adjust your categories on [Plan](/plan) until Remaining reaches $0. Then add the rest of your goals, accounts and assets on their pages. Not sure where extra money should go first? See [Where extra money should go first](/help/what-to-fund-first).
 
 ## Estimates, not promises
-Every projection is an estimate based on the numbers you enter and the returns you assume. It isn't financial advice. Updating your balances once a month keeps the estimates close to reality.`,
+Every projection is an estimate based on the numbers you enter and the returns you assume. It isn't financial advice. Updating your balances once a month keeps the estimates close to reality.
+
+The projections leave a few things out to stay simple: taxes on growth or withdrawals (a 401(k), a Roth IRA and a brokerage account all grow the same way here), market ups and downs (each account grows at its expected return every year), and minimum payments that shrink as a card's balance falls (minimums stay fixed, which makes "saved vs minimums only" a little smaller than it really is).`,
   },
   {
     slug: 'hints',
@@ -79,8 +81,9 @@ Your hint settings are saved to your account, so they follow you to any device y
     body: `The [Plan](/plan) page is where everything starts. Enter your **monthly take-home income** (your pay after taxes; if it varies, use a typical month), then split it into categories.
 
 ## Categories
-- Add a category with a name and an amount, like Rent or Groceries.
-- Type an amount in dollars (500) or as a percent of income (10%). It's always saved as dollars.
+- New plans start with four everyday categories at $0: **Housing**, **Groceries**, **Utilities** and **Transportation**. They're ordinary categories, so rename or delete any of them. With a mortgage, put only property tax, insurance and HOA in Housing: the loan payment is part of your Debt amount, so it would otherwise count twice.
+- Add a category with a name and an amount, like Phone or Childcare.
+- Type an amount in dollars (500) or as a percent of income (10%). It's always saved as dollars. If you type more than your whole income, the box says so as you type.
 - Drag a category by its handle to reorder it. Tap the color dot to change its color.
 - Delete a category with the bin icon. You get a few seconds to press **Undo**.
 - A plan can have up to 100 categories.
@@ -91,11 +94,30 @@ These three are built in. They have a lock icon: you can change their amount and
 ## Remaining
 **Remaining = income minus every category.** It's green while money is still unassigned and shows "Every dollar has a job" at $0. If your categories add up to more than your income, it turns red and says "Over-allocated by". You can still save, but the dashboard will warn you that its projections are optimistic.
 
+## What to fund next
+When your plan skips a common step (a starter emergency fund, the full employer match, high-interest debt before more investing, or investing about 15%), a note under the totals names the next one. It's a suggestion; close it with the X. See [Where extra money should go first](/help/what-to-fund-first).
+
 ## Changing your income
 When you change your income, category amounts stay the same and Remaining moves. If you'd rather keep the same proportions, press **Scale all to new income**.
 
 ## Saving
 There's no save button. Each change saves when you leave the box or press Enter. Press Escape to undo a change you're still typing. The top of the page shows "Saving…" or "All changes saved".`,
+  },
+  {
+    slug: 'what-to-fund-first',
+    title: 'Where extra money should go first',
+    section: 'Your plan',
+    summary: 'The order many planners suggest for extra money: a starter cushion, the match, costly debt, then investing.',
+    keywords: 'order priority starter match free money high interest invest 15 percent retirement next step suggestion',
+    body: `When money is tight, the order you fund things matters as much as the amounts. Many planners suggest this order, and the [Plan](/plan) page names the next step your plan hasn't covered:
+
+- **A starter emergency fund**, about $1,000, so a surprise bill doesn't land on a card.
+- **The full employer match.** It's part of your pay; anything less leaves it on the table.
+- **High-interest debt** (roughly 8% APR and up) before investing beyond the match. Paying a 24% card saves 24% for sure; investing is only expected to earn about 7%.
+- **A full emergency fund** of 3 to 6 months of expenses, once the costly debt is gone.
+- **Investing about 15% of your income** for the long run.
+
+It's a common guide, not a rule, and your situation may call for a different order. The app never moves money for you; it only points out the next step. Close the note on Plan and it stays hidden for that visit.`,
   },
   {
     slug: 'move-a-dollar',
@@ -132,7 +154,7 @@ On phones the panel sits at the top of the page, so it stays in view while you s
 - **Target date** (optional): you'll see whether you're on track.
 - **APY** (optional): the yearly interest the account pays, like 4.5.
 
-You can have up to 50 goals. No goals yet? The page suggests an **emergency fund** of 3 or 6 months of the expenses in your plan.
+You can have up to 50 goals. A target date can't be one that has already passed. No goals yet? The page suggests an **emergency fund** of 3 or 6 months of your everyday categories plus every debt's minimum payment (an emergency doesn't pause those), or a **$1,000 starter fund** to hold while you pay off cards.
 
 ## Priority or Percent
 - **Priority** fills goals from the top down. Drag goals to change the order.
@@ -162,7 +184,9 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
 - **Minimum payment**: what you must pay each month. For a mortgage, enter the principal and interest only, not the escrow part (taxes and insurance), since that never touches the balance.
 - **Minimum only**: on by default for a mortgage. The debt is paid on its own schedule and still counts against your net worth, but your extra money skips it and "debt-free" means everything else. Turn it on for any long loan you'd rather not snowball, or off to throw your extra at the mortgage too.
 
-You can have up to 50 debts. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.
+You can have up to 50 debts. If a minimum payment doesn't cover the month's interest, the form warns you as you type: that debt would grow forever. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.
+
+If any debt is still getting less than its interest in the plan, the Debt page and the dashboard name it.
 
 ## How payments are worked out
 Every month, each debt gets its minimum. Whatever is left of your Debt amount goes to one target debt, marked **Getting extra**. When a debt is paid off, its money stays in your Debt amount and moves to the next debt. Once everything is paid, that money goes where you chose under **Assumptions** on the Dashboard.
@@ -211,10 +235,18 @@ The house goes here as something you own. The mortgage goes on the [Debt](/debt)
 - **Balance**: what it's worth today. Update it whenever you check.
 - **Expected yearly return**: 7% unless you change it. It's an assumption, not a promise.
 
+- **Taken from your paycheck** (401(k), HSA and other): what already goes in from each paycheck, per month. Your take-home pay is after this, so it's added on top of your plan's Investments amount, not taken from it. Your Investments amount is only what you put in yourself.
+
 You can have up to 50 accounts.
 
 ## Employer match
-If your employer adds money when you contribute, fill in the match. "50% match up to 6%" means **Match** 50 and **Up to** 6: your employer adds half of what you put in, on contributions up to 6% of your monthly income. The match is added on top of your own contributions in every projection.
+If your employer adds money when you contribute, fill in the match. "50% match up to 6%" means **Match** 50 and **Up to** 6: your employer adds half of what you put in, on contributions up to 6% of your salary. Add your **yearly salary before taxes** so the limit is worked out the way your employer does it; left empty, your take-home pay is used, which shows a smaller match. Paycheck money and your plan's share both count toward the match, and the match is added on top in every projection.
+
+## Yearly limits
+The IRS caps what you can put into some accounts each year. For 2026: $24,500 for a 401(k) ($32,500 at 50 or older), $7,500 for IRAs and Roth IRAs together ($8,600 at 50 or older), and $4,400 for an HSA with self-only coverage ($8,750 family). If your plan would put more than that in, the page warns you so you can move the extra elsewhere. Employer match doesn't count toward your own limit.
+
+## Taxes
+Projections don't take taxes out. A 401(k) or traditional IRA is taxed when you withdraw, a Roth isn't, and a brokerage account is taxed on gains along the way, so the same balance can be worth different amounts to you.
 
 ## Splitting your monthly amount
 With two or more accounts, press **Change split** to choose each account's share. The shares must add up to 100%, or use **Split evenly**. If they don't add up, the page warns you and scales them until you fix it.
@@ -242,8 +274,11 @@ A dated roadmap of what's coming: each debt paid off, the day you're debt-free, 
 ## Homes, cars and other things
 Your home, car and anything else you own live on the [Assets](/assets) page. Under the net worth figure, **Home** is your home's value and **Other** is everything else you own there; if you've recorded something you owe outside the Debt page, a second line splits your debts into **Debt page** and **Other**. Both "Other" words link to the Assets page.
 
+## A range, not one number
+Under the projected net worth, a line shows where it could land if every return ran 2 points lower or higher each year. Real markets move around much more than that from year to year; the range is a reminder that the estimate is an estimate.
+
 ## Warnings
-If your plan is over-allocated, or your Debt amount doesn't cover your minimum payments, the dashboard tells you and links to Plan to fix it.`,
+If your plan is over-allocated, your Debt amount doesn't cover your minimum payments, or a debt's payment doesn't cover its interest (so it keeps growing), the dashboard tells you and links to the page to fix it.`,
   },
   {
     slug: 'todays-dollars',
@@ -252,14 +287,15 @@ If your plan is over-allocated, or your Debt amount doesn't cover your minimum p
     summary: "What the Today's dollars switch does, and how to change inflation, raises and where finished money goes.",
     keywords: 'inflation real value purchasing power raise salary assumptions settings destination remaining after debt after goals',
     body: `## Today's dollars
-A dollar in 20 years won't buy what a dollar buys now. Switch on **Today's dollars** on the Dashboard to show future amounts in what they'd be worth today, after inflation. Switch it off to see the actual dollar amounts your accounts would show.
+A dollar in 20 years won't buy what a dollar buys now. **Today's dollars** on the Dashboard shows future amounts in what they'd be worth today, after inflation. It starts switched on, because 40 years of inflation make future amounts look far bigger than they feel: at 3% a year, $1 million in 40 years buys about what $307,000 buys today. Switch it off to see the actual dollar amounts your accounts would show; those figures are marked "future dollars".
 
-It only changes how numbers are shown, not your plan. It resets to off each time you open the Dashboard.
+It only changes how numbers are shown, not your plan. It's on again each time you open the Dashboard.
 
 ## Assumptions
 Press **Assumptions** on the Dashboard to change what every projection assumes:
 - **Inflation**: used by Today's dollars. 3% a year unless you change it.
-- **Yearly raise**: how much your income grows each year. The extra goes to Remaining (it isn't projected until you give it a job), and it raises any employer-match cap.
+- **Yearly raise**: how much your income grows each year. It also raises any employer-match cap.
+- **Invest each raise**: on, and every raise is added to your Investments amount, so what you invest grows with your pay. Off (the default), the extra goes to Remaining, where it isn't projected until you give it a job.
 - **Once all debt is paid**, that money goes to Investments, Savings goals, or back to Remaining.
 - **Once all goals are full**, that money goes to Investments, Debt payoff, or back to Remaining.
 
@@ -321,6 +357,8 @@ Like your plan, these are estimates, not advice.`,
 - [Early payoff](/tools?tool=payoff): how much time and interest an extra monthly payment saves on a loan.
 - [Loan comparison](/tools?tool=compare): two offers for the same amount, side by side: monthly payment, total interest and total paid.
 - [DRIP](/tools?tool=drip): what reinvesting dividends adds compared with taking them as cash.
+
+The boxes stop at believable limits (a 30% yearly return at most, for example), since bigger guesses say more about the guess than the money. The DRIP calculator takes a negative price growth for a falling share, and leaves out tax on dividends.
 
 Every result is an estimate based on the numbers you enter, not financial advice.`,
   },

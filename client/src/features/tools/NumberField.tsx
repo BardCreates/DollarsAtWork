@@ -9,18 +9,33 @@ interface NumberFieldProps {
   prefix?: string;
   /** Shown after the number, e.g. "%" or "years". */
   suffix?: string;
+  /** Lowest number accepted. Default 0; a negative min lets a minus sign be typed (a falling share price). */
+  min?: number;
   max?: number;
+  /** The number must be above 0 (a loan term): 0 or an empty box is flagged instead of used. */
+  positive?: boolean;
   helperText?: string;
 }
 
+const NUMBER = /^-?(\d+\.?\d*|\.\d+)$/;
+
 /**
- * A number box for the calculators: the result updates as you type, and anything that isn't a
- * number from 0 to max is flagged and ignored. Calculators aren't saved, so there is no form to submit.
+ * A number box for the calculators: the result updates as you type, and anything outside min to max is flagged and
+ * ignored, so the result keeps showing the last good number. Calculators aren't saved, so there is no form to submit.
+ * The limits keep results believable: a 50%-a-year return for 40 years says more about the guess than the money.
  */
-export function NumberField({ label, value, onChange, prefix, suffix, max = 999_999_999, helperText }: NumberFieldProps) {
+export function NumberField({ label, value, onChange, prefix, suffix, min = 0, max = 100_000_000, positive = false, helperText }: NumberFieldProps) {
   const [text, setText] = useState(String(value));
-  const cleaned = text.replace(/[\s$,%]/g, '');
-  const invalid = cleaned !== '' && (!/^(\d+\.?\d*|\.\d+)$/.test(cleaned) || Number(cleaned) > max);
+  const read = (raw: string): number | null => {
+    const cleaned = raw.replace(/[\s$,%]/g, '');
+    if (cleaned === '') return positive ? null : 0;
+    if (!NUMBER.test(cleaned)) return null;
+    const number = Number(cleaned);
+    if (number < min || number > max || (positive && number <= 0)) return null;
+    return number;
+  };
+  const invalid = read(text) === null;
+  const range = positive ? `more than 0, up to ${max.toLocaleString('en-US')}` : `from ${min.toLocaleString('en-US')} to ${max.toLocaleString('en-US')}`;
 
   return (
     <TextField
@@ -28,17 +43,15 @@ export function NumberField({ label, value, onChange, prefix, suffix, max = 999_
       label={label}
       value={text}
       error={invalid}
-      helperText={invalid ? `Enter a number from 0 to ${max.toLocaleString('en-US')}.` : helperText}
+      helperText={invalid ? `Enter a number ${range}.` : helperText}
       onChange={(event) => {
-        const next = event.target.value;
-        setText(next);
-        const digits = next.replace(/[\s$,%]/g, '');
-        if (digits === '') onChange(0);
-        else if (/^(\d+\.?\d*|\.\d+)$/.test(digits) && Number(digits) <= max) onChange(Number(digits));
+        setText(event.target.value);
+        const number = read(event.target.value);
+        if (number !== null) onChange(number);
       }}
       onFocus={(event) => event.target.select()}
       slotProps={{
-        htmlInput: { inputMode: 'decimal' },
+        htmlInput: { inputMode: min < 0 ? 'text' : 'decimal' },
         input: {
           startAdornment: prefix ? <InputAdornment position="start">{prefix}</InputAdornment> : undefined,
           endAdornment: suffix ? <InputAdornment position="end">{suffix}</InputAdornment> : undefined,
