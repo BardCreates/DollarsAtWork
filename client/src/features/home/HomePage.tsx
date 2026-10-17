@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Card, CardActionArea, CardContent, Typography } from '@mui/material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
@@ -27,9 +30,12 @@ const steps = [
 
 const features: { icon: ReactNode; title: string; body: string }[] = [
   { icon: <TaskAltIcon />, title: 'Move a dollar', body: 'Change any amount in your plan and watch your debt-free date and future net worth move as you type.' },
-  { icon: <AccountBalanceIcon />, title: 'Debt-free date', body: 'Snowball, avalanche or your own order, with every payment scheduled and the interest you save.' },
+  { icon: <AccountBalanceIcon />, title: 'Debt-free date', body: 'Snowball, avalanche or your own order, 0% balance transfers included, with every payment scheduled and the interest you save.' },
   { icon: <SavingsIcon />, title: 'Savings goals', body: 'Goals that fill in order and tell you whether you are on track for the date you want.' },
-  { icon: <ShowChartIcon />, title: 'Investing and match', body: 'Your 401(k), IRA and brokerage accounts projected forward, employer match included.' },
+  { icon: <ReceiptLongIcon />, title: 'Bills that come back', body: 'Sinking funds save a little each month for insurance, gifts and other yearly bills, so they never land all at once.' },
+  { icon: <CardGiftcardIcon />, title: 'One-time money', body: 'Give a tax refund or bonus a job ahead of time and see how much sooner it makes you debt-free.' },
+  { icon: <ShowChartIcon />, title: 'Investing and match', body: 'Your 401(k), IRA and brokerage accounts projected forward, paycheck contributions and employer match included.' },
+  { icon: <BeachAccessIcon />, title: 'Retirement number', body: 'What you would need to retire, when your plan gets there, and what would close the gap.' },
   { icon: <CompareArrowsIcon />, title: 'What-if plans', body: 'Try up to 3 different plans side by side without touching your real one.' },
   { icon: <EventAvailableIcon />, title: 'Monthly check-in', body: 'A one-minute update of your balances and a one-screen report card of your month.' },
 ];
@@ -133,7 +139,12 @@ export function HomePage() {
       {/* Private, free tools, help */}
       <Box component="section" sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(3, minmax(0, 1fr))' }, mb: { xs: 6, md: 9 } }}>
         {[
-          { to: '/security', icon: <LockIcon />, title: 'Private by design', body: 'No bank login, no tracking, no selling your data. You type in your numbers; you can export or delete them any time.' },
+          {
+            to: '/security',
+            icon: <LockIcon />,
+            title: 'Private by design',
+            body: "No bank linking, on purpose: it never asks for a bank login and doesn't import transactions. You type in your numbers once a month. No tracking, no selling your data, and you can export or delete everything any time.",
+          },
           { to: '/tools', icon: <CalculateIcon />, title: 'Free calculators', body: 'Early payoff, loan comparison, compound interest, DRIP and the cost of a habit. No account needed.' },
           { to: '/help', icon: <HelpOutlineIcon />, title: 'Help guide', body: 'How everything works, in plain words, with a search box for the question you have.' },
         ].map((card) => (

@@ -3,7 +3,12 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { PageHeader } from '../../components/PageHeader';
 import { useMe } from '../../auth/auth';
-import { SAMPLE_NAMES, SAMPLE_PERSON } from '../../lib/sampleData';
+import { SAMPLE_NAMES, SAMPLE_PERSON, SAMPLE_RETIREMENT, SAMPLE_WINDFALL, sampleInput } from '../../lib/sampleData';
+import { formatMonthFromNow } from '../../lib/dates';
+import { formatMoney } from '../../lib/money';
+import { project } from '../../lib/projection';
+import { monthNumberReached, WITHDRAWAL_RATE } from '../../lib/retirement';
+import { RANGE_POINTS } from '../dashboard/NetWorthCard';
 import { signUpPath } from '../../lib/signUp';
 import { useRecordVisit } from '../../lib/usage';
 import { buildTimeline } from '../../lib/timeline';
@@ -24,7 +29,22 @@ export function DemoPage() {
   const { data: me } = useMe();
   const [year, setYear] = useState(10);
   const { extra, setExtra, result, impact } = useSampleImpact();
-  const timeline = useMemo(() => buildTimeline(result, { debts: [...SAMPLE_NAMES.debts], goals: [...SAMPLE_NAMES.goals] }), [result]);
+  // Alex's retirement number and when the plan gets there; the demo is in today's dollars, like the number.
+  const retirementMonth = useMemo(() => monthNumberReached(result, SAMPLE_RETIREMENT.number), [result]);
+  const range = useMemo(() => {
+    const input = sampleInput(extra);
+    return { low: project({ ...input, returnAdjustment: -RANGE_POINTS }), high: project({ ...input, returnAdjustment: RANGE_POINTS }) };
+  }, [extra]);
+  const timeline = useMemo(
+    () =>
+      buildTimeline(result, {
+        debts: [...SAMPLE_NAMES.debts],
+        goals: [...SAMPLE_NAMES.goals],
+        windfalls: [SAMPLE_WINDFALL],
+        retirement: { amount: SAMPLE_RETIREMENT.number, month: retirementMonth },
+      }),
+    [result, retirementMonth],
+  );
 
   return (
     <>
@@ -48,7 +68,7 @@ export function DemoPage() {
 
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.7fr) minmax(0, 1fr)' } }}>
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
-          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars={false} />
+          <NetWorthCard result={result} year={year} onYearChange={setYear} todaysDollars range={range} />
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 1 }}>
@@ -58,7 +78,30 @@ export function DemoPage() {
             </CardContent>
           </Card>
         </Box>
-        <TimelineCard items={timeline} links={false} />
+        <Box sx={{ display: 'grid', gap: 3, minWidth: 0, gridTemplateColumns: 'minmax(0, 1fr)' }}>
+          <TimelineCard items={timeline} links={false} />
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Retirement number
+              </Typography>
+              <Typography variant="h5" component="p" sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                {formatMoney(SAMPLE_RETIREMENT.number)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                25 × {formatMoney(SAMPLE_RETIREMENT.spendingMonthly * 12)} a year of spending, in today's dollars.
+              </Typography>
+              <Typography sx={{ mt: 1.5 }} color={retirementMonth === null ? 'text.secondary' : 'success.main'}>
+                {retirementMonth === null
+                  ? `${SAMPLE_PERSON.name}'s investments don't reach it within 40 years on this plan.`
+                  : `${SAMPLE_PERSON.name}'s investments reach it around ${formatMonthFromNow(retirementMonth)}, at about ${SAMPLE_RETIREMENT.age + Math.round(retirementMonth / 12)}.`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+                Based on the {WITHDRAWAL_RATE}% rule of thumb. Move the slider above and watch it change.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
 
       {!me && (

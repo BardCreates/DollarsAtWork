@@ -38,10 +38,10 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: `Dollars at Work turns this month's plan into a picture of your future. You tell it what you take home and where each dollar goes. It shows you your debt-free date, when each goal is reached, and what your net worth could be up to 40 years from now.
 
 ## How the pieces fit
-- **Plan**: enter your monthly take-home pay and split it into categories. Three of them are built in: Savings, Debt and Investments.
-- **Savings, Debt and Invest**: each takes its monthly amount from Plan and puts it to work on your goals, your debts and your accounts. You can change that amount on the page itself.
+- **Plan**: enter your monthly take-home pay (or add each paycheck as an income source) and split it into categories. Three of them are built in: Savings, Debt and Investments. Plan is also where you add **one-time money**, like a tax refund.
+- **Savings, Debt and Invest**: each takes its monthly amount from Plan and puts it to work on your goals (including sinking funds for yearly bills), your debts (including 0% promotions) and your accounts (including what comes from your paycheck). You can change that amount on the page itself.
 - **Assets**: your home, car and other things you own, so your net worth counts them.
-- **Dashboard**: your net worth today and where your plan takes it. Check in once a month to keep the numbers true.
+- **Dashboard**: your net worth today and where your plan takes it, your money timeline and your retirement number. Check in once a month to keep the numbers true.
 - **What if**: try a different plan and compare it with yours, without changing anything.
 - **Tools**: quick calculators for one-off questions.
 
@@ -472,8 +472,8 @@ The installed app is the same site: your plan is always loaded fresh from your a
     title: 'Privacy and security',
     section: 'Account and billing',
     summary: 'No bank login, ever. You type in your numbers; we keep them safe and never sell them.',
-    keywords: 'security safe bank login plaid data sell privacy policy cookies',
-    body: `Dollars at Work never asks for your bank login. You tell it your numbers and it shows you where they lead. That means there are no bank connections to break, and nobody else can see your transactions through us.
+    keywords: 'security safe bank login plaid link linking connect import transactions ynab mint data sell privacy policy cookies',
+    body: `Dollars at Work never asks for your bank login, and that's on purpose: it doesn't link to your bank or import transactions, so it isn't a spending tracker like YNAB or Mint. You tell it your numbers (a check-in once a month keeps them current) and it shows you where they lead. That means there are no bank connections to break, and nobody else can see your transactions through us.
 
 - Your password is stored scrambled (hashed), so nobody can read it.
 - One cookie keeps you signed in. There are no advertising or tracking cookies.
