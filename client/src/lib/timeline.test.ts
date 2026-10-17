@@ -187,3 +187,15 @@ describe('one-time money on the roadmap', () => {
     expect(windfalls).toEqual([{ key: 'windfall-refund', kind: 'windfall', label: 'Tax refund arrives ($2,000)', month: 5 }]);
   });
 });
+
+describe('the retirement number on the roadmap', () => {
+  it('appears when set and not yet reached, and stays at the end when it never is', () => {
+    const result = project(plan({ months: 24, accounts: [cash] }));
+    const reached = buildTimeline(result, { debts: [], goals: [], retirement: { amount: 1_200_000, month: 18 } });
+    expect(reached.find((item) => item.kind === 'retirement')).toEqual({ key: 'retirement', kind: 'retirement', label: 'Retirement number ($1,200,000)', month: 18 });
+    const never = buildTimeline(result, { debts: [], goals: [], retirement: { amount: 1_200_000, month: null } });
+    expect(never[never.length - 1].kind).toBe('retirement');
+    const done = buildTimeline(result, { debts: [], goals: [], retirement: { amount: 1_000, month: 0 } });
+    expect(done.some((item) => item.kind === 'retirement')).toBe(false);
+  });
+});
