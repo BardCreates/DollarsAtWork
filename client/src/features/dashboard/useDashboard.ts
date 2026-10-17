@@ -13,7 +13,7 @@ import { useDebts, type DebtsData } from '../debt/debts';
 import { toAccountInput, useInvestments, type InvestmentsData } from '../invest/investments';
 import { planTotals, usePlan, type CategoryKind, type Plan } from '../plan/plan';
 import { useSavings, type SavingsData } from '../savings/savings';
-import { useNetWorth, type NetWorthData } from './networth';
+import { toWindfallInputs, useNetWorth, type NetWorthData } from './networth';
 
 /** The dashboard slider: 0 to 40 years. */
 export const DASHBOARD_YEARS = 40;
@@ -67,6 +67,7 @@ export function buildProjectionInput(data: DashboardData, todaysDollars: boolean
     debts: debts.debts.map((d) => ({ id: d.id, balance: d.balance, apr: d.apr, minPayment: d.minPayment, minimumOnly: d.minimumOnly })),
     debtStrategy: debts.strategy.toLowerCase() as DebtStrategy,
     accounts: investments.accounts.map(toAccountInput),
+    windfalls: toWindfallInputs(netWorth.windfalls ?? []),
     otherItems: netWorth.items.map((i) => ({ id: i.id, value: i.value, kind: (i.kind === 'Asset' ? 'asset' : 'liability') as 'asset' | 'liability', yearlyChange: i.yearlyChangePercent })),
     debtDoneDestination: netWorth.settings.debtDoneDestination.toLowerCase() as FreedMoneyDestination,
     savingsDoneDestination: netWorth.settings.savingsDoneDestination.toLowerCase() as FreedMoneyDestination,
@@ -90,9 +91,16 @@ export function useDashboardProjection(data: DashboardData, todaysDollars: boole
       debts: data.debts.debts.map((d) => d.name),
       goals: data.savings.goals.map((g) => g.name),
       minimumOnly: data.debts.debts.map((d) => d.minimumOnly),
+      windfalls: windfallNames(data),
     });
     return { result, timeline };
   }, [data, todaysDollars]);
+}
+
+/** Upcoming one-time money with the projection month it lands in, for the timeline. */
+export function windfallNames(data: DashboardData): { id: string; name: string; amount: number; month: number }[] {
+  const byId = new Map((data.netWorth.windfalls ?? []).map((w) => [w.id, w]));
+  return toWindfallInputs(data.netWorth.windfalls ?? []).map((w) => ({ id: w.id, name: byId.get(w.id)?.name ?? '', amount: w.amount, month: w.month }));
 }
 
 /** The asset and liability lines under the net worth card, read from the projection at a month. */

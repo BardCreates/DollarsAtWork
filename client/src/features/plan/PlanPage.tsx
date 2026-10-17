@@ -14,7 +14,9 @@ import { IMPACT_YEARS } from '../../lib/planImpact';
 import { AddCategoryForm } from './AddCategoryForm';
 import { AllocationDonut } from './AllocationDonut';
 import { CategoryRow } from './CategoryRow';
+import { useNetWorth } from '../dashboard/networth';
 import { FundingNudge } from './FundingNudge';
+import { WindfallsCard } from './WindfallsCard';
 import { ImpactPanel } from './ImpactPanel';
 import { plansDiffer, usePlanImpact } from './usePlanImpact';
 import {
@@ -72,6 +74,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
   const reorderCategories = useReorderCategories();
   const addCategory = useAddCategory();
   const saving = useIsMutating({ mutationKey: planMutationKey }) > 0;
+  const { data: netWorth } = useNetWorth();
 
   const [problem, setProblem] = useState<string | null>(null);
   const [deleted, setDeleted] = useState<{ category: Category; index: number } | null>(null);
@@ -260,6 +263,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
               <AllocationDonut plan={livePlan} />
             </CardContent>
           </Card>
+          {netWorth && <WindfallsCard windfalls={netWorth.windfalls} readOnly={readOnly} />}
         </Box>
       </Box>
 

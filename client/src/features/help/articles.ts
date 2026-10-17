@@ -77,7 +77,7 @@ Your hint settings are saved to your account, so they follow you to any device y
     title: 'Your monthly plan',
     section: 'Your plan',
     summary: 'Enter your take-home pay and give every dollar a job with categories.',
-    keywords: 'budget income categories remaining allocate allocation over-allocated percent drag reorder delete undo rent groceries donut',
+    keywords: 'budget income categories remaining allocate allocation over-allocated percent drag reorder delete undo rent groceries donut windfall tax refund bonus one-time lump sum',
     body: `The [Plan](/plan) page is where everything starts. Enter your **monthly take-home income** (your pay after taxes; if it varies, use a typical month), then split it into categories.
 
 ## Categories
@@ -96,6 +96,11 @@ These three are built in. They have a lock icon: you can change their amount and
 
 ## What to fund next
 When your plan skips a common step (a starter emergency fund, the full employer match, high-interest debt before more investing, or investing about 15%), a note under the totals names the next one. It's a suggestion; close it with the X. See [Where extra money should go first](/help/what-to-fund-first).
+
+## One-time money
+Expecting a tax refund, a bonus, or money from something you're selling? Add it under **One-time money** with the month it arrives and its job: **Pay down debt** (an extra payment to the debt your payoff order is working on), **Savings goals** (shared the way your monthly savings are), or **Investments** (split across your accounts).
+
+Each one shows what it does, such as "Debt-free 3 months sooner", compared with the same plan without it. It lands in the projection once, in its month; one that arrives this month counts from next month. Once the month has passed it's kept but no longer projected, so update your balances at the next check-in. Money a debt or the goals can't use follows your **Assumptions**, like any finished money. Up to 50.
 
 ## Changing your income
 When you change your income, category amounts stay the same and Remaining moves. If you'd rather keep the same proportions, press **Scale all to new income**.
@@ -269,7 +274,7 @@ The **Growth** tab shows what you put in, your employer's match, and growth over
 The chart stacks your savings, investments and other assets above the line and your debt below it, with your net worth drawn on top. A dashed line marks the year on the slider.
 
 ## Money timeline
-A dated roadmap of what's coming: each debt paid off, the day you're debt-free, each goal reached, and your next net-worth milestones. When a milestone is close, the mascot celebrates. Tap the mascot any time for confetti.
+A dated roadmap of what's coming: each debt paid off, the day you're debt-free, each goal reached, one-time money arriving, and your next net-worth milestones. When a milestone is close, the mascot celebrates. Tap the mascot any time for confetti.
 
 ## Homes, cars and other things
 Your home, car and anything else you own live on the [Assets](/assets) page. Under the net worth figure, **Home** is your home's value and **Other** is everything else you own there; if you've recorded something you owe outside the Debt page, a second line splits your debts into **Debt page** and **Other**. Both "Other" words link to the Assets page.
@@ -428,7 +433,7 @@ If your trial or subscription ends without payment, nothing is deleted. Everythi
 - After five wrong passwords, sign-in locks for 15 minutes.
 
 ## Download your data
-Under **Your data**, download everything you've entered (your plan, goals, debts, accounts and net-worth history) as spreadsheets (CSV) or JSON.
+Under **Your data**, download everything you've entered (your plan, goals, debts, accounts, assets, one-time money and net-worth history) as spreadsheets (CSV) or JSON.
 
 ## Delete your account
 **Delete my account** permanently removes your account and everything in it, and cancels any subscription straight away, with no refund for unused time. Download your data first if you want a copy. This can't be undone.`,

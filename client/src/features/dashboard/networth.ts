@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { localToday } from '../../lib/dates';
+import { localToday, monthsUntilYearMonth } from '../../lib/dates';
+import type { WindfallInput } from '../../lib/projection';
 import { debtsQueryKey } from '../debt/debts';
 import { investmentsQueryKey } from '../invest/investments';
 import { savingsQueryKey } from '../savings/savings';
@@ -58,10 +59,43 @@ export interface Snapshot {
   debts: number | null;
 }
 
+export type WindfallDestination = 'Debt' | 'Savings' | 'Investments';
+
+export const windfallDestinationLabels: Record<WindfallDestination, string> = {
+  Debt: 'Pay down debt',
+  Savings: 'Savings goals',
+  Investments: 'Investments',
+};
+
+/** One-time money expected in a month: a tax refund, a bonus, something sold. */
+export interface Windfall {
+  id: string;
+  name: string;
+  amount: number;
+  /** "2027-03": the month it arrives. */
+  month: string;
+  destination: WindfallDestination;
+}
+
+export type WindfallFields = Omit<Windfall, 'id'>;
+
 export interface NetWorthData {
   settings: Settings;
   items: OtherItem[];
   snapshots: Snapshot[];
+  windfalls: Windfall[];
+}
+
+/**
+ * Windfalls as the engine takes them: one landing this month counts in month 1 (the next step of the projection),
+ * and one whose month has gone by is left out.
+ */
+export function toWindfallInputs(windfalls: Windfall[], from: Date = new Date()): WindfallInput[] {
+  return windfalls.flatMap((w) => {
+    const months = monthsUntilYearMonth(w.month, from);
+    if (months === null || months < 0) return [];
+    return [{ id: w.id, month: Math.max(1, months), amount: w.amount, destination: w.destination.toLowerCase() as WindfallInput['destination'] }];
+  });
 }
 
 export type OtherItemFields = Omit<OtherItem, 'id' | 'sortOrder'>;
@@ -109,6 +143,33 @@ export function useDeleteOtherItem() {
     onSuccess: (_, id) => change((data) => ({ ...data, items: data.items.filter((i) => i.id !== id) })),
   });
 }
+
+export function useAddWindfall() {
+  const change = useNetWorthCache();
+  return useMutation({
+    mutationFn: (windfall: WindfallFields) => api.post<Windfall>('/networth/windfalls', windfall),
+    onSuccess: (windfall) => change((data) => ({ ...data, windfalls: sortWindfalls([...data.windfalls, windfall]) })),
+  });
+}
+
+export function useSaveWindfall() {
+  const change = useNetWorthCache();
+  return useMutation({
+    mutationFn: ({ id, windfall }: { id: string; windfall: WindfallFields }) => api.put<Windfall>(`/networth/windfalls/${id}`, windfall),
+    onSuccess: (windfall) => change((data) => ({ ...data, windfalls: sortWindfalls(data.windfalls.map((w) => (w.id === windfall.id ? windfall : w))) })),
+  });
+}
+
+export function useDeleteWindfall() {
+  const change = useNetWorthCache();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/networth/windfalls/${id}`),
+    onSuccess: (_, id) => change((data) => ({ ...data, windfalls: data.windfalls.filter((w) => w.id !== id) })),
+  });
+}
+
+/** Soonest first, as the server lists them. "2027-03" sorts as text. */
+const sortWindfalls = (windfalls: Windfall[]) => [...windfalls].sort((a, b) => a.month.localeCompare(b.month));
 
 export interface BalanceUpdate {
   id: string;
