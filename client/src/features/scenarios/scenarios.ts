@@ -106,8 +106,8 @@ export function useComparison(data: DashboardData, scenarios: Scenario[]): Compa
     const base = baseInputs(data);
 
     const run = (inputs: ScenarioInputs) => {
-      // Actual future dollars, the same as the dashboard shows before "today's dollars" is switched on.
-      const result = project(buildProjectionInput(withInputs(data, inputs), false));
+      // Today's dollars, the same as the dashboard shows by default (interest paid stays in actual dollars).
+      const result = project(buildProjectionInput(withInputs(data, inputs), true));
       return {
         metrics: summarizeProjection(result),
         netWorthByYear: Array.from({ length: DASHBOARD_YEARS + 1 }, (_, year) => result.points[year * 12].netWorth),

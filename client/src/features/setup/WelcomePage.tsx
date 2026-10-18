@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -140,6 +140,19 @@ export function WelcomePage() {
   const [problem, setProblem] = useState<string | null>(null);
   const onError = (e: unknown) => setProblem(errorMessage(e));
 
+  // Reaching the amounts step (by Next, Skip, Back/Forward or a link): start the Debt amount at the debts' minimums,
+  // so the plan covers them from day one. Again whenever the minimums change (a debt added after going back), and
+  // only ever raising it, so a lower amount chosen on purpose for the same debts stays.
+  const prefilledFor = useRef<number | null>(null);
+  const canEdit = !!me?.access.hasFullAccess;
+  const minimumsDue = (debts.data?.debts ?? []).filter((d) => d.balance > 0).reduce((sum, d) => sum + d.minPayment, 0);
+  const debtNow = debtAmount.category?.amount;
+  useEffect(() => {
+    if (step < 3 || !canEdit || !debts.data || debtNow === undefined || prefilledFor.current === minimumsDue) return;
+    prefilledFor.current = minimumsDue;
+    if (minimumsDue > 0 && debtNow < minimumsDue) debtAmount.set(minimumsDue, (e) => setProblem(errorMessage(e)));
+  }, [step, canEdit, debts.data, debtNow, minimumsDue, debtAmount]);
+
   if (plan.isPending) {
     return (
       <Box sx={{ display: 'grid', placeItems: 'center', py: 8 }}>
@@ -168,8 +181,6 @@ export function WelcomePage() {
       navigate('/');
       return;
     }
-    // Leaving the debts step: start the Debt amount at the minimums, so the plan covers them from day one.
-    if (step === 2 && !readOnly && minimums > 0 && (debtAmount.category?.amount ?? 0) < minimums) debtAmount.set(minimums);
     goTo(step + 1);
   };
 
@@ -220,7 +231,7 @@ export function WelcomePage() {
                 What do you take home each month?
               </Typography>
               <Typography color="text.secondary" sx={{ mb: 3 }}>
-                Your pay after taxes and anything taken out for a 401(k). If it varies, use a typical month.
+                Your pay after taxes and anything taken out for a 401(k). If it varies, use a careful, lower-than-usual month.
               </Typography>
               <Box sx={{ maxWidth: 320 }}>
                 <IncomeField income={income} readOnly={readOnly} onError={onError} />

@@ -78,10 +78,10 @@ Your hint settings are saved to your account, so they follow you to any device y
     section: 'Your plan',
     summary: 'Enter your take-home pay and give every dollar a job with categories.',
     keywords: 'budget income categories remaining allocate allocation over-allocated percent drag reorder delete undo rent groceries donut windfall tax refund bonus one-time lump sum two incomes paycheck biweekly weekly partner second job freelance irregular variable pay',
-    body: `The [Plan](/plan) page is where everything starts. Enter your **monthly take-home income** (your pay after taxes; if it varies, use a typical month), then split it into categories.
+    body: `The [Plan](/plan) page is where everything starts. Enter your **monthly take-home income** (your pay after taxes; if it varies, use a careful, lower-than-usual month), then split it into categories.
 
 ## Two paychecks, or pay that varies
-Under the income box, press **Two paychecks, or pay that varies?** to add **income sources**: your paycheck, a partner's, a second job, freelance work. For each, enter what you take home and how often: every two weeks, twice a month, weekly, monthly, yearly, or **it varies**. Your monthly income becomes their average month added up (26 two-weekly paychecks spread over 12 months, for example), and the income box follows them; change it by changing the sources.
+Under the income box, press **Two paychecks, or pay that varies?** to add **income sources**: your paycheck, a partner's, a second job, freelance work. For each, enter what you take home and how often: every two weeks, twice a month, weekly, monthly, yearly, or **it varies**. Your monthly income becomes their average month added up (26 two-weekly paychecks spread over 12 months, for example), and the income box follows them; change it by changing the sources. The first source replaces the number you typed, so add your own paycheck as a source too. When the total changes, Plan offers to scale your categories to match.
 
 If your pay varies, enter a careful month, lower than usual, and add anything extra as **one-time money** when you know it's coming. Paid every two weeks? Two months a year have a third paycheck; you can plan on two a month and add the extra ones as one-time money instead. Delete every source to go back to typing one number.
 
@@ -105,7 +105,7 @@ When your plan skips a common step (a starter emergency fund, the full employer 
 ## One-time money
 Expecting a tax refund, a bonus, or money from something you're selling? Add it under **One-time money** with the month it arrives and its job: **Pay down debt** (an extra payment to the debt your payoff order is working on), **Savings goals** (shared the way your monthly savings are), or **Investments** (split across your accounts).
 
-Each one shows what it does, such as "Debt-free 3 months sooner", compared with the same plan without it. It lands in the projection once, in its month; one that arrives this month counts from next month. Once the month has passed it's kept but no longer projected, so update your balances at the next check-in. Money a debt or the goals can't use follows your **Assumptions**, like any finished money. Up to 50.
+Each one shows what it does, such as "Debt-free 3 months sooner", compared with the same plan without it. It lands in the projection once, in its month; one that arrives this month counts from next month. Once the month has passed it's kept but no longer projected, so update your balances at the next check-in. Money a debt or the goals can't use follows your **Assumptions**, like any finished money, except that it's never dropped: if that setting is **Remaining**, the one-time money is invested instead, since it isn't monthly spending money. Editing one after its month has passed (to rename it, say) keeps its month. Up to 50.
 
 ## Changing your income
 When you change your income, category amounts stay the same and Remaining moves. If you'd rather keep the same proportions, press **Scale all to new income**.
@@ -169,7 +169,7 @@ You can have up to 50 goals. A target date can't be one that has already passed.
 ## Sinking funds for bills that come back
 Car insurance every December, gifts every year, registration every two years: turn on **It's for a bill that comes back**, pick how often, and set the **next due date** and the bill's amount as the target. Saving a little each month means the bill doesn't land all at once.
 
-On each due date the target is paid out of the goal, and it starts filling again for next time. The goal shows **Ready for the bill** once it has enough, or how much more a month it needs before the next due date. A sinking fund never counts as done, so its money doesn't move on to other goals. If a bill comes due before the fund is full, the projection pays what's there. Update the balance at your check-in after you pay it.
+On each due date the target is paid out of the goal, and it starts filling again for next time. The goal shows **Ready for the bill** once it has enough, or how much more a month it needs before the next due date. Once the fund is full, its monthly money goes on to your next goal (or wherever finished money goes) until the bill is paid, and then the fund takes it back to fill up again. A bill due later this month still counts: it's paid from what's saved. If a bill comes due before the fund is full, the projection pays what's there. Update the balance at your check-in after you pay it.
 
 ## Priority or Percent
 - **Priority** fills goals from the top down. Drag goals to change the order.
@@ -197,7 +197,7 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
 - **Balance**: what you owe today.
 - **APR**: the yearly interest rate, like 19.99.
 - **Minimum payment**: what you must pay each month. For a mortgage, enter the principal and interest only, not the escrow part (taxes and insurance), since that never touches the balance.
-- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. Avalanche orders debts by the rate they charge that month. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
+- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. With Avalanche and a promotion, the projection tries two orders (by today's rate, and with the promotion ranked by the APR that follows) and keeps the one that pays less interest. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
 - **Minimum only**: on by default for a mortgage. The debt is paid on its own schedule and still counts against your net worth, but your extra money skips it and "debt-free" means everything else. Turn it on for any long loan you'd rather not snowball, or off to throw your extra at the mortgage too.
 
 You can have up to 50 debts. If a minimum payment doesn't cover the month's interest, the form warns you as you type: that debt would grow forever. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.
@@ -209,7 +209,7 @@ Every month, each debt gets its minimum. Whatever is left of your Debt amount go
 
 ## Snowball, Avalanche or Custom
 - **Snowball**: smallest balance first, for quick wins.
-- **Avalanche**: highest APR first, which costs the least interest.
+- **Avalanche**: highest APR first, which costs the least interest. With a 0% promotion, it also tries paying that balance first (by the APR that follows) and keeps whichever order costs less.
 - **Custom**: your own order. Drag the debts to set it.
 
 ## The numbers
@@ -251,7 +251,7 @@ The house goes here as something you own. The mortgage goes on the [Debt](/debt)
 - **Balance**: what it's worth today. Update it whenever you check.
 - **Expected yearly return**: 7% unless you change it. It's an assumption, not a promise.
 
-- **Taken from your paycheck** (401(k), HSA and other): what already goes in from each paycheck, per month. Your take-home pay is after this, so it's added on top of your plan's Investments amount, not taken from it. Your Investments amount is only what you put in yourself.
+- **Taken from your paycheck** (401(k), HSA and other): what already goes in from each paycheck, per month. Your take-home pay is after this, so it's added on top of your plan's Investments amount, not taken from it. Your Investments amount is only what you put in yourself. Because it's usually a percent of your pay, the projection raises it with your yearly raise.
 
 You can have up to 50 accounts.
 
@@ -259,7 +259,7 @@ You can have up to 50 accounts.
 If your employer adds money when you contribute, fill in the match. "50% match up to 6%" means **Match** 50 and **Up to** 6: your employer adds half of what you put in, on contributions up to 6% of your salary. Add your **yearly salary before taxes** so the limit is worked out the way your employer does it; left empty, your take-home pay is used, which shows a smaller match. Paycheck money and your plan's share both count toward the match, and the match is added on top in every projection.
 
 ## Yearly limits
-The IRS caps what you can put into some accounts each year. For 2026: $24,500 for a 401(k) ($32,500 at 50 or older), $7,500 for IRAs and Roth IRAs together ($8,600 at 50 or older), and $4,400 for an HSA with self-only coverage ($8,750 family). If your plan would put more than that in, the page warns you so you can move the extra elsewhere. Employer match doesn't count toward your own limit.
+The IRS caps what you can put into some accounts each year. For 2026: $24,500 for a 401(k) ($32,500 at 50 or older, $35,750 at 60 to 63), $7,500 for IRAs and Roth IRAs together ($8,600 at 50 or older), and $4,400 for an HSA with self-only coverage ($8,750 family, plus $1,000 at 55 or older). If your plan would put more than that in, the page warns you so you can move the extra elsewhere. The limits are per person: when only two accounts added together are over, the page says so, since that's fine if they belong to two people. A 401(k) employer match doesn't count toward your own limit, but money your employer puts in an HSA does, and the check only counts what you put in, so leave room for it.
 
 ## Taxes
 Projections don't take taxes out. A 401(k) or traditional IRA is taxed when you withdraw, a Roth isn't, and a brokerage account is taxed on gains along the way, so the same balance can be worth different amounts to you.
@@ -288,7 +288,7 @@ The chart stacks your savings, investments and other assets above the line and y
 A dated roadmap of what's coming: each debt paid off, the day you're debt-free, each goal reached, one-time money arriving, and your next net-worth milestones. When a milestone is close, the mascot celebrates. Tap the mascot any time for confetti.
 
 ## Retirement number
-The **Retirement number** card works out how much invested money could pay for your retirement: about 25 times a year of what you'd spend then, less any Social Security or pension. That's the common **4% rule**: spending about 4% of your investments in the first year, then the same amount raised with inflation, has usually lasted 30 years in US market history. It's a guide, not a promise.
+The **Retirement number** card works out how much invested money could pay for your retirement: about 25 times a year of what you'd spend then, less any Social Security or pension. That's the common **4% rule**: spending about 4% of your investments in the first year, then the same amount raised with inflation, has usually lasted 30 years in US market history. It's a guide, not a promise. Money in a traditional 401(k) or IRA is taxed when you take it out, so if most of yours is there, plan to spend a little less than the number suggests, or aim a little higher.
 
 Press **Set it up** to add the year you were born (for your age on each date), the age you'd like to retire, what you expect to spend each month (leave it empty to use your everyday categories on Plan) and other income then. Everything is in today's dollars. The card shows when your investments reach the number and, with an age set, about how much more a month would get you there in time. It's on your money timeline too.
 
@@ -308,7 +308,7 @@ If your plan is over-allocated, your Debt amount doesn't cover your minimum paym
     summary: "What the Today's dollars switch does, and how to change inflation, raises and where finished money goes.",
     keywords: 'inflation real value purchasing power raise salary assumptions settings destination remaining after debt after goals',
     body: `## Today's dollars
-A dollar in 20 years won't buy what a dollar buys now. **Today's dollars** on the Dashboard shows future amounts in what they'd be worth today, after inflation. It starts switched on, because 40 years of inflation make future amounts look far bigger than they feel: at 3% a year, $1 million in 40 years buys about what $307,000 buys today. Switch it off to see the actual dollar amounts your accounts would show; those figures are marked "future dollars".
+A dollar in 20 years won't buy what a dollar buys now. **Today's dollars** on the Dashboard shows future amounts in what they'd be worth today, after inflation. It starts switched on, because 40 years of inflation make future amounts look far bigger than they feel: at 3% a year, $1 million in 40 years buys about what $307,000 buys today. Switch it off to see the actual dollar amounts your accounts would show; those figures are marked "future dollars". The Plan page, What if, your emails and the check-in recap use today's dollars too. The Invest page shows future dollars, so its balances match what your accounts will say, and it's labelled that way.
 
 It only changes how numbers are shown, not your plan. It's on again each time you open the Dashboard.
 
@@ -449,7 +449,7 @@ If your trial or subscription ends without payment, nothing is deleted. Everythi
 - After five wrong passwords, sign-in locks for 15 minutes.
 
 ## Download your data
-Under **Your data**, download everything you've entered (your plan, goals, debts, accounts, assets, one-time money and net-worth history) as spreadsheets (CSV) or JSON.
+Under **Your data**, download everything you've entered (your plan, income sources, goals, debts, accounts, assets, one-time money, what-if scenarios and net-worth history) as spreadsheets (CSV) or JSON.
 
 ## Delete your account
 **Delete my account** permanently removes your account and everything in it, and cancels any subscription straight away, with no refund for unused time. Download your data first if you want a copy. This can't be undone.`,

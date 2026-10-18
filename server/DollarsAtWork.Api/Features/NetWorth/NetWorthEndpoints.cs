@@ -212,7 +212,7 @@ public static class NetWorthEndpoints
         if (windfall is null)
             return WindfallMissing();
 
-        var check = Apply(windfall, request, clock.GetUtcNow());
+        var check = Apply(windfall, request, clock.GetUtcNow(), current: windfall.Month);
         if (check.Failed)
             return check.ToResult();
 
@@ -234,9 +234,10 @@ public static class NetWorthEndpoints
 
     /// <summary>
     /// Copies a request onto a windfall. The month may be this month or later (a month back is allowed too, since the
-    /// browser's calendar can be a day behind UTC's), up to the end of the projection.
+    /// browser's calendar can be a day behind UTC's), up to the end of the projection. An edit that keeps the month it
+    /// already has is fine even after that month has gone by (renaming one that has arrived, say).
     /// </summary>
-    private static Validation Apply(Windfall windfall, SaveWindfallRequest request, DateTimeOffset now)
+    private static Validation Apply(Windfall windfall, SaveWindfallRequest request, DateTimeOffset now, DateOnly? current = null)
     {
         var check = new Validation();
         windfall.Name = check.Name("name", request.Name);
@@ -248,7 +249,7 @@ public static class NetWorthEndpoints
         var thisMonth = new DateOnly(now.Year, now.Month, 1);
         if (!DateOnly.TryParseExact((request.Month ?? "") + "-01", "yyyy-MM-dd", out var month))
             check.Add("month", "Pick the month the money arrives.");
-        else if (month < thisMonth.AddMonths(-1))
+        else if (month < thisMonth.AddMonths(-1) && month != current)
             check.Add("month", "That month has passed. Pick this month or a later one.");
         else if (month > thisMonth.AddYears(MaxWindfallYears))
             check.Add("month", $"Pick a month within the next {MaxWindfallYears} years.");

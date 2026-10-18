@@ -51,7 +51,7 @@ export function ImpactPanel({ state, changed, freedMonthly, onCompareFromHere }:
     state.status === 'ready'
       ? [
           { label: 'Debt-free', ...debtFreeLine(state.impact.debtFree) },
-          { label: `Net worth in ${IMPACT_YEARS} years`, ...netWorthLine(state.impact.netWorth) },
+          { label: `Net worth in ${IMPACT_YEARS} years (today's dollars)`, ...netWorthLine(state.impact.netWorth) },
         ]
       : null;
 

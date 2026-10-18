@@ -33,7 +33,8 @@ export function usePlanImpact(baseline: Plan, live: Plan): PlanImpactState {
 
   return useMemo(() => {
     if (!data) return { status: isPending ? 'loading' : 'unavailable' };
-    const run = (plan: Plan) => project(buildProjectionInput({ ...data, plan }, false));
+    // Today's dollars, like the dashboard's default, so the two show the same 10-year number.
+    const run = (plan: Plan) => project(buildProjectionInput({ ...data, plan }, true));
     return {
       status: 'ready',
       impact: comparePlans(run(baseline), run(live)),

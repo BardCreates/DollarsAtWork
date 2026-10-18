@@ -22,8 +22,16 @@ const schema = z.object({
   expectedReturn: z.string().refine(optionalPercent(50), 'Enter a yearly return between 0% and 50%.'),
   matchPercent: z.string().refine(optionalPercent(500), 'Enter a match between 0% and 500%.'),
   matchLimitPercent: z.string().refine(optionalPercent(100), 'Enter a limit between 0% and 100%.'),
-  matchSalaryYearly: z.string().refine(isAmount, 'Enter your yearly salary in dollars.'),
-  payrollMonthly: z.string().refine(isAmount, 'Enter a monthly amount in dollars.'),
+  matchSalaryYearly: z.string(),
+  payrollMonthly: z.string(),
+}).superRefine((values, ctx) => {
+  // Only fields on screen are checked: a hidden one (no match, or an account type without paycheck money) is ignored.
+  if (values.matchPercent.trim() !== '' && !isAmount(values.matchSalaryYearly)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['matchSalaryYearly'], message: 'Enter your yearly salary in dollars.' });
+  }
+  if (payrollTypes.includes(values.type) && !isAmount(values.payrollMonthly)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['payrollMonthly'], message: 'Enter a monthly amount in dollars.' });
+  }
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -81,7 +89,7 @@ export function AccountDialog({ open, account, onClose }: { open: boolean; accou
   const guardedClose = useGuardedClose(open, isDirty, onClose);
 
   const onSubmit = handleSubmit((values) => {
-    const salary = parseMoneyInput(values.matchSalaryYearly) ?? 0;
+    const salary = values.matchPercent.trim() === '' ? 0 : (parseMoneyInput(values.matchSalaryYearly) ?? 0);
     const fields: AccountFields = {
       name: values.name,
       type: values.type,

@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Alert, AlertTitle, Button } from '@mui/material';
 import { nextFundingStep, type FundingStep } from '../../lib/fundingOrder';
+import { formatYearMonth } from '../../lib/dates';
 import { formatMoney } from '../../lib/money';
-import { planExpectedReturn } from '../../lib/planImpact';
 import { toDebtInput } from '../debt/debts';
+import { planExpectedReturn } from '../../lib/planImpact';
 import { useDashboardData } from '../dashboard/useDashboard';
 import type { Plan } from './plan';
 
@@ -29,10 +30,15 @@ export function FundingNudge({ plan }: { plan: Plan }) {
       savingsMonthly: amountOf(plan, 'Savings'),
       investmentsMonthly: investing,
       savedToday: data.savings.goals.reduce((sum, g) => sum + g.currentBalance, 0),
-      // A debt on a promotional rate is judged by the rate it charges now.
+      // A promotion its minimums clear in time costs only the promotional rate; one they don't is judged by the APR
+      // that follows, since that's what the balance left at the end will cost (the same test the payoff order uses).
       debts: data.debts.debts.map((d) => {
-        const engine = toDebtInput(d);
-        return { name: d.name, balance: d.balance, apr: engine.promoMonths ? (engine.promoApr ?? 0) : d.apr, minimumOnly: d.minimumOnly };
+        const promoMonths = toDebtInput(d).promoMonths ?? 0;
+        if (promoMonths <= 0) return { name: d.name, balance: d.balance, apr: d.apr, minimumOnly: d.minimumOnly };
+        const clearedInTime = d.balance - d.minPayment * promoMonths <= 0.005;
+        return clearedInTime
+          ? { name: d.name, balance: d.balance, apr: d.promoApr ?? 0, minimumOnly: d.minimumOnly }
+          : { name: d.name, balance: d.balance, apr: d.apr, minimumOnly: d.minimumOnly, promoEndsMonth: d.promoEndsMonth ?? undefined };
       }),
       accounts: accounts.map((a) => {
         const fromPlan = (investing * a.sharePercent) / sharesTotal;
@@ -84,12 +90,12 @@ function wording(step: FundingStep): { title: string; body: string } {
     case 'high-interest':
       return {
         title: `Next step: ${step.debt} before more investing`,
-        body: `${step.debt} charges ${Number(step.apr.toFixed(2))}%. Each extra dollar paid on it saves that interest for sure, while investing is expected to earn about ${Number(step.expectedReturn.toFixed(1))}%. Many people keep the match and move the rest of their investing to Debt until it's gone.`,
+        body: `${step.debt} ${step.promoEndsMonth ? `charges ${Number(step.apr.toFixed(2))}% after its promotion ends in ${formatYearMonth(step.promoEndsMonth)}, and its minimums won't clear it by then` : `charges ${Number(step.apr.toFixed(2))}%`}. Each extra dollar paid on it saves that interest for sure, while investing is expected to earn about ${Number(step.expectedReturn.toFixed(1))}%. Many people keep the match and move the rest of their investing to Debt until it's gone.`,
       };
     case 'retirement':
       return {
         title: 'Next step: invest about 15%',
-        body: `You're investing about ${Math.round(step.sharePercent)}% of your take-home pay. Many planners suggest about 15% for the long run, which would be ${whole(step.target)} a month. Even a little more each year helps.`,
+        body: `You're investing about ${Math.round(step.sharePercent)}% of your ${step.ofSalary ? 'pay before taxes' : 'take-home pay'}. Many planners suggest about 15% for the long run, which would be ${whole(step.target)} a month. Even a little more each year helps.`,
       };
   }
 }

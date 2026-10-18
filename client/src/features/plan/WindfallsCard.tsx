@@ -20,7 +20,8 @@ function useWindfallImpacts(): Map<string, PlanImpact> {
   return useMemo(() => {
     const impacts = new Map<string, PlanImpact>();
     if (!data) return impacts;
-    const input = buildProjectionInput(data, false);
+    // Today's dollars, like the dashboard's default.
+    const input = buildProjectionInput(data, true);
     const withAll = project(input);
     for (const windfall of input.windfalls ?? []) {
       const without = project({ ...input, windfalls: (input.windfalls ?? []).filter((w) => w.id !== windfall.id) });
@@ -34,7 +35,7 @@ function impactText(windfall: Windfall, impact: PlanImpact | undefined): string 
   if (!impact) return null;
   const sooner = impact.debtFree.monthsSooner;
   if (windfall.destination === 'Debt' && sooner !== null && sooner > 0) return `Debt-free ${formatDuration(sooner)} sooner`;
-  if (Math.round(impact.netWorth.change) > 0) return `+${whole(impact.netWorth.change)} net worth in ${IMPACT_YEARS} years`;
+  if (Math.round(impact.netWorth.change) > 0) return `+${whole(impact.netWorth.change)} net worth in ${IMPACT_YEARS} years, in today's dollars`;
   return null;
 }
 

@@ -115,9 +115,14 @@ function PlanEditor({ plan }: { plan: Plan }) {
   const { allocated } = planTotals(plan);
   const income = plan.monthlyIncome;
 
-  const changeIncome = (next: number) => {
-    const plannedAgainst = scaleFrom ?? income;
+  /** Offers "Scale all to new income" when the income moves, measured from the income the categories were planned against. */
+  const noteIncomeChange = (from: number, next: number) => {
+    const plannedAgainst = scaleFrom ?? from;
     setScaleFrom(plannedAgainst > 0 && allocated > 0 && next > 0 && next !== plannedAgainst ? plannedAgainst : null);
+  };
+
+  const changeIncome = (next: number) => {
+    noteIncomeChange(income, next);
     updateIncome.mutate(next, { onError });
   };
 
@@ -155,7 +160,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
           }}
         >
           <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-            <IncomeBox income={income} readOnly={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} />
+            <IncomeBox income={income} readOnly={readOnly} onCommit={changeIncome} onDraft={setDraft('income')} onSourcesChanged={noteIncomeChange} />
           </Box>
           <Figure
             label="Allocated"
@@ -180,28 +185,23 @@ function PlanEditor({ plan }: { plan: Plan }) {
       </Card>
 
       {scaleFrom !== null && (
-        <Alert
-          severity="info"
-          sx={{ mb: 3 }}
-          onClose={() => setScaleFrom(null)}
-          action={
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                color="inherit"
-                size="small"
-                variant="outlined"
-                disabled={readOnly || scaleCategories.isPending}
-                onClick={() => scaleCategories.mutate(scaleFrom, { onError, onSuccess: () => setScaleFrom(null) })}
-              >
-                Scale all to new income
-              </Button>
-              <Button color="inherit" size="small" onClick={() => setScaleFrom(null)}>
-                Keep amounts
-              </Button>
-            </Box>
-          }
-        >
+        <Alert severity="info" sx={{ mb: 3 }} onClose={() => setScaleFrom(null)}>
           Your income changed from {formatMoney(scaleFrom)} to {formatMoney(income)}. Category amounts stayed the same.
+          {/* The buttons sit under the message, so a phone doesn't squeeze it into a narrow column. */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+            <Button
+              color="inherit"
+              size="small"
+              variant="outlined"
+              disabled={readOnly || scaleCategories.isPending}
+              onClick={() => scaleCategories.mutate(scaleFrom, { onError, onSuccess: () => setScaleFrom(null) })}
+            >
+              Scale all to new income
+            </Button>
+            <Button color="inherit" size="small" onClick={() => setScaleFrom(null)}>
+              Keep amounts
+            </Button>
+          </Box>
         </Alert>
       )}
 

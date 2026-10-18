@@ -139,6 +139,27 @@ describe('debt rollovers', () => {
   });
 });
 
+describe('debt rollovers with one-time money', () => {
+  it('reads the monthly amount from a month without one-time money', () => {
+    // Visa 3,000 at 0%, min 100; Car 10,000 at 0%, min 200; 600 a month, snowball; 2,000 windfall to debt in month 2.
+    // Month 1: Visa 100 + 300 extra = 400 (2,600 left). Month 2: Visa gets 400 + 2,000 = 2,400 (200 left).
+    // Month 3: Visa is cleared. Month 2 holds the windfall, so the amount is read from month 1: 400 (not 2,400).
+    const result = project(
+      plan({
+        months: 6,
+        debtMonthly: 600,
+        debts: [
+          { id: 'visa', balance: 3_000, apr: 0, minPayment: 100 },
+          { id: 'car', balance: 10_000, apr: 0, minPayment: 200 },
+        ],
+        windfalls: [{ id: 'w', month: 2, amount: 2_000, destination: 'debt' }],
+      }),
+    );
+    const [visa] = debtRollovers(result, [100, 200], 'investments', [], [2]);
+    expect(visa).toEqual({ index: 0, month: 3, amount: 400, target: { kind: 'items', indexes: [1] } });
+  });
+});
+
 describe('goal rollovers', () => {
   it('priority mode: a full goal passes its money to the next goal down the list', () => {
     // Savings 500 a month. Emergency: target 1,000, has 400. Car: target 5,000, has 0.
@@ -185,6 +206,44 @@ describe('goal rollovers', () => {
     const result = project(plan({ savingsMonthly: 500, goals: [{ id: 'g', target: 600, balance: 0 }] }));
     expect(goalRollovers(result, 'priority', 'debt')).toEqual([
       { index: 0, month: 2, amount: 500, target: { kind: 'destination', destination: 'debt' } },
+    ]);
+  });
+
+  it('reads the monthly amount from a month without one-time money', () => {
+    // Goals 2,000 and 5,000; 200 a month; 800 windfall to savings in month 5.
+    // Months 1–4: 200 each → 800. Month 5: 200 + 800 = 1,000 → 1,800. Month 6: 200 → 2,000, full.
+    // Month 5 holds the windfall, so the monthly amount is read from month 4: 200 (not 1,000).
+    const result = project(
+      plan({
+        months: 8,
+        savingsMonthly: 200,
+        goals: [
+          { id: 'a', target: 2_000, balance: 0 },
+          { id: 'b', target: 5_000, balance: 0 },
+        ],
+        windfalls: [{ id: 'w', month: 5, amount: 800, destination: 'savings' }],
+      }),
+    );
+    expect(goalRollovers(result, 'priority', 'investments', [5])).toEqual([
+      { index: 0, month: 6, amount: 200, target: { kind: 'items', indexes: [1] } },
+    ]);
+  });
+
+  it('marks a sinking fund as moving its money only until the bill is due', () => {
+    // Insurance 600 due in month 12, every 12 months; then a 5,000 goal. 200 a month: insurance full in month 3
+    // (200, 400, 600), having received 200 in month 2.
+    const result = project(
+      plan({
+        months: 6,
+        savingsMonthly: 200,
+        goals: [
+          { id: 'ins', target: 600, balance: 0, repeat: { firstMonth: 12, everyMonths: 12 } },
+          { id: 'car', target: 5_000, balance: 0 },
+        ],
+      }),
+    );
+    expect(goalRollovers(result, 'priority', 'investments', [], [true, false])).toEqual([
+      { index: 0, month: 3, amount: 200, target: { kind: 'items', indexes: [1] }, untilDue: true },
     ]);
   });
 

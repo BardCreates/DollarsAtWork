@@ -70,7 +70,28 @@ describe('nextFundingStep', () => {
     const step = nextFundingStep(
       onTrack({ investmentsMonthly: 400, accounts: [{ name: 'Roth', monthly: 400, fromPlan: 400, matchPercent: null, matchLimitPercent: null, salaryMonthly: null }] }),
     );
-    expect(step).toEqual({ kind: 'retirement', sharePercent: 8, target: 750 });
+    expect(step).toEqual({ kind: 'retirement', sharePercent: 8, target: 750, ofSalary: false });
+  });
+
+  it('measures the 15% against pay before taxes when an account knows the salary', () => {
+    // Paycheck 750 into a 401(k), salary 7,500 a month, take-home 5,000. 750 of 5,000 would look like 15%, but of
+    // 7,500 it's 10%; 15% of 7,500 is 1,125. Match 50% up to 6% of 7,500 = 450 cap, met by the 750.
+    const step = nextFundingStep(onTrack({ accounts: [{ name: '401(k)', monthly: 750, fromPlan: 0, matchPercent: 50, matchLimitPercent: 6, salaryMonthly: 7_500 }] }));
+    expect(step).toEqual({ kind: 'retirement', sharePercent: 10, target: 1_125, ofSalary: true });
+  });
+
+  it('never measures a household against one salary smaller than its take-home', () => {
+    // Two earners: take-home 9,000; two 401(k)s, each 600 a month from the paycheck with a 6,000 salary and no match.
+    // 1,200 of 6,000 would look like 20%; against the household's 9,000 it's 13.33%, short of 15%: 15% is 1,350.
+    const account = { monthly: 600, fromPlan: 0, matchPercent: null, matchLimitPercent: null, salaryMonthly: 6_000 };
+    const step = nextFundingStep(
+      onTrack({ takeHome: 9_000, investmentsMonthly: 0, accounts: [{ name: 'Mine', ...account }, { name: 'Theirs', ...account }] }),
+    );
+    expect(step?.kind).toBe('retirement');
+    if (step?.kind !== 'retirement') return;
+    expect(step.ofSalary).toBe(false);
+    expect(step.sharePercent).toBeCloseTo(13.3333, 3);
+    expect(step.target).toBeCloseTo(1_350, 6);
   });
 
   it('counts paycheck money toward the match and the 15%', () => {

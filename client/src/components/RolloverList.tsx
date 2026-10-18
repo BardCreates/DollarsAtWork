@@ -53,7 +53,7 @@ export function RolloverList({ title, rollovers, names, doneWord, groupNoun }: R
 
       return {
         key: `${rollover.index}-${rollover.month}`,
-        text: `When ${names[rollover.index]} is ${doneWord} in ${formatMonthFromNow(rollover.month)}, ${ending}.`,
+        text: `When ${names[rollover.index]} is ${doneWord} in ${formatMonthFromNow(rollover.month)}, ${ending}${rollover.untilDue ? ' until its next bill is due' : ''}.`,
       };
     });
 

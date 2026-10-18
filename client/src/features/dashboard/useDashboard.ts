@@ -7,7 +7,7 @@ import {
   type ProjectionResult,
   type SavingsSplitMode,
 } from '../../lib/projection';
-import { yearMonthFromNow } from '../../lib/dates';
+import { monthsUntilYearMonth, yearMonthFromNow } from '../../lib/dates';
 import { buildTimeline, type TimelineItem } from '../../lib/timeline';
 import { toDebtInput, useDebts, type DebtsData } from '../debt/debts';
 import { toAccountInput, useInvestments, type InvestmentsData } from '../invest/investments';
@@ -107,10 +107,13 @@ function retirementOnTimeline(data: DashboardData): { amount: number; month: num
   return outlook.number > 0 ? { amount: outlook.number, month: outlook.month } : undefined;
 }
 
-/** Upcoming one-time money with the projection month it lands in, for the timeline. */
-export function windfallNames(data: DashboardData): { id: string; name: string; amount: number; month: number }[] {
+/** Upcoming one-time money with the projection month it lands in and the month it arrives, for the timeline. */
+export function windfallNames(data: DashboardData): { id: string; name: string; amount: number; month: number; arrives?: number }[] {
   const byId = new Map((data.netWorth.windfalls ?? []).map((w) => [w.id, w]));
-  return toWindfallInputs(data.netWorth.windfalls ?? []).map((w) => ({ id: w.id, name: byId.get(w.id)?.name ?? '', amount: w.amount, month: w.month }));
+  return toWindfallInputs(data.netWorth.windfalls ?? []).map((w) => {
+    const arrives = monthsUntilYearMonth(byId.get(w.id)?.month ?? '') ?? undefined;
+    return { id: w.id, name: byId.get(w.id)?.name ?? '', amount: w.amount, month: w.month, arrives };
+  });
 }
 
 /** The asset and liability lines under the net worth card, read from the projection at a month. */
@@ -151,7 +154,7 @@ export function homeEquityAt(data: DashboardData, result: ProjectionResult, mont
   return homes.reduce((sum, v) => sum + v, 0) - mortgages.reduce((sum, v) => sum + v, 0);
 }
 
-/** The forward-looking numbers the emails and the check-in recap share, always in actual dollars. */
+/** The forward-looking numbers the emails and the check-in recap share, always in today's dollars (the dashboard's default). */
 export interface Outlook {
   /** False when there is no debt at all, so "debt-free" means nothing. */
   hasDebt: boolean;

@@ -64,7 +64,7 @@ public static class ReportEmail
         if (request.DebtFreeMonth is { } months and > 0)
             ahead.Add(new EmailLayout.Row("Debt-free", EmailDates.MonthFromNow(months, request.DebtFreeOn, now)));
         if (request.NetWorthIn10Years is { } ten)
-            ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)}"));
+            ahead.Add(new EmailLayout.Row("Net worth in 10 years", $"about {Money(ten)} in today's dollars"));
 
         var opener = change switch
         {

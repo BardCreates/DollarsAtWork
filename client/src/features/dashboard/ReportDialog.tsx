@@ -50,10 +50,11 @@ export function ReportDialog({ open, data, onClose }: { open: boolean; data: Das
 
   const report = useMemo(() => buildReport(data.netWorth.snapshots), [data.netWorth.snapshots]);
 
-  // Always in actual dollars, so the screen and the emailed copy agree whatever the dashboard's toggle says.
+  // Always in today's dollars (the dashboard's default), so the screen and the emailed copy agree whatever the
+  // dashboard's toggle says; both say so.
   const outlook = useMemo(() => {
     if (!open) return null;
-    const result = project(buildProjectionInput(data, false));
+    const result = project(buildProjectionInput(data, true));
     const timeline = buildTimeline(result, {
       debts: data.debts.debts.map((d) => d.name),
       goals: data.savings.goals.map((g) => g.name),
@@ -114,7 +115,7 @@ export function ReportDialog({ open, data, onClose }: { open: boolean; data: Das
                 </li>
               )}
               <li>
-                <Typography variant="body2">Net worth in 10 years: about {whole(outlook.netWorthIn10Years)}.</Typography>
+                <Typography variant="body2">Net worth in 10 years: about {whole(outlook.netWorthIn10Years)}, in today's dollars.</Typography>
               </li>
               {outlook.next && outlook.next.month !== null && (
                 <li>

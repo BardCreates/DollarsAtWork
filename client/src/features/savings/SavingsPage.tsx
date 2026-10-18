@@ -32,8 +32,9 @@ import { formatDuration, formatMonthFromNow } from '../../lib/dates';
 import { formatMoney, formatPercent } from '../../lib/money';
 import type { FreedMoneyDestination, ProjectionInput } from '../../lib/projection';
 import { goalRollovers } from '../../lib/rollover';
+import { listNames } from '../../lib/words';
 import { RolloverList } from '../../components/RolloverList';
-import { useNetWorth } from '../dashboard/networth';
+import { toWindfallInputs, useNetWorth } from '../dashboard/networth';
 import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import { GoalDialog } from './GoalDialog';
 import { GoalList } from './GoalList';
@@ -99,8 +100,15 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
   const { data: netWorth } = useNetWorth();
   const doneDestination = (netWorth?.settings.savingsDoneDestination ?? 'Investments').toLowerCase() as FreedMoneyDestination;
   const rollovers = useMemo(
-    () => goalRollovers(projection.result, data.splitMode === 'Percent' ? 'percent' : 'priority', doneDestination),
-    [projection.result, data.splitMode, doneDestination],
+    () =>
+      goalRollovers(
+        projection.result,
+        data.splitMode === 'Percent' ? 'percent' : 'priority',
+        doneDestination,
+        toWindfallInputs(netWorth?.windfalls ?? []).map((w) => w.month),
+        data.goals.map((g) => !!g.repeatMonths),
+      ),
+    [projection.result, data.splitMode, doneDestination, netWorth?.windfalls, data.goals],
   );
 
   const setSplitMode = useSetSplitMode();
@@ -114,6 +122,8 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
   const onError = (e: unknown) => setProblem(errorMessage(e));
 
   const hasGoals = data.goals.length > 0;
+  // Sinking funds that come up short at a due date somewhere in the projection.
+  const shortFunds = data.goals.filter((g, i) => g.repeatMonths && projection.result.warnings.shortBills[i]).map((g) => g.name);
   const percentMode = data.splitMode === 'Percent';
   const { totalSaved, totalTarget, allFullMonth } = projection;
 
@@ -136,6 +146,12 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
           {data.monthlyAmount <= 0 && (
             <Alert severity="info" sx={{ mb: 3 }}>
               Your plan doesn't set anything aside for Savings yet, so these goals won't grow. Give Savings an amount in Plan.
+            </Alert>
+          )}
+          {shortFunds.length > 0 && (
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              At this pace, {listNames(shortFunds)} won't have the whole bill saved by {shortFunds.length === 1 ? 'a due date' : 'their due dates'}. The
+              projection pays what's there. A little more each month, or a lower target, closes the gap.
             </Alert>
           )}
           {percentMode && projection.sharesTotal > 0 && Math.abs(projection.sharesTotal - 100) > 0.01 && (
