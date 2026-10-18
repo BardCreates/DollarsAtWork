@@ -625,6 +625,23 @@ describe('rule 9: paycheck contributions and a match on salary before taxes', ()
     expect(project(plan({ months: 1, accounts: [noSalary] })).points[1].investments).toBeCloseTo(750, 6);
   });
 
+  it('never matches one-time money', () => {
+    // Match 100% up to 6% of a 6,000 salary (cap 360). The plan invests 100 a month; a 5,000 refund goes to
+    // Investments in month 2. Only the 100 is matched each month: month 1 adds 100 + 100, month 2 adds
+    // 100 + 5,000 + 100. Investments 5,400; matched 200 (not 100 + 360).
+    const account = { ...cashAccount, matchPercent: 100, matchLimitPercent: 6, matchSalaryMonthly: 6_000 };
+    const { points } = project(
+      plan({
+        months: 2,
+        investmentsMonthly: 100,
+        accounts: [account],
+        windfalls: [{ id: 'refund', month: 2, amount: 5_000, destination: 'investments' }],
+      }),
+    );
+    expect(points[2].matchedToDate).toBeCloseTo(200, 6);
+    expect(points[2].investments).toBeCloseTo(5_400, 6);
+  });
+
   it('the salary the match is capped on, and the paycheck money, grow with the raise', () => {
     // Salary 5,000 a month, 10% raise from month 13: 5,500. Match 100% up to 10%: cap 500 in year one, 550 in year two.
     // Paycheck 1,000 a month, 1,100 from month 13: month 1 adds 1,000 + 500, month 13 adds 1,100 + 550 = 1,650.
@@ -904,6 +921,32 @@ describe('rule 13: a promotional rate that ends', () => {
     expect(result.points[2].debtBalances[0]).toBeCloseTo(980, 6);
     expect(result.points[2].debtBalances[1]).toBeCloseTo(818.2, 6);
     expect(result.totalInterest).toBeCloseTo(38.2, 6);
+  });
+});
+
+describe('rule 13b: avalanche with a promotion also tries smallest balance first', () => {
+  it('keeps smallest-first when that pays the least interest of the three orders', () => {
+    // Transfer T 1,000 at 0% for 3 months, then 120% (10% a month); card K 300 at 24% (2%); car R 5,000 at 12% (1%).
+    // No minimums, 400 a month, 4 months.
+    // Smallest first (K, T, R): M1 K 306 paid off, 94 to T (906); R 5,050. Interest 6 + 50 = 56.
+    //   M2 T 506, R 5,100.5 (50.5). M3 T 106, R 5,151.505 (51.005). M4 T charges 10.6 → 116.6, paid off; 283.4 to R:
+    //   5,203.02005 − 283.4 = 4,919.62005 (interest 51.51505). Total 219.62005.
+    // By today's rate (K, R, T) totals about 294.13 (T charges 100 in month 4); with T ranked by its later 120%
+    // (T, K, R) about 223.75. Smallest first is kept.
+    const result = project(
+      plan({
+        months: 4,
+        debtMonthly: 400,
+        debtStrategy: 'avalanche',
+        debts: [
+          { id: 'T', balance: 1_000, apr: 120, minPayment: 0, promoApr: 0, promoMonths: 3 },
+          { id: 'K', balance: 300, apr: 24, minPayment: 0 },
+          { id: 'R', balance: 5_000, apr: 12, minPayment: 0 },
+        ],
+      }),
+    );
+    expect(result.totalInterest).toBeCloseTo(219.62005, 6);
+    expect(result.points[4].debtBalances).toEqual([0, 0, expect.closeTo(4_919.62005, 6)]);
   });
 });
 

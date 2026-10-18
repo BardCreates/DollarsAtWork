@@ -11,6 +11,8 @@ export type PlanImpactState =
       impact: PlanImpact;
       /** The yearly return "if invested" figures use: the plan's own, from its investment accounts. */
       expectedReturn: number;
+      /** The plan's yearly inflation assumption, for showing amounts in today's dollars. */
+      inflationRate: number;
       /** False when it is the default, because no investment accounts have been added. */
       hasAccounts: boolean;
     };
@@ -39,6 +41,7 @@ export function usePlanImpact(baseline: Plan, live: Plan): PlanImpactState {
       status: 'ready',
       impact: comparePlans(run(baseline), run(live)),
       expectedReturn: planExpectedReturn(data.investments.accounts),
+      inflationRate: data.netWorth.settings.inflationRate,
       hasAccounts: data.investments.accounts.length > 0,
     };
   }, [data, isPending, baseline, live]);

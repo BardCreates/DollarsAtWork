@@ -229,6 +229,14 @@ and decisions already made. Don't re-ask decided questions.
   re-raises Debt to the minimums whenever they change (never lowers; errors shown). The 15% check never uses a salary
   smaller than take-home. With debtDone 'savings', what full goals can't take follows savingsDoneDestination. Savings
   page warns about sinking funds short at a due date (warnings.shortBills). nextDueMonths rejects impossible dates.
+- Fourth audit fixes (Oct 17, audit doc "Fourth audit — Oct 17"): the employer match is never paid on one-time money
+  (engine tracks oneTimeInvested; only recurring money is matchable). Avalanche with a promo runs three orders (rate
+  now, later APR, and snowball) and keeps the least totalInterest; the copy says "usually" the least interest. /welcome
+  raises Debt to the minimums on Skip too, from $0 or when the minimums grew this visit (not again after a refresh), and
+  shows amount save errors. The habit cost on Plan is in today's dollars (habitCost inflationRate). Labels: What if
+  table, Invest Growth tab. Savings "/month now" skips windfall months; a sinking fund is on track only if never short
+  (extra = bill ÷ months between bills); goalRollovers skips a sinking fund that fills in a due month. JSON export
+  writes month fields as yyyy-MM.
 
 ## What we compete on
 

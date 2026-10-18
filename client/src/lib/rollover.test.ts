@@ -247,6 +247,23 @@ describe('goal rollovers', () => {
     ]);
   });
 
+  it('says nothing for a sinking fund that fills in its due month (the bill takes it straight back)', () => {
+    // Insurance 1,200 due in month 12, every 12 months, from 0 at 100 a month: full in month 12, paid that month,
+    // and month 13 deposits 100 into it again, so the Trip goal never receives its money.
+    const result = project(
+      plan({
+        months: 14,
+        savingsMonthly: 100,
+        goals: [
+          { id: 'ins', target: 1_200, balance: 0, repeat: { firstMonth: 12, everyMonths: 12 } },
+          { id: 'trip', target: 5_000, balance: 0 },
+        ],
+      }),
+    );
+    expect(result.goalFullMonths[0]).toBe(12);
+    expect(goalRollovers(result, 'priority', 'investments', [], [true, false])).toEqual([]);
+  });
+
   it('has no amount for a goal that fills next month', () => {
     const result = project(plan({ savingsMonthly: 500, goals: [{ id: 'g', target: 300, balance: 0 }] }));
     expect(goalRollovers(result, 'priority', 'investments')).toEqual([

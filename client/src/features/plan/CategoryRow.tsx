@@ -20,15 +20,17 @@ interface CategoryRowProps {
   liveAmount: number;
   /** The yearly return used for "if invested", or null to leave that line out. */
   investedReturn: number | null;
+  /** Yearly inflation, so "if invested" is in today's dollars like the panel beside it. */
+  inflationRate: number;
   onDraftAmount: (dollars: number | null) => void;
   onChange: (changes: CategoryChanges) => void;
   onDelete: () => void;
 }
 
 /** One line of the plan: drag handle, color, name, amount, share of income, delete, and what a habit costs. */
-export function CategoryRow({ category, index, income, readOnly, liveAmount, investedReturn, onDraftAmount, onChange, onDelete }: CategoryRowProps) {
+export function CategoryRow({ category, index, income, readOnly, liveAmount, investedReturn, inflationRate, onDraftAmount, onChange, onDelete }: CategoryRowProps) {
   // Cost of a habit: only for the user's own spending categories. Savings, Debt and Investments are already working.
-  const habit = !category.isBuiltIn && investedReturn !== null && liveAmount > 0 ? habitCost(liveAmount, investedReturn) : null;
+  const habit = !category.isBuiltIn && investedReturn !== null && liveAmount > 0 ? habitCost(liveAmount, investedReturn, IMPACT_YEARS, inflationRate) : null;
 
   return (
     <Draggable draggableId={category.id} index={index} isDragDisabled={readOnly}>
@@ -96,7 +98,7 @@ export function CategoryRow({ category, index, income, readOnly, liveAmount, inv
 
           {habit !== null && (
             <Typography variant="caption" color="text.secondary" sx={{ gridArea: 'habit', pl: { sm: 1.75 }, mt: -0.5 }}>
-              ≈ <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>{formatMoney(Math.round(habit))}</Box> in {IMPACT_YEARS} years if invested
+              ≈ <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>{formatMoney(Math.round(habit))}</Box> in {IMPACT_YEARS} years if invested, in today's dollars
             </Typography>
           )}
 

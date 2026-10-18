@@ -155,7 +155,7 @@ function InvestModule({ data, whole }: { data: InvestmentsData; whole?: Projecti
           )}
           {data.monthlyAmount <= 0 && (
             <Alert severity="info" sx={{ mb: 3 }}>
-              Your plan doesn't put anything into Investments yet, so this shows growth on today's balances only. Give Investments an amount in Plan.
+              Your plan doesn't put anything into Investments each month yet. What's shown is today's balances plus anything that arrives later, like a paid-off debt's payment or one-time money. Give Investments an amount above to add to it.
             </Alert>
           )}
           {limitWarnings.map((warning) => (
@@ -215,16 +215,18 @@ function InvestModule({ data, whole }: { data: InvestmentsData; whole?: Projecti
             <Box sx={{ display: 'grid', gap: 3 }}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 1.5 }}>
-                    Contributions vs growth
+                  <Typography variant="h6">Contributions vs growth</Typography>
+                  <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 1.5 }}>
+                    Future dollars, before inflation.
                   </Typography>
                   <GrowthChart years={projection.years} />
                 </CardContent>
               </Card>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 1.5 }}>
-                    What it could be worth
+                  <Typography variant="h6">What it could be worth</Typography>
+                  <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 1.5 }}>
+                    Future dollars, before inflation.
                   </Typography>
                   <Milestones projection={projection} />
                 </CardContent>
