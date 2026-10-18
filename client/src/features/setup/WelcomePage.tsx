@@ -141,20 +141,41 @@ export function WelcomePage() {
   const onError = (e: unknown) => setProblem(errorMessage(e));
 
   // Start the Debt amount at the debts' minimums, so the plan covers them from day one: on reaching the amounts step
-  // (by Next, Back/Forward or a link) and on Skip. It only ever raises the amount: from
-  // $0, or again when the minimums grow (a debt added after going back) during this visit. A lower amount chosen on
-  // purpose stays, even after a refresh.
+  // (by Next, Back/Forward or a link) and on Skip, which waits for the save. It only ever raises the amount: from
+  // $0, or again when the minimums grow (a debt added after going back) during this visit. An amount above $0 chosen on
+  // purpose stays, even after a refresh; $0 counts as not set yet.
   const prefilledFor = useRef<number | null>(null);
   const canEdit = !!me?.access.hasFullAccess;
   const minimumsDue = (debts.data?.debts ?? []).filter((d) => d.balance > 0).reduce((sum, d) => sum + d.minPayment, 0);
   const debtNow = debtAmount.category?.amount;
-  const raiseDebtToMinimums = () => {
-    if (!canEdit || !debts.data || debtNow === undefined || minimumsDue <= 0 || debtNow >= minimumsDue) return;
-    if (prefilledFor.current === minimumsDue) return;
+  /** True when the Debt amount should be raised to the minimums now. */
+  const shouldRaiseDebt = () => {
+    if (!canEdit || !debts.data || debtNow === undefined || minimumsDue <= 0 || debtNow >= minimumsDue) return false;
+    if (prefilledFor.current === minimumsDue) return false;
     const grew = prefilledFor.current !== null && minimumsDue > prefilledFor.current;
-    if (debtNow !== 0 && !grew) return;
+    return debtNow === 0 || grew;
+  };
+  const raiseDebtToMinimums = () => {
+    if (!shouldRaiseDebt()) return;
     prefilledFor.current = minimumsDue;
     debtAmount.set(minimumsDue, (e) => setProblem(errorMessage(e)));
+  };
+  // Skip leaves the page at once, so it waits for the save first: otherwise the dashboard could load the plan before
+  // the new Debt amount reaches the server, and show (and email) a plan with Debt at $0.
+  const [skipping, setSkipping] = useState(false);
+  const skip = async () => {
+    if (shouldRaiseDebt()) {
+      prefilledFor.current = minimumsDue;
+      setSkipping(true);
+      try {
+        await debtAmount.save(minimumsDue);
+      } catch (e) {
+        setSkipping(false);
+        setProblem(errorMessage(e));
+        return;
+      }
+    }
+    navigate('/');
   };
   useEffect(() => {
     if (step >= 3) raiseDebtToMinimums();
@@ -360,13 +381,7 @@ export function WelcomePage() {
             </Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {!last && (
-                <Button
-                  color="inherit"
-                  onClick={() => {
-                    raiseDebtToMinimums();
-                    navigate('/');
-                  }}
-                >
+                <Button color="inherit" disabled={skipping || debtAmount.isPending} onClick={skip}>
                   Skip for now
                 </Button>
               )}
