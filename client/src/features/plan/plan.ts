@@ -151,6 +151,15 @@ export function useSetModuleAmount(kind: Exclude<CategoryKind, 'Custom'>) {
         { onError, onSettled: () => queryClient.invalidateQueries({ queryKey: moduleQueryKeys[kind] }) },
       );
     },
+    /** Like `set`, but resolves once the server has saved it (rejects on failure), for leaving the page right after. */
+    save: async (amount: number) => {
+      if (!category) return;
+      try {
+        await update.mutateAsync({ id: category.id, changes: { amount } });
+      } finally {
+        queryClient.invalidateQueries({ queryKey: moduleQueryKeys[kind] });
+      }
+    },
   };
 }
 
