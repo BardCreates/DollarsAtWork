@@ -23,7 +23,7 @@ export const contributionLimits: Record<LimitGroup, ContributionLimit> = {
   '401k': { group: '401k', label: '401(k)', limit: 24_500, higher: '$32,500 if you are 50 or older, $35,750 at 60 to 63' },
   // Traditional and Roth IRAs share one limit.
   ira: { group: 'ira', label: 'IRA and Roth IRA together', limit: 7_500, higher: '$8,600 if you are 50 or older' },
-  hsa: { group: 'hsa', label: 'HSA', limit: 4_400, higher: '$8,750 with family coverage, plus $1,000 at 55 or older; money from your employer counts too' },
+  hsa: { group: 'hsa', label: 'HSA', limit: 4_400, higher: '$8,750 with family coverage, plus $1,000 at 55 or older; money your employer puts in counts too, so leave room for it' },
 };
 
 const groupOf: Partial<Record<string, LimitGroup>> = { Retirement401k: '401k', Ira: 'ira', RothIra: 'ira', Hsa: 'hsa' };

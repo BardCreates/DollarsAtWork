@@ -13,6 +13,8 @@ describe('next due month of a sinking fund', () => {
   });
   it('is null for a date it cannot read', () => {
     expect(nextDueMonths({ targetDate: 'soon', repeatMonths: 12 }, october)).toBeNull();
+    expect(nextDueMonths({ targetDate: '2026-13-40', repeatMonths: 12 }, october)).toBeNull();
+    expect(nextDueMonths({ targetDate: '2026-12-01', repeatMonths: 0 }, october)).toBeNull();
   });
   it('moves a bill that has gone by on to its next time round', () => {
     // Due earlier this month: next is a year on.

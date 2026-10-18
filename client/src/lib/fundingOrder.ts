@@ -21,7 +21,11 @@ export interface FundingInput {
   investmentsMonthly: number;
   /** Everything in savings goals today. */
   savedToday: number;
-  debts: { name: string; balance: number; apr: number; minimumOnly: boolean }[];
+  /**
+   * `apr` is the rate that matters for this check; for a promotion the caller decides (the promo rate when the
+   * minimums clear it in time, else the APR that follows, with `promoEndsMonth` "YYYY-MM" set).
+   */
+  debts: { name: string; balance: number; apr: number; minimumOnly: boolean; promoEndsMonth?: string }[];
   accounts: {
     name: string;
     /** What goes in each month: the account's share of the plan plus anything from the paycheck. */
@@ -40,7 +44,7 @@ export interface FundingInput {
 export type FundingStep =
   | { kind: 'starter-fund'; target: number }
   | { kind: 'match'; account: string; matchPercent: number; limitPercent: number; missing: number; extraMatch: number }
-  | { kind: 'high-interest'; debt: string; apr: number; expectedReturn: number }
+  | { kind: 'high-interest'; debt: string; apr: number; expectedReturn: number; promoEndsMonth?: string }
   /** `ofSalary`: measured against pay before taxes (known from an account's salary), else take-home pay. */
   | { kind: 'retirement'; sharePercent: number; target: number; ofSalary: boolean };
 
@@ -73,15 +77,23 @@ export function nextFundingStep(input: FundingInput): FundingStep | null {
     .filter((d) => !d.minimumOnly && d.balance > 0 && d.apr >= HIGH_INTEREST_APR && d.apr > input.expectedReturn)
     .sort((a, b) => b.apr - a.apr)[0];
   if (costly && investingBeyondMatch(input) >= 1) {
-    return { kind: 'high-interest', debt: costly.name, apr: costly.apr, expectedReturn: input.expectedReturn };
+    return {
+      kind: 'high-interest',
+      debt: costly.name,
+      apr: costly.apr,
+      expectedReturn: input.expectedReturn,
+      ...(costly.promoEndsMonth ? { promoEndsMonth: costly.promoEndsMonth } : {}),
+    };
   }
 
   const openPayoffDebt = input.debts.some((d) => !d.minimumOnly && d.balance > 0 && d.apr >= HIGH_INTEREST_APR);
   const investing = input.accounts.reduce((sum, a) => sum + a.monthly, 0) + (input.accounts.length === 0 ? input.investmentsMonthly : 0);
   // The 15% rule of thumb is of pay before taxes; use it when an account knows the salary, else take-home pay.
+  // A salary is one person's, so it never counts for less than the household's take-home (two earners).
   const salaries = input.accounts.flatMap((a) => (a.salaryMonthly && a.salaryMonthly > 0 ? [a.salaryMonthly] : []));
-  const ofSalary = salaries.length > 0;
-  const pay = ofSalary ? Math.max(...salaries) : input.takeHome;
+  const biggestSalary = salaries.length > 0 ? Math.max(...salaries) : 0;
+  const ofSalary = biggestSalary > input.takeHome;
+  const pay = ofSalary ? biggestSalary : input.takeHome;
   const sharePercent = (investing / pay) * 100;
   if (!openPayoffDebt && sharePercent < RETIREMENT_SHARE - 0.5) {
     return { kind: 'retirement', sharePercent, target: (pay * RETIREMENT_SHARE) / 100, ofSalary };

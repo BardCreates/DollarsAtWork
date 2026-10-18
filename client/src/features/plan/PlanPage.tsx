@@ -185,28 +185,23 @@ function PlanEditor({ plan }: { plan: Plan }) {
       </Card>
 
       {scaleFrom !== null && (
-        <Alert
-          severity="info"
-          sx={{ mb: 3 }}
-          onClose={() => setScaleFrom(null)}
-          action={
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                color="inherit"
-                size="small"
-                variant="outlined"
-                disabled={readOnly || scaleCategories.isPending}
-                onClick={() => scaleCategories.mutate(scaleFrom, { onError, onSuccess: () => setScaleFrom(null) })}
-              >
-                Scale all to new income
-              </Button>
-              <Button color="inherit" size="small" onClick={() => setScaleFrom(null)}>
-                Keep amounts
-              </Button>
-            </Box>
-          }
-        >
+        <Alert severity="info" sx={{ mb: 3 }} onClose={() => setScaleFrom(null)}>
           Your income changed from {formatMoney(scaleFrom)} to {formatMoney(income)}. Category amounts stayed the same.
+          {/* The buttons sit under the message, so a phone doesn't squeeze it into a narrow column. */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+            <Button
+              color="inherit"
+              size="small"
+              variant="outlined"
+              disabled={readOnly || scaleCategories.isPending}
+              onClick={() => scaleCategories.mutate(scaleFrom, { onError, onSuccess: () => setScaleFrom(null) })}
+            >
+              Scale all to new income
+            </Button>
+            <Button color="inherit" size="small" onClick={() => setScaleFrom(null)}>
+              Keep amounts
+            </Button>
+          </Box>
         </Alert>
       )}
 

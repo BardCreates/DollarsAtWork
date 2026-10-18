@@ -22,13 +22,13 @@ export function IncomeBox({
   /** Income sources changed the income from one total to another. */
   onSourcesChanged?: (from: number, to: number) => void;
 }) {
-  const { data } = useIncomes();
+  const { data, isError } = useIncomes();
   const [open, setOpen] = useState(false);
   const count = data?.sources.length ?? 0;
 
   return (
     <Box>
-      <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly || !data || count > 0} onCommit={onCommit} onDraft={onDraft} />
+      <MoneyField label="Monthly take-home income" size="medium" value={income} disabled={readOnly || (!data && !isError) || count > 0} onCommit={onCommit} onDraft={onDraft} />
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', columnGap: 1, mt: 0.5 }}>
         {count > 0 && (
           <Typography variant="caption" color="text.secondary">

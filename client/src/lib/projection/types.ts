@@ -28,8 +28,8 @@ export interface GoalInput {
   /**
    * A sinking fund for a bill that comes back: at the end of month firstMonth, and every everyMonths after it, the
    * bill (the target) is paid from the goal and it starts filling again. A balance short of the target pays what it
-   * has. firstMonth 0 means due later this month: that bill is paid in month 1, and the next ones every everyMonths
-   * from month 0. Left out for an ordinary goal.
+   * has. firstMonth 0 means due later this month: that bill is paid at the start of month 1 from today's balance
+   * (before that month's deposit), and the next ones every everyMonths from month 0. Left out for an ordinary goal.
    */
   repeat?: { firstMonth: number; everyMonths: number };
 }

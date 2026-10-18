@@ -54,8 +54,9 @@ export function CompareView({ plans }: { plans: ComparedPlan[] }) {
     <>
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography variant="h6" sx={{ mb: 1.5 }}>
-            Net worth over time
+          <Typography variant="h6">Net worth over time</Typography>
+          <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 1.5 }}>
+            In today's dollars, after inflation, like the Dashboard.
           </Typography>
           <Box sx={{ height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">

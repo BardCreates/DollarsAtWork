@@ -76,7 +76,8 @@ export function IncomeSourcesDialog({
   const amountLabel = incomeFrequencies.find((f) => f.value === frequency)?.amountLabel ?? 'Amount';
 
   const sources = data?.sources ?? [];
-  const before = data?.monthlyIncome ?? currentIncome;
+  // With no sources yet, the income is the one on screen (it may have just been typed); after that, the sources' total.
+  const before = sources.length === 0 || !data ? currentIncome : data.monthlyIncome;
   const changed = (result: IncomesData) => {
     if (result.monthlyIncome !== before) onIncomeChanged?.(before, result.monthlyIncome);
   };
@@ -132,7 +133,18 @@ export function IncomeSourcesDialog({
                   </Tooltip>
                   <Tooltip title="Delete">
                     <span>
-                      <IconButton size="small" aria-label={`Delete ${source.name}`} disabled={readOnly || remove.isPending} onClick={() => remove.mutate(source.id, { onSuccess: changed })}>
+                      <IconButton size="small" aria-label={`Delete ${source.name}`} disabled={readOnly || remove.isPending} onClick={() =>
+                          remove.mutate(source.id, {
+                            onSuccess: (result) => {
+                              // Deleting the one being edited closes its form, so Save can't hit a missing source.
+                              if (editing?.id === source.id) {
+                                setEditing(null);
+                                reset(blank);
+                              }
+                              changed(result);
+                            },
+                          })
+                        }>
                         <DeleteOutlineIcon fontSize="small" />
                       </IconButton>
                     </span>

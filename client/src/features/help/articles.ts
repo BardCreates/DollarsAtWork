@@ -197,7 +197,7 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
 - **Balance**: what you owe today.
 - **APR**: the yearly interest rate, like 19.99.
 - **Minimum payment**: what you must pay each month. For a mortgage, enter the principal and interest only, not the escrow part (taxes and insurance), since that never touches the balance.
-- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. Avalanche orders debts by the rate they charge that month, except a promotion its minimums won't clear in time, which ranks by the APR that follows. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
+- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. With Avalanche and a promotion, the projection tries two orders (by today's rate, and with the promotion ranked by the APR that follows) and keeps the one that pays less interest. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
 - **Minimum only**: on by default for a mortgage. The debt is paid on its own schedule and still counts against your net worth, but your extra money skips it and "debt-free" means everything else. Turn it on for any long loan you'd rather not snowball, or off to throw your extra at the mortgage too.
 
 You can have up to 50 debts. If a minimum payment doesn't cover the month's interest, the form warns you as you type: that debt would grow forever. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.
@@ -209,7 +209,7 @@ Every month, each debt gets its minimum. Whatever is left of your Debt amount go
 
 ## Snowball, Avalanche or Custom
 - **Snowball**: smallest balance first, for quick wins.
-- **Avalanche**: highest APR first, which costs the least interest. A 0% promotion that its minimums won't clear in time is ranked by the APR that follows it, because the balance left when the promotion ends is the expensive part.
+- **Avalanche**: highest APR first, which costs the least interest. With a 0% promotion, it also tries paying that balance first (by the APR that follows) and keeps whichever order costs less.
 - **Custom**: your own order. Drag the debts to set it.
 
 ## The numbers
@@ -259,7 +259,7 @@ You can have up to 50 accounts.
 If your employer adds money when you contribute, fill in the match. "50% match up to 6%" means **Match** 50 and **Up to** 6: your employer adds half of what you put in, on contributions up to 6% of your salary. Add your **yearly salary before taxes** so the limit is worked out the way your employer does it; left empty, your take-home pay is used, which shows a smaller match. Paycheck money and your plan's share both count toward the match, and the match is added on top in every projection.
 
 ## Yearly limits
-The IRS caps what you can put into some accounts each year. For 2026: $24,500 for a 401(k) ($32,500 at 50 or older), $7,500 for IRAs and Roth IRAs together ($8,600 at 50 or older), and $4,400 for an HSA with self-only coverage ($8,750 family). If your plan would put more than that in, the page warns you so you can move the extra elsewhere. Employer match doesn't count toward your own limit.
+The IRS caps what you can put into some accounts each year. For 2026: $24,500 for a 401(k) ($32,500 at 50 or older, $35,750 at 60 to 63), $7,500 for IRAs and Roth IRAs together ($8,600 at 50 or older), and $4,400 for an HSA with self-only coverage ($8,750 family, plus $1,000 at 55 or older). If your plan would put more than that in, the page warns you so you can move the extra elsewhere. The limits are per person: when only two accounts added together are over, the page says so, since that's fine if they belong to two people. A 401(k) employer match doesn't count toward your own limit, but money your employer puts in an HSA does, and the check only counts what you put in, so leave room for it.
 
 ## Taxes
 Projections don't take taxes out. A 401(k) or traditional IRA is taxed when you withdraw, a Roth isn't, and a brokerage account is taxed on gains along the way, so the same balance can be worth different amounts to you.
@@ -308,7 +308,7 @@ If your plan is over-allocated, your Debt amount doesn't cover your minimum paym
     summary: "What the Today's dollars switch does, and how to change inflation, raises and where finished money goes.",
     keywords: 'inflation real value purchasing power raise salary assumptions settings destination remaining after debt after goals',
     body: `## Today's dollars
-A dollar in 20 years won't buy what a dollar buys now. **Today's dollars** on the Dashboard shows future amounts in what they'd be worth today, after inflation. It starts switched on, because 40 years of inflation make future amounts look far bigger than they feel: at 3% a year, $1 million in 40 years buys about what $307,000 buys today. Switch it off to see the actual dollar amounts your accounts would show; those figures are marked "future dollars".
+A dollar in 20 years won't buy what a dollar buys now. **Today's dollars** on the Dashboard shows future amounts in what they'd be worth today, after inflation. It starts switched on, because 40 years of inflation make future amounts look far bigger than they feel: at 3% a year, $1 million in 40 years buys about what $307,000 buys today. Switch it off to see the actual dollar amounts your accounts would show; those figures are marked "future dollars". The Plan page, What if, your emails and the check-in recap use today's dollars too. The Invest page shows future dollars, so its balances match what your accounts will say, and it's labelled that way.
 
 It only changes how numbers are shown, not your plan. It's on again each time you open the Dashboard.
 

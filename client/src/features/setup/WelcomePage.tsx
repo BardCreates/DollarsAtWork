@@ -141,15 +141,16 @@ export function WelcomePage() {
   const onError = (e: unknown) => setProblem(errorMessage(e));
 
   // Reaching the amounts step (by Next, Skip, Back/Forward or a link): start the Debt amount at the debts' minimums,
-  // so the plan covers them from day one. Once a visit, and only raising it, never lowering.
-  const prefilled = useRef(false);
+  // so the plan covers them from day one. Again whenever the minimums change (a debt added after going back), and
+  // only ever raising it, so a lower amount chosen on purpose for the same debts stays.
+  const prefilledFor = useRef<number | null>(null);
   const canEdit = !!me?.access.hasFullAccess;
   const minimumsDue = (debts.data?.debts ?? []).filter((d) => d.balance > 0).reduce((sum, d) => sum + d.minPayment, 0);
   const debtNow = debtAmount.category?.amount;
   useEffect(() => {
-    if (step < 3 || prefilled.current || !canEdit || !debts.data || debtNow === undefined) return;
-    prefilled.current = true;
-    if (minimumsDue > 0 && debtNow < minimumsDue) debtAmount.set(minimumsDue);
+    if (step < 3 || !canEdit || !debts.data || debtNow === undefined || prefilledFor.current === minimumsDue) return;
+    prefilledFor.current = minimumsDue;
+    if (minimumsDue > 0 && debtNow < minimumsDue) debtAmount.set(minimumsDue, (e) => setProblem(errorMessage(e)));
   }, [step, canEdit, debts.data, debtNow, minimumsDue, debtAmount]);
 
   if (plan.isPending) {

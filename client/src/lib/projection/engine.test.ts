@@ -787,6 +787,21 @@ describe('rule 12: one-time money (windfalls)', () => {
     expect(points[1].investments).toBeCloseTo(800, 6);
   });
 
+  it('debt money sent to savings, with every goal full, follows the goals’ own finished-money setting', () => {
+    // No debt left, 100 a month to Debt, finished debt money → savings. The goal is full (500 of 500) and finished
+    // savings money → remaining, so the 100 is left over (dropped), not invested. With savings → investments it's invested.
+    const input = plan({
+      months: 1,
+      debtMonthly: 100,
+      debtDoneDestination: 'savings',
+      savingsDoneDestination: 'remaining',
+      goals: [{ id: 'fund', target: 500, balance: 500 }],
+      accounts: [cashAccount],
+    });
+    expect(project(input).points[1].investments).toBe(0);
+    expect(project({ ...input, savingsDoneDestination: 'investments' }).points[1].investments).toBeCloseTo(100, 6);
+  });
+
   it('ignores months outside the projection', () => {
     const { points } = project(
       plan({
@@ -846,31 +861,57 @@ describe('rule 13: a promotional rate that ends', () => {
     expect(result.points[1].debtBalances[1]).toBeCloseTo(888.3333333, 6);
   });
 
-  it('avalanche ranks a promotional balance by its later APR when the minimums would leave some at the end', () => {
-    // A: 1,000 at 0% for 6 months (25% after), min 20: after month 1's minimum 980 is left and 5 more minimums (100)
-    // won't clear it, so it ranks at 25%, above B's 10%, and gets the extra.
-    // Month 1: A 1,000 − 20 − 100 = 880. B: 1,008.3333 − 20 = 988.3333.
+  it('avalanche ranks a promotion by its later APR when that pays less interest in total', () => {
+    // A: 1,000 at 0% for 2 months, then 120% (10% a month), min 10. B: 1,000 at 12% (1% a month), min 10. Budget 520.
+    // By today's rate (B first): M1 B 1,010 − 510 = 500, A 990 (interest 10). M2 B 505 − 505 = 0, the 5 left goes to
+    //   A: 975 (interest 5). M3 A charges 97.5. Total 112.5.
+    // By A's later APR (A first, since its minimums can't clear 990 in one more month): M1 A 1,000 − 510 = 490,
+    //   B 1,000 (interest 10). M2 A 480 → paid off, 20 left to B: 1,010 − 30 = 980 (interest 10). M3 B 989.8,
+    //   pays 520: 469.8 (interest 9.8). Total 29.8, so this order is kept.
     const result = project(
       plan({
-        months: 1,
-        debtMonthly: 140,
+        months: 3,
+        debtMonthly: 520,
         debtStrategy: 'avalanche',
         debts: [
-          { id: 'A', balance: 1_000, apr: 25, minPayment: 20, promoApr: 0, promoMonths: 6 },
-          { id: 'B', balance: 1_000, apr: 10, minPayment: 20 },
+          { id: 'A', balance: 1_000, apr: 120, minPayment: 10, promoApr: 0, promoMonths: 2 },
+          { id: 'B', balance: 1_000, apr: 12, minPayment: 10 },
         ],
       }),
     );
-    expect(result.points[1].debtBalances[0]).toBeCloseTo(880, 6);
-    expect(result.points[1].debtBalances[1]).toBeCloseTo(988.3333333, 6);
+    expect(result.points[1].debtBalances[0]).toBeCloseTo(490, 6);
+    expect(result.points[1].debtBalances[1]).toBeCloseTo(1_000, 6);
+    expect(result.points[3].debtBalances[1]).toBeCloseTo(469.8, 6);
+    expect(result.totalInterest).toBeCloseTo(29.8, 6);
+  });
+
+  it('avalanche keeps ranking by today’s rate when that pays less interest (a 0% card next to a costly one)', () => {
+    // A: 1,000 at 0% for 12 months, then 120%, min 10. B: 1,000 at 24% (2% a month), min 10. Budget 120, 2 months.
+    // By today's rate (B first): M1 B 1,020 − 110 = 910, A 990 (interest 20). M2 B 928.2 − 110 = 818.2, A 980
+    //   (interest 18.2). Total 38.2.
+    // By A's later APR (A first): B only gets its minimum: interest 20 + 20.2 = 40.2. More, so today's order is kept.
+    const result = project(
+      plan({
+        months: 2,
+        debtMonthly: 120,
+        debtStrategy: 'avalanche',
+        debts: [
+          { id: 'A', balance: 1_000, apr: 120, minPayment: 10, promoApr: 0, promoMonths: 12 },
+          { id: 'B', balance: 1_000, apr: 24, minPayment: 10 },
+        ],
+      }),
+    );
+    expect(result.points[2].debtBalances[0]).toBeCloseTo(980, 6);
+    expect(result.points[2].debtBalances[1]).toBeCloseTo(818.2, 6);
+    expect(result.totalInterest).toBeCloseTo(38.2, 6);
   });
 });
 
 describe('rule 14: sinking funds for bills that come back', () => {
-  it('pays a bill due later this month (firstMonth 0) in month 1, then keeps the yearly schedule from month 0', () => {
-    // Has 1,200 for a 1,200 bill due this month; 100 a month. Month 1: the fund is full, so the 100 can't go in
-    // (it moves on to Investments), then the bill is paid: 0. Months 2–12: 11 × 100 = 1,100 when the next bill is due
-    // in month 12, which is short: it pays 1,100, leaving 0.
+  it('pays a bill due later this month (firstMonth 0) from today’s balance, then keeps the yearly schedule from month 0', () => {
+    // Has 1,200 for a 1,200 bill due this month; 100 a month. Start of month 1: the bill is paid from the 1,200 → 0,
+    // then month 1's 100 goes in → 100. Months 2–12 add 1,100 → 1,200 when the next bill is due (month 12): paid in
+    // full → 0. Month 13: 100. Never short.
     const result = project(
       plan({
         months: 13,
@@ -879,11 +920,24 @@ describe('rule 14: sinking funds for bills that come back', () => {
         accounts: [cashAccount],
       }),
     );
-    expect(result.points[1].savings).toBe(0);
-    expect(result.points[2].savings).toBeCloseTo(100, 6);
-    expect(result.points[11].savings).toBeCloseTo(1_000, 6);
+    expect(result.points[1].savings).toBeCloseTo(100, 6);
+    expect(result.points[11].savings).toBeCloseTo(1_100, 6);
     expect(result.points[12].savings).toBe(0);
     expect(result.points[13].savings).toBeCloseTo(100, 6);
+    expect(result.warnings.shortBills).toEqual([false]);
+  });
+
+  it('flags a bill due later this month that today’s balance can’t cover', () => {
+    // Has 1,100 for a 1,200 bill due this month: it pays the 1,100 and is short. Month 1's 100 then goes in → 100.
+    const result = project(
+      plan({
+        months: 1,
+        savingsMonthly: 100,
+        goals: [{ id: 'insurance', target: 1_200, balance: 1_100, repeat: { firstMonth: 0, everyMonths: 12 } }],
+        accounts: [cashAccount],
+      }),
+    );
+    expect(result.points[1].savings).toBeCloseTo(100, 6);
     expect(result.warnings.shortBills).toEqual([true]);
   });
 

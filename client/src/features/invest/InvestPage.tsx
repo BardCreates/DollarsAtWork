@@ -171,8 +171,8 @@ function InvestModule({ data, whole }: { data: InvestmentsData; whole?: Projecti
           <Card sx={{ mb: 3 }}>
             <CardContent sx={{ display: 'grid', gap: { xs: 2, md: 4 }, alignItems: 'start', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
               <Figure label="Invested today" value={formatMoney(projection.totalToday)} />
-              <Figure label="In 10 years" value={formatMoney(Math.round(valueIn(10)))} color="success.main" />
-              <Figure label="In 30 years" value={formatMoney(Math.round(valueIn(30)))} color="success.main" />
+              <Figure label="In 10 years" value={formatMoney(Math.round(valueIn(10)))} color="success.main" note="Future dollars, before inflation." />
+              <Figure label="In 30 years" value={formatMoney(Math.round(valueIn(30)))} color="success.main" note="Future dollars, before inflation." />
               <Figure
                 label="Employer match"
                 value={`${formatMoney(Math.round(projection.matchNextMonth))}/month`}

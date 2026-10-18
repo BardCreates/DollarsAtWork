@@ -4,10 +4,11 @@
  * ordinary goal or a date that can't be read.
  */
 export function nextDueMonths(goal: { targetDate: string | null; repeatMonths: number | null }, from: Date = new Date()): number | null {
-  if (!goal.repeatMonths || !goal.targetDate) return null;
+  if (!goal.repeatMonths || goal.repeatMonths < 1 || !goal.targetDate) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(goal.targetDate);
   if (!match) return null;
   const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
   let months = (year - from.getFullYear()) * 12 + (month - 1 - from.getMonth());
   // Gone by: an earlier month, or earlier this month. Step on by whole repeats until it's ahead (or later today).
   const gone = (m: number) => m < 0 || (m === 0 && day < from.getDate());

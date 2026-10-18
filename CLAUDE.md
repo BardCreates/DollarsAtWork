@@ -211,8 +211,8 @@ and decisions already made. Don't re-ask decided questions.
   source, is read-only for expired accounts, and every change to the total offers "Scale all to new income" on Plan
   (IncomeBox onSourcesChanged). Emails and the check-in report send the 10-year number in today's dollars and say so.
   Engine: a windfall is never dropped (the part with nowhere to go is invested when the finished-money setting is
-  Remaining); avalanche ranks a promo balance its minimums won't clear in time by the APR that follows; paycheck money
-  grows with the raise; a sinking fund with firstMonth 0 (due later this month) is paid in month 1. lib/sinkingFund
+  Remaining); paycheck money grows with the raise; a sinking fund with firstMonth 0 (due later this month) is paid at
+  the start of month 1 from today's balance, before deposits. lib/sinkingFund
   keeps a bill due later this month at 0; GoalList says "Due this month" instead of "Target date has passed". Rollover
   sentences read the monthly amount from a month without one-time money and mark sinking funds "until its next bill is
   due". The timeline shows a windfall arriving this month as this month (TimelineItem.shownMonth). Editing a windfall
@@ -220,6 +220,15 @@ and decisions already made. Don't re-ask decided questions.
   Debt and Savings). IRS limits are per person: overLimit marks `together` when only the total is over. The 15% nudge
   measures against salary when an account knows it; FundingNudge judges promo debts by their APR. CSV export writes
   month fields as yyyy-MM.
+- Third audit fixes (Oct 17, audit doc "Third audit — Oct 17"): avalanche with a promo debt runs two orders (by the
+  rate charged now, and with promos its minimums won't clear ranked by the later APR: engine projectWith) and keeps
+  the one with less totalInterest. FundingNudge uses the same minimums test (promo rate when cleared in time, else the
+  APR with the promo end month in the wording). Today's dollars on the Plan impact panel, What if and the one-time money
+  card (labelled); the Invest page stays in future dollars and says so. useUpdateIncome invalidates ['incomes'], and the
+  income sources dialog measures the scale prompt from the income on screen when there are no sources. /welcome
+  re-raises Debt to the minimums whenever they change (never lowers; errors shown). The 15% check never uses a salary
+  smaller than take-home. With debtDone 'savings', what full goals can't take follows savingsDoneDestination. Savings
+  page warns about sinking funds short at a due date (warnings.shortBills). nextDueMonths rejects impossible dates.
 
 ## What we compete on
 

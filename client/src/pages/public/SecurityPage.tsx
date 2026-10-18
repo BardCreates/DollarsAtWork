@@ -72,7 +72,10 @@ export function SecurityPage() {
       <Section title="What we do keep">
         <List>
           <Point>Your email address, and a scrambled (hashed) version of your password. We can't read your password.</Point>
-          <Point>The numbers you type in: your income, categories, goals, debts, accounts and monthly check-ins.</Point>
+          <Point>
+            The numbers and names you type in: your income and income sources, categories, goals, debts, accounts, assets, one-time money, retirement
+            settings, what-if scenarios and monthly check-ins.
+          </Point>
           <Point>Whether you're on a trial or subscribed. Your card details go straight to Stripe and never reach us.</Point>
         </List>
       </Section>

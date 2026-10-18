@@ -69,11 +69,14 @@ const saveOptions = { mutationKey: planMutationKey, scope: { id: 'plan' } } as c
 
 export function useUpdateIncome() {
   const cache = usePlanCache();
+  const queryClient = useQueryClient();
   return useMutation({
     ...saveOptions,
     mutationFn: (monthlyIncome: number) => api.put<Plan>('/plan/income', { monthlyIncome }),
     onMutate: (monthlyIncome) => cache.changeNow((plan) => ({ ...plan, monthlyIncome })),
     onError: cache.reload,
+    // The income sources answer carries the income too (incomes.ts incomesQueryKey; named here to avoid an import loop).
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['incomes'] }),
   });
 }
 
@@ -141,11 +144,11 @@ export function useSetModuleAmount(kind: Exclude<CategoryKind, 'Custom'>) {
   return {
     category,
     isPending: update.isPending,
-    set: (amount: number) => {
+    set: (amount: number, onError?: (error: unknown) => void) => {
       if (!category) return;
       update.mutate(
         { id: category.id, changes: { amount } },
-        { onSettled: () => queryClient.invalidateQueries({ queryKey: moduleQueryKeys[kind] }) },
+        { onError, onSettled: () => queryClient.invalidateQueries({ queryKey: moduleQueryKeys[kind] }) },
       );
     },
   };

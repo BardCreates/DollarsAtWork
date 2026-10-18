@@ -20,7 +20,7 @@ import {
 const destinations = Object.keys(windfallDestinationLabels) as [WindfallDestination, ...WindfallDestination[]];
 
 const destinationHelp: Record<WindfallDestination, string> = {
-  Debt: 'An extra payment that month, to the debt your payoff order is working on.',
+  Debt: 'An extra payment that month, to the debt your payoff order is working on (a minimum-only mortgage doesn’t get extra).',
   Savings: 'Shared among your goals the way your monthly savings are.',
   Investments: 'Added to your investing that month, by your accounts’ split.',
 };
