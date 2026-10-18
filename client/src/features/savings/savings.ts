@@ -176,15 +176,22 @@ export function useSavingsProjection(data: SavingsData, whole?: ProjectionInput)
       savingsDoneDestination: 'remaining',
     });
 
+    // "A month now" is read from the first month without one-time money, so a windfall isn't shown as a monthly amount.
+    const windfallMonths = new Set((whole?.windfalls ?? []).map((w) => w.month));
+    let steadyMonth = 1;
+    while (windfallMonths.has(steadyMonth) && steadyMonth < SAVINGS_HORIZON_MONTHS) steadyMonth++;
     const outlooks = data.goals.map((goal, i): GoalOutlook => {
-      const monthlyNow = result.points[1]?.goalDeposits[i] ?? 0;
+      const monthlyNow = result.points[steadyMonth]?.goalDeposits[i] ?? 0;
       const fullMonth = result.goalFullMonths[i];
       if (!goal.targetDate) return { monthlyNow, fullMonth };
 
-      // A sinking fund is judged against its next bill, and it's on track when it isn't short then.
+      // A sinking fund is judged against its next bill, and also every later one: it's on track only if the
+      // projection never finds it short. To keep up, it needs at least its bill spread over the months between bills.
       const months = nextDueMonths(goal) ?? monthsUntil(goal.targetDate);
-      const onTrack = fullMonth !== null && fullMonth <= Math.max(0, months);
-      const needed = monthlyNeededForGoal(goals[i], months);
+      const sinking = goal.repeatMonths ? goal.repeatMonths : 0;
+      const shortLater = sinking > 0 && result.warnings.shortBills[i];
+      const onTrack = fullMonth !== null && fullMonth <= Math.max(0, months) && !shortLater;
+      const needed = Math.max(monthlyNeededForGoal(goals[i], months), shortLater ? goal.targetAmount / sinking : 0);
       return { monthlyNow, fullMonth, deadline: { months, onTrack, extraNeeded: onTrack ? 0 : Math.max(0, needed - monthlyNow) } };
     });
 

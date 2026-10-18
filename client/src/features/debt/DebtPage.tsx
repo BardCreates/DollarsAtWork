@@ -159,7 +159,7 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
           {projection.planned.warnings.debtBudgetBelowMinimums && (
             <Alert severity="warning" sx={{ mb: 3 }}>
               Your plan gives Debt {formatMoney(data.monthlyBudget)} a month, but your minimum payments add up to {formatMoney(projection.minimumsDue)}.
-              Raise the Debt amount in Plan to cover them.
+              Raise the Debt amount above to cover them.
             </Alert>
           )}
           {projection.planned.warnings.debtGrowing && (
@@ -172,7 +172,7 @@ function DebtModule({ data, whole }: { data: DebtsData; whole?: ProjectionInput 
               ) : (
                 'At least one debt is getting less each month than the interest it charges, so it grows instead of shrinking.'
               )}{' '}
-              Check the minimum payment, or give Debt more in Plan.
+              Check the minimum payment, or give Debt more above.
             </Alert>
           )}
           {promoWarnings.map((warning) => (

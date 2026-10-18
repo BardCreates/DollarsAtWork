@@ -71,12 +71,12 @@ const builtInHelp: Record<Exclude<CategoryKind, 'Custom'>, string> = {
 };
 
 /** A built-in amount: saved through the plan's category, so its module page shows the new amount straight away. */
-function ModuleAmount({ category, income, readOnly }: { category: Category; income: number; readOnly: boolean }) {
+function ModuleAmount({ category, income, readOnly, onError }: { category: Category; income: number; readOnly: boolean; onError: (e: unknown) => void }) {
   const kind = category.kind as Exclude<CategoryKind, 'Custom'>;
   const module = useSetModuleAmount(kind);
   return (
     <AmountRow name={category.name} help={builtInHelp[kind]}>
-      <MoneyField value={category.amount} percentOf={income} ariaLabel={`${category.name} amount`} disabled={readOnly} onCommit={module.set} />
+      <MoneyField value={category.amount} percentOf={income} ariaLabel={`${category.name} amount`} disabled={readOnly} onCommit={(dollars) => module.set(dollars, onError)} />
     </AmountRow>
   );
 }
@@ -140,18 +140,25 @@ export function WelcomePage() {
   const [problem, setProblem] = useState<string | null>(null);
   const onError = (e: unknown) => setProblem(errorMessage(e));
 
-  // Reaching the amounts step (by Next, Skip, Back/Forward or a link): start the Debt amount at the debts' minimums,
-  // so the plan covers them from day one. Again whenever the minimums change (a debt added after going back), and
-  // only ever raising it, so a lower amount chosen on purpose for the same debts stays.
+  // Start the Debt amount at the debts' minimums, so the plan covers them from day one: on reaching the amounts step
+  // (by Next, Back/Forward or a link) and on Skip. It only ever raises the amount: from
+  // $0, or again when the minimums grow (a debt added after going back) during this visit. A lower amount chosen on
+  // purpose stays, even after a refresh.
   const prefilledFor = useRef<number | null>(null);
   const canEdit = !!me?.access.hasFullAccess;
   const minimumsDue = (debts.data?.debts ?? []).filter((d) => d.balance > 0).reduce((sum, d) => sum + d.minPayment, 0);
   const debtNow = debtAmount.category?.amount;
-  useEffect(() => {
-    if (step < 3 || !canEdit || !debts.data || debtNow === undefined || prefilledFor.current === minimumsDue) return;
+  const raiseDebtToMinimums = () => {
+    if (!canEdit || !debts.data || debtNow === undefined || minimumsDue <= 0 || debtNow >= minimumsDue) return;
+    if (prefilledFor.current === minimumsDue) return;
+    const grew = prefilledFor.current !== null && minimumsDue > prefilledFor.current;
+    if (debtNow !== 0 && !grew) return;
     prefilledFor.current = minimumsDue;
-    if (minimumsDue > 0 && debtNow < minimumsDue) debtAmount.set(minimumsDue, (e) => setProblem(errorMessage(e)));
-  }, [step, canEdit, debts.data, debtNow, minimumsDue, debtAmount]);
+    debtAmount.set(minimumsDue, (e) => setProblem(errorMessage(e)));
+  };
+  useEffect(() => {
+    if (step >= 3) raiseDebtToMinimums();
+  });
 
   if (plan.isPending) {
     return (
@@ -306,7 +313,7 @@ export function WelcomePage() {
               </Typography>
               <Box sx={{ display: 'grid', gap: 2.5 }}>
                 {builtIns.map((category) => (
-                  <ModuleAmount key={category.id} category={category} income={income} readOnly={readOnly} />
+                  <ModuleAmount key={category.id} category={category} income={income} readOnly={readOnly} onError={onError} />
                 ))}
               </Box>
               {minimums > 0 && (debtAmount.category?.amount ?? 0) < minimums && (
@@ -353,7 +360,13 @@ export function WelcomePage() {
             </Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {!last && (
-                <Button color="inherit" onClick={() => navigate('/')}>
+                <Button
+                  color="inherit"
+                  onClick={() => {
+                    raiseDebtToMinimums();
+                    navigate('/');
+                  }}
+                >
                   Skip for now
                 </Button>
               )}

@@ -145,7 +145,7 @@ The panel compares your plan with how it looked when you opened the page. Press 
 If you free up money but don't give it to Debt, Savings or Investments, the panel reminds you: money left in Remaining isn't projected.
 
 ## Cost of a habit
-Each of your own categories (not the built-in three) shows a line like "≈ $43,000 in 10 years if invested". That's what the monthly amount could grow to over 10 years if it were invested instead. It uses your investment accounts' expected return, or 7% a year if you haven't added any. It's an estimate, not advice.
+Each of your own categories (not the built-in three) shows a line like "≈ $43,000 in 10 years if invested". That's what the monthly amount could grow to over 10 years if it were invested instead, in today's dollars (after inflation), like the panel beside it. It uses your investment accounts' expected return, or 7% a year if you haven't added any. It's an estimate, not advice.
 
 On phones the panel sits at the top of the page, so it stays in view while you scroll.`,
   },
@@ -197,10 +197,10 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
 - **Balance**: what you owe today.
 - **APR**: the yearly interest rate, like 19.99.
 - **Minimum payment**: what you must pay each month. For a mortgage, enter the principal and interest only, not the escrow part (taxes and insurance), since that never touches the balance.
-- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. With Avalanche and a promotion, the projection tries two orders (by today's rate, and with the promotion ranked by the APR that follows) and keeps the one that pays less interest. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
+- **Promotional rate** (optional): for a 0% balance transfer or a promo purchase rate, turn it on and enter the rate and the last month it applies. The projection charges that rate until then and the APR after. If the promotion would end with money still owed, the Debt page tells you how much and about how much more a month would clear it in time. With Avalanche and a promotion, the projection tries three orders (by today's rate, with the promotion ranked by the APR that follows, and smallest balance first) and keeps the one that pays the least interest. Watch for **deferred interest** on store cards: miss the deadline and all the interest from the promotion is added at once, which the projection doesn't do.
 - **Minimum only**: on by default for a mortgage. The debt is paid on its own schedule and still counts against your net worth, but your extra money skips it and "debt-free" means everything else. Turn it on for any long loan you'd rather not snowball, or off to throw your extra at the mortgage too.
 
-You can have up to 50 debts. If a minimum payment doesn't cover the month's interest, the form warns you as you type: that debt would grow forever. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount in Plan.
+You can have up to 50 debts. If a minimum payment doesn't cover the month's interest, the form warns you as you type: that debt would grow forever. If your Debt amount doesn't cover all the minimums, you'll see a warning; raise the amount at the top of the Debt page or on Plan.
 
 If any debt is still getting less than its interest in the plan, the Debt page and the dashboard name it.
 
@@ -209,7 +209,7 @@ Every month, each debt gets its minimum. Whatever is left of your Debt amount go
 
 ## Snowball, Avalanche or Custom
 - **Snowball**: smallest balance first, for quick wins.
-- **Avalanche**: highest APR first, which costs the least interest. With a 0% promotion, it also tries paying that balance first (by the APR that follows) and keeps whichever order costs less.
+- **Avalanche**: highest APR first, which usually costs the least interest. With a 0% promotion, the projection also tries paying that balance first (by the APR that follows) and smallest balance first, and keeps whichever of the three costs less. That's usually, though not always, the cheapest possible order.
 - **Custom**: your own order. Drag the debts to set it.
 
 ## The numbers
@@ -256,7 +256,7 @@ The house goes here as something you own. The mortgage goes on the [Debt](/debt)
 You can have up to 50 accounts.
 
 ## Employer match
-If your employer adds money when you contribute, fill in the match. "50% match up to 6%" means **Match** 50 and **Up to** 6: your employer adds half of what you put in, on contributions up to 6% of your salary. Add your **yearly salary before taxes** so the limit is worked out the way your employer does it; left empty, your take-home pay is used, which shows a smaller match. Paycheck money and your plan's share both count toward the match, and the match is added on top in every projection.
+If your employer adds money when you contribute, fill in the match. "50% match up to 6%" means **Match** 50 and **Up to** 6: your employer adds half of what you put in, on contributions up to 6% of your salary. Add your **yearly salary before taxes** so the limit is worked out the way your employer does it; left empty, your take-home pay is used instead. That usually shows a smaller match, but with two incomes in the plan it can show a bigger one than you'll get, so it's worth adding the salary. Paycheck money and your plan's share both count toward the match, and the match is added on top in every projection.
 
 ## Yearly limits
 The IRS caps what you can put into some accounts each year. For 2026: $24,500 for a 401(k) ($32,500 at 50 or older, $35,750 at 60 to 63), $7,500 for IRAs and Roth IRAs together ($8,600 at 50 or older), and $4,400 for an HSA with self-only coverage ($8,750 family, plus $1,000 at 55 or older). If your plan would put more than that in, the page warns you so you can move the extra elsewhere. The limits are per person: when only two accounts added together are over, the page says so, since that's fine if they belong to two people. A 401(k) employer match doesn't count toward your own limit, but money your employer puts in an HSA does, and the check only counts what you put in, so leave room for it.
@@ -290,7 +290,7 @@ A dated roadmap of what's coming: each debt paid off, the day you're debt-free, 
 ## Retirement number
 The **Retirement number** card works out how much invested money could pay for your retirement: about 25 times a year of what you'd spend then, less any Social Security or pension. That's the common **4% rule**: spending about 4% of your investments in the first year, then the same amount raised with inflation, has usually lasted 30 years in US market history. It's a guide, not a promise. Money in a traditional 401(k) or IRA is taxed when you take it out, so if most of yours is there, plan to spend a little less than the number suggests, or aim a little higher.
 
-Press **Set it up** to add the year you were born (for your age on each date), the age you'd like to retire, what you expect to spend each month (leave it empty to use your everyday categories on Plan) and other income then. Everything is in today's dollars. The card shows when your investments reach the number and, with an age set, about how much more a month would get you there in time. It's on your money timeline too.
+Press **Set it up** to add the year you were born (for your age on each date), the age you'd like to retire, what you expect to spend each month (leave it empty to use your everyday categories on Plan) and other income then. Everything is in today's dollars. The card shows when your investments reach the number and, with an age set, about how much more a month would get you there in time. That extra is the same dollar amount every month, so raise it a little each year as prices go up. It's on your money timeline too.
 
 ## Homes, cars and other things
 Your home, car and anything else you own live on the [Assets](/assets) page. Under the net worth figure, **Home** is your home's value and **Other** is everything else you own there; if you've recorded something you owe outside the Debt page, a second line splits your debts into **Debt page** and **Other**. Both "Other" words link to the Assets page.
@@ -395,7 +395,7 @@ Every result is an estimate based on the numbers you enter, not financial advice
 - **APY** (annual percentage yield): the yearly interest a savings account pays you, including interest on interest.
 - **Minimum payment**: the least a lender accepts each month.
 - **Snowball**: paying the smallest debt first for quick wins, then rolling its payment into the next.
-- **Avalanche**: paying the highest-interest debt first, which costs the least in total.
+- **Avalanche**: paying the highest-interest debt first, which usually costs the least in total.
 - **Employer match**: money your employer adds to your retirement account when you contribute.
 - **Expected return**: the yearly growth you assume for an investment. It's a guess about the future, not a promise.
 - **Inflation**: prices rising over time, so a dollar buys less each year. See [Today's dollars](/help/todays-dollars).

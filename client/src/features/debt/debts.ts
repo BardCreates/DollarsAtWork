@@ -20,7 +20,7 @@ export const debtTypeLabels: Record<DebtType, string> = {
 
 export const strategyInfo: Record<DebtStrategy, { label: string; description: string }> = {
   Snowball: { label: 'Snowball', description: 'Extra money goes to the smallest balance first, for quick wins.' },
-  Avalanche: { label: 'Avalanche', description: 'Extra money goes to the highest APR first, which costs the least interest.' },
+  Avalanche: { label: 'Avalanche', description: 'Extra money goes to the highest APR first, which usually costs the least interest.' },
   Custom: { label: 'Custom', description: 'Extra money follows your own order. Drag the debts to set it.' },
 };
 

@@ -99,8 +99,9 @@ export function CompareView({ plans }: { plans: ComparedPlan[] }) {
 
       <Card>
         <CardContent>
-          <Typography variant="h6" sx={{ mb: 1.5 }}>
-            Side by side
+          <Typography variant="h6">Side by side</Typography>
+          <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 1.5 }}>
+            Net worth in today's dollars. Interest paid is the actual dollars charged over 40 years, mortgage included.
           </Typography>
           <TableContainer>
             <Table size="small" sx={{ minWidth: 120 + plans.length * 150, '& td, & th': { fontVariantNumeric: 'tabular-nums', verticalAlign: 'top' } }}>

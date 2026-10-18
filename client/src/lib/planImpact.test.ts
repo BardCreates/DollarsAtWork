@@ -100,6 +100,8 @@ describe("the plan's expected return", () => {
 describe('cost of a habit', () => {
   it('with no growth, it is just the money itself', () => {
     expect(habitCost(250, 0, 10)).toBeCloseTo(30_000, 6); // 250 × 120 months
+    // In today's dollars at 3% inflation over 10 years: 30,000 ÷ 1.03^10 (1.343916379) = 22,322.8178.
+    expect(habitCost(250, 0, 10, 3)).toBeCloseTo(22_322.8178, 3);
   });
 
   it('at 1% a month for a year, matches the annuity sum', () => {

@@ -232,6 +232,7 @@ function PlanEditor({ plan }: { plan: Plan }) {
                         readOnly={readOnly}
                         liveAmount={livePlan.categories[index].amount}
                         investedReturn={impact.status === 'ready' ? impact.expectedReturn : null}
+                        inflationRate={impact.status === 'ready' ? impact.inflationRate : 0}
                         onDraftAmount={setDraft(category.id)}
                         onChange={(changes) => updateCategory.mutate({ id: category.id, changes }, { onError })}
                         onDelete={() => removeCategory(category, index)}

@@ -110,6 +110,9 @@ export function goalRollovers(
     const amount = read === null ? null : result.points[read].goalDeposits[index];
     if (amount !== null && amount < DUST) return;
 
+    // A sinking fund that fills in a due month pays the bill straight away and keeps taking its money: nothing moves.
+    if (repeating[index] && amount !== null && (result.points[month + 1]?.goalDeposits[index] ?? 0) >= amount - DUST) return;
+
     const open = result.goalFullMonths.flatMap((m, j) => (m === null || m > month ? [j] : []));
     const untilDue = repeating[index] ? { untilDue: true } : {};
     if (open.length === 0) {

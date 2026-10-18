@@ -10,7 +10,7 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *     budget goes to the target debt (and on to the next one if the target is cleared).
  *  3. Money whose job is finished (all goals full, all debt paid) moves to its chosen destination.
  *  4. Investments: every account grows on what it held, then receives contributions (its share of the plan's
- *     amount plus anything paid in straight from the paycheck) and employer match.
+ *     amount plus anything paid in straight from the paycheck) and employer match (never on one-time money).
  *  5. Other items (a home, a car) move by their own yearly change.
  *
  * A sinking fund (a goal that repeats) pays its bill at the end of each due month, after that month's deposits, and
@@ -22,7 +22,8 @@ import type { FreedMoneyDestination, MonthPoint, ProjectionInput, ProjectionResu
  *
  * A debt with a promotional rate (a 0% balance transfer) is charged that rate in months 1 to promoMonths, then its APR.
  * Avalanche orders debts by the rate they charge that month. With a promotional debt it also tries ranking a balance
- * its minimums won't clear in time by the APR that follows, and keeps whichever order pays less interest in total.
+ * its minimums won't clear in time by the APR that follows, and smallest balance first, and keeps whichever of the
+ * three orders pays the least interest in total.
  *
  * A minimum-only debt (a mortgage) is paid its minimum every month and never receives the extra; the
  * payoff order and the debt-free month skip it.
@@ -44,14 +45,18 @@ function monthlyRate(annualPercent: number): number {
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
 export function project(input: ProjectionInput): ProjectionResult {
-  // Avalanche promises the least interest. With a promotional debt, neither "rank it by the rate it charges now" nor
-  // "rank it by the APR that follows" always wins (it depends on what else is owed), so both are run and the one
-  // that pays less interest is kept; a tie keeps the plain order.
+  // Avalanche aims for the least interest. With a promotional debt no single ranking always wins (it depends on what
+  // else is owed and when promotions end), so three orders are run: by the rate charged now, with a promotion ranked
+  // by the APR that follows, and smallest balance first. The one that pays the least interest is kept; a tie keeps
+  // the plain order. It's usually, not always, the cheapest possible order.
   const hasPromo = input.debtStrategy === 'avalanche' && input.debts.some((d) => (d.promoMonths ?? 0) > 0);
   const byRateNow = projectWith(input, false);
   if (!hasPromo) return byRateNow;
-  const byLaterApr = projectWith(input, true);
-  return byLaterApr.totalInterest < byRateNow.totalInterest - 0.005 ? byLaterApr : byRateNow;
+  let best = byRateNow;
+  for (const other of [projectWith(input, true), projectWith({ ...input, debtStrategy: 'snowball' }, false)]) {
+    if (other.totalInterest < best.totalInterest - 0.005) best = other;
+  }
+  return best;
 }
 
 function projectWith(input: ProjectionInput, rankPromoByLaterApr: boolean): ProjectionResult {
@@ -131,7 +136,6 @@ function projectWith(input: ProjectionInput, rankPromoByLaterApr: boolean): Proj
     deposits[i] += amount;
   };
 
-  /** Shares a savings amount among the goals and returns what no goal could take. */
   /** A sinking fund's bill: paid from the fund when `due`; a fund short of it pays what it has and is flagged. */
   const payBill = (i: number, bill: number, due: boolean) => {
     if (!due) return;
@@ -139,6 +143,8 @@ function projectWith(input: ProjectionInput, rankPromoByLaterApr: boolean): Proj
     goals[i] = Math.max(0, goals[i] - bill);
     if (goals[i] <= DUST) goals[i] = 0;
   };
+
+  /** Shares a savings amount among the goals and returns what no goal could take. */
   const fillGoals = (amount: number): number => {
     let left = amount;
 
@@ -299,10 +305,13 @@ function projectWith(input: ProjectionInput, rankPromoByLaterApr: boolean): Proj
     interestPaidToDate += sum(interest);
 
     // 3. Freed money moves on. Anything that can't be placed ends up invested.
-    let toInvest = input.investmentsMonthly + (raiseInvested ? income - input.monthlyIncome : 0) + windfallIn(month, 'investments');
+    // One-time money is invested like the rest but never matched: an employer only matches paycheck deferrals.
+    let oneTimeInvested = windfallIn(month, 'investments');
+    let toInvest = input.investmentsMonthly + (raiseInvested ? income - input.monthlyIncome : 0) + oneTimeInvested;
     const send = (amount: number, destination: FreedMoneyDestination, windfallPart = 0) => {
       if (destination !== 'remaining') toInvest += amount;
       else toInvest += windfallPart;
+      oneTimeInvested += windfallPart;
     };
     if (debtDoneDestination === 'savings') {
       // Into the goals; what they can't take follows the goals' own finished-money setting (debt would send it
@@ -327,10 +336,11 @@ function projectWith(input: ProjectionInput, rankPromoByLaterApr: boolean): Proj
         const growth = balance * accountRates[i];
         // Paycheck money is usually a percent of pay, so it grows with the raise.
         const contribution = toInvest * accountWeights[i] + Math.max(0, account.payrollMonthly ?? 0) * raiseFactor;
+        const recurring = contribution - oneTimeInvested * accountWeights[i];
         // The match limit is a percent of salary before taxes when it's known, else of take-home pay.
         const salary = account.matchSalaryMonthly === undefined ? income : account.matchSalaryMonthly * raiseFactor;
         const matchable =
-          account.matchLimitPercent === undefined ? contribution : Math.min(contribution, (salary * account.matchLimitPercent) / 100);
+          account.matchLimitPercent === undefined ? recurring : Math.min(recurring, (salary * account.matchLimitPercent) / 100);
         const match = (matchable * (account.matchPercent ?? 0)) / 100;
 
         accounts[i] = balance + growth + contribution + match;

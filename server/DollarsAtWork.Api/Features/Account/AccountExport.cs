@@ -37,11 +37,11 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             Add(zip, "savings-goals.csv", ["Name", "Target", "Balance", "TargetDate", "Apy", "Priority", "SharePercent", "RepeatMonths"],
                 data.SavingsGoals.Select(g => new object?[] { g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent, g.RepeatMonths }));
             Add(zip, "debts.csv", ["Name", "Type", "Balance", "Apr", "MinimumPayment", "MinimumOnly", "PromoApr", "PromoEndsMonth", "Order"],
-                data.Debts.Select(d => new object?[] { d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, YearMonth(d.PromoEndsMonth), d.SortOrder }));
+                data.Debts.Select(d => new object?[] { d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, d.PromoEndsMonth, d.SortOrder }));
             Add(zip, "investment-accounts.csv", ["Name", "Type", "Balance", "ExpectedReturn", "SharePercent", "MatchPercent", "MatchLimitPercent", "MatchSalaryYearly", "PayrollMonthly"],
                 data.InvestmentAccounts.Select(a => new object?[] { a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly }));
             Add(zip, "other-items.csv", ["Name", "Kind", "Type", "Value", "YearlyChangePercent"], data.OtherItems.Select(i => new object?[] { i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent }));
-            Add(zip, "one-time-amounts.csv", ["Name", "Amount", "Month", "GoesTo"], data.Windfalls.Select(w => new object?[] { w.Name, w.Amount, YearMonth(w.Month), w.Destination }));
+            Add(zip, "one-time-amounts.csv", ["Name", "Amount", "Month", "GoesTo"], data.Windfalls.Select(w => new object?[] { w.Name, w.Amount, w.Month, w.Destination }));
             Add(zip, "net-worth-history.csv", ["Date", "Assets", "Liabilities", "NetWorth", "Savings", "Investments", "Debts"],
                 data.NetWorthHistory.Select(s => new object?[] { s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts }));
             Add(zip, "scenarios.csv", ["Name", "Changes"], data.Scenarios.Select(s => new object?[] { s.Name, JsonSerializer.Serialize(s.Changes, Json) }));
@@ -67,13 +67,13 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             await db.SavingsGoals.AsNoTracking().Where(g => g.UserId == id).OrderBy(g => g.Priority)
                 .Select(g => new ExportGoal(g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent, g.RepeatMonths)).ToListAsync(ct),
             await db.Debts.AsNoTracking().Where(d => d.UserId == id).OrderBy(d => d.SortOrder)
-                .Select(d => new ExportDebt(d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, d.PromoEndsMonth, d.SortOrder)).ToListAsync(ct),
+                .Select(d => new ExportDebt(d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, YearMonth(d.PromoEndsMonth), d.SortOrder)).ToListAsync(ct),
             await db.InvestmentAccounts.AsNoTracking().Where(a => a.UserId == id).OrderBy(a => a.SortOrder)
                 .Select(a => new ExportInvestmentAccount(a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly)).ToListAsync(ct),
             await db.OtherItems.AsNoTracking().Where(i => i.UserId == id).OrderBy(i => i.SortOrder)
                 .Select(i => new ExportOtherItem(i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent)).ToListAsync(ct),
             await db.Windfalls.AsNoTracking().Where(w => w.UserId == id).OrderBy(w => w.Month)
-                .Select(w => new ExportWindfall(w.Name, w.Amount, w.Month, w.Destination)).ToListAsync(ct),
+                .Select(w => new ExportWindfall(w.Name, w.Amount, YearMonth(w.Month)!, w.Destination)).ToListAsync(ct),
             await db.NetWorthSnapshots.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.Date)
                 .Select(s => new ExportSnapshot(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts)).ToListAsync(ct),
             (await db.Scenarios.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.SortOrder)
@@ -89,7 +89,8 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
             writer.WriteLine(string.Join(',', row.Select(Cell)));
     }
 
-    /// <summary>A month field ("2027-06"): stored as its first day, but it means the whole month.</summary>
+    /// <summary>A month field ("2027-06"): stored as its first day, but it means the whole month. Used in the final
+    /// projection of the export queries (EF runs it on the loaded values).</summary>
     private static string? YearMonth(DateOnly? month) => month?.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
     private static string Cell(object? value)
@@ -129,10 +130,10 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
     private record ExportIncomeSource(string Name, decimal Amount, IncomeFrequency Frequency, decimal MonthlyAmount);
     private record ExportCategory(string Name, CategoryKind Kind, decimal Amount, int SortOrder);
     private record ExportGoal(string Name, decimal TargetAmount, decimal CurrentBalance, DateOnly? TargetDate, decimal Apy, int Priority, decimal SharePercent, int? RepeatMonths);
-    private record ExportDebt(string Name, DebtType Type, decimal Balance, decimal Apr, decimal MinPayment, bool MinimumOnly, decimal? PromoApr, DateOnly? PromoEndsMonth, int SortOrder);
+    private record ExportDebt(string Name, DebtType Type, decimal Balance, decimal Apr, decimal MinPayment, bool MinimumOnly, decimal? PromoApr, string? PromoEndsMonth, int SortOrder);
     private record ExportInvestmentAccount(string Name, InvestmentAccountType Type, decimal Balance, decimal ExpectedReturn, decimal SharePercent, decimal? MatchPercent, decimal? MatchLimitPercent, decimal? MatchSalaryYearly, decimal PayrollMonthly);
     private record ExportOtherItem(string Name, OtherItemKind Kind, OtherItemType Type, decimal Value, decimal YearlyChangePercent);
-    private record ExportWindfall(string Name, decimal Amount, DateOnly Month, WindfallDestination Destination);
+    private record ExportWindfall(string Name, decimal Amount, string Month, WindfallDestination Destination);
     private record ExportScenario(string Name, ScenarioOverrides Changes);
     private record ExportSnapshot(DateOnly Date, decimal Assets, decimal Liabilities, decimal NetWorth, decimal? Savings, decimal? Investments, decimal? Debts);
 }

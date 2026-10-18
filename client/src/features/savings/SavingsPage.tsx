@@ -145,12 +145,12 @@ function SavingsModule({ data, whole }: { data: SavingsData; whole?: ProjectionI
         <>
           {data.monthlyAmount <= 0 && (
             <Alert severity="info" sx={{ mb: 3 }}>
-              Your plan doesn't set anything aside for Savings yet, so these goals won't grow. Give Savings an amount in Plan.
+              Your plan doesn't set anything aside for Savings each month yet, so these goals only grow from interest and any money sent here later. Give Savings an amount above.
             </Alert>
           )}
           {shortFunds.length > 0 && (
             <Alert severity="warning" sx={{ mb: 3 }}>
-              At this pace, {listNames(shortFunds)} won't have the whole bill saved by {shortFunds.length === 1 ? 'a due date' : 'their due dates'}. The
+              At this pace, {listNames(shortFunds)} won't have the whole bill saved by {shortFunds.length === 1 ? 'one of its due dates' : 'some of their due dates'}. The
               projection pays what's there. A little more each month, or a lower target, closes the gap.
             </Alert>
           )}

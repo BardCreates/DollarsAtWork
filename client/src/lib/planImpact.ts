@@ -55,8 +55,9 @@ export function planExpectedReturn(accounts: { expectedReturn: number; sharePerc
 }
 
 /** What a monthly amount would grow to if it were invested instead, at a yearly return, after some years. */
-export function habitCost(monthly: number, annualReturn: number, years: number = IMPACT_YEARS): number {
+export function habitCost(monthly: number, annualReturn: number, years: number = IMPACT_YEARS, inflationRate = 0): number {
   if (monthly <= 0) return 0;
   const rows = compoundGrowth({ initial: 0, monthly, annualRate: annualReturn, years });
-  return rows[rows.length - 1].value;
+  // In today's dollars (like the dashboard) when an inflation rate is given.
+  return rows[rows.length - 1].value / Math.pow(1 + Math.max(0, inflationRate) / 100, years);
 }
