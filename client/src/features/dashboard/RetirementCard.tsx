@@ -8,7 +8,7 @@ import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
 import { formatMonthFromNow } from '../../lib/dates';
-import { formatMoney, moneyInputProblem, parseMoneyInput } from '../../lib/money';
+import { formatMoney, moneyInputProblem, moneyInputText, parseMoneyInput } from '../../lib/money';
 import { WITHDRAWAL_RATE } from '../../lib/retirement';
 import { DashCard } from './cards';
 import { useSaveRetirement, type RetirementSettings } from './networth';
@@ -115,8 +115,8 @@ function RetirementDialog({ open, settings, planSpending, onClose }: { open: boo
     reset({
       birthYear: text(settings.birthYear),
       retirementAge: text(settings.retirementAge),
-      spendingMonthly: text(settings.spendingMonthly),
-      otherIncomeMonthly: text(settings.otherIncomeMonthly),
+      spendingMonthly: settings.spendingMonthly === null ? '' : moneyInputText(settings.spendingMonthly),
+      otherIncomeMonthly: settings.otherIncomeMonthly === null ? '' : moneyInputText(settings.otherIncomeMonthly),
     });
   }, [open, settings]);
 

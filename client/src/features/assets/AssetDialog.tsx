@@ -6,7 +6,7 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
-import { parseMoneyInput } from '../../lib/money';
+import { moneyInputText, parseMoneyInput } from '../../lib/money';
 import { otherItemTypeLabels, useAddOtherItem, useSaveOtherItem, type OtherItem, type OtherItemType } from '../dashboard/networth';
 
 const itemTypes = Object.keys(otherItemTypeLabels) as [OtherItemType, ...OtherItemType[]];
@@ -57,7 +57,7 @@ export function AssetDialog({ open, item, onClose }: { open: boolean; item?: Oth
     if (!open) return;
     add.reset();
     save.reset();
-    reset(item ? { name: item.name, kind: item.kind, type: item.type, value: String(item.value), yearlyChange: String(item.yearlyChangePercent) } : blank);
+    reset(item ? { name: item.name, kind: item.kind, type: item.type, value: moneyInputText(item.value), yearlyChange: String(item.yearlyChangePercent) } : blank);
   }, [open, item]);
 
   // Picking a type on a new item fills in its usual yearly change. Editing never changes a saved rate on its own.

@@ -63,7 +63,7 @@ public static partial class PlanEndpoints
         if (await db.IncomeSources.AnyAsync(s => s.UserId == userId, ct))
             return Invalid("monthlyIncome", "Your income adds up from your income sources. Change those instead.");
 
-        plan.MonthlyIncome = income;
+        plan.MonthlyIncome = Validation.Cents(income);
         plan.UpdatedAt = clock.GetUtcNow();
         await db.SaveChangesAsync(ct);
 
@@ -133,7 +133,7 @@ public static partial class PlanEndpoints
             UserId = userId,
             Kind = CategoryKind.Custom,
             Name = name!,
-            Amount = amount,
+            Amount = Validation.Cents(amount),
             Color = color,
             CreatedAt = now,
             UpdatedAt = now,
@@ -171,7 +171,7 @@ public static partial class PlanEndpoints
         }
         if (request.Amount is { } amount)
         {
-            if (IsValidAmount(amount)) category.Amount = amount;
+            if (IsValidAmount(amount)) category.Amount = Validation.Cents(amount);
             else errors["amount"] = ["Enter an amount between $0 and $999,999,999."];
         }
         if (request.Color is { } color)

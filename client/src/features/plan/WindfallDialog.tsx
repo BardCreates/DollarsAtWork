@@ -7,7 +7,7 @@ import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
 import { yearMonthFromNow } from '../../lib/dates';
-import { moneyInputProblem, parseMoneyInput } from '../../lib/money';
+import { moneyInputProblem, moneyInputText, parseMoneyInput } from '../../lib/money';
 import {
   useAddWindfall,
   useSaveWindfall,
@@ -54,7 +54,7 @@ export function WindfallDialog({ open, windfall, onClose }: { open: boolean; win
     if (!open) return;
     add.reset();
     save.reset();
-    reset(windfall ? { name: windfall.name, amount: String(windfall.amount), month: windfall.month, destination: windfall.destination } : blank());
+    reset(windfall ? { name: windfall.name, amount: moneyInputText(windfall.amount), month: windfall.month, destination: windfall.destination } : blank());
   }, [open, windfall]);
 
   const guardedClose = useGuardedClose(open, isDirty, onClose);

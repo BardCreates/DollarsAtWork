@@ -114,8 +114,8 @@ public static class NetWorthEndpoints
 
         plan.BirthYear = request.BirthYear;
         plan.RetirementAge = request.RetirementAge;
-        plan.RetirementSpendingMonthly = request.SpendingMonthly;
-        plan.RetirementIncomeMonthly = request.OtherIncomeMonthly;
+        plan.RetirementSpendingMonthly = Validation.Cents(request.SpendingMonthly);
+        plan.RetirementIncomeMonthly = Validation.Cents(request.OtherIncomeMonthly);
         plan.UpdatedAt = now;
         await db.SaveChangesAsync(ct);
         return Results.Ok(SettingsResponse.From(plan));

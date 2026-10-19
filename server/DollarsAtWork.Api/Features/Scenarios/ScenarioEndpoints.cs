@@ -116,7 +116,7 @@ public static class ScenarioEndpoints
                 else if (amount < 0 || amount > Validation.MaxAmount)
                     check.Add("categoryAmounts", "Enter amounts between $0 and $999,999,999.");
                 else
-                    amounts[categoryId] = amount;
+                    amounts[categoryId] = Validation.Cents(amount);
             }
         }
 

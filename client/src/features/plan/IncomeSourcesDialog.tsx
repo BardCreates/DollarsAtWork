@@ -9,7 +9,7 @@ import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
 import { incomeFrequencies, monthlyEquivalent, type IncomeFrequency } from '../../lib/income';
-import { formatMoney, moneyInputProblem, parseMoneyInput } from '../../lib/money';
+import { formatMoney, moneyInputProblem, moneyInputText, parseMoneyInput } from '../../lib/money';
 import { useAddIncomeSource, useDeleteIncomeSource, useIncomes, useSaveIncomeSource, type IncomeSource, type IncomesData } from './incomes';
 
 const frequencyValues = incomeFrequencies.map((f) => f.value) as [IncomeFrequency, ...IncomeFrequency[]];
@@ -66,7 +66,7 @@ export function IncomeSourcesDialog({
 
   const startEdit = (source: IncomeSource) => {
     setEditing(source);
-    reset({ name: source.name, amount: String(source.amount), frequency: source.frequency });
+    reset({ name: source.name, amount: moneyInputText(source.amount), frequency: source.frequency });
   };
 
   const serverError = saving.error instanceof ApiError ? saving.error : undefined;

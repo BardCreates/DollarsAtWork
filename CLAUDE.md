@@ -238,6 +238,10 @@ and decisions already made. Don't re-ask decided questions.
   table, Invest Growth tab. Savings "/month now" skips windfall months; a sinking fund is on track only if never short
   (extra = bill ÷ months between bills); goalRollovers skips a sinking fund that fills in a due month. JSON export
   writes month fields as yyyy-MM.
+- Money to the cent (Oct 19, R16): the server rounds every money field to cents on write (Validation.Amount, or
+  Validation.Cents where a field is checked another way: income, categories, retirement amounts, scenario amounts) and in
+  the export. Edit boxes start from money.ts moneyInputText (cents-rounded, never 1234.5678 from the four stored decimals);
+  chart tooltips use formatWholeMoney (whole dollars, like the cards).
 
 ## What we compete on
 

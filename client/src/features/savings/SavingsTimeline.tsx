@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { formatDuration, formatMonthFromNow } from '../../lib/dates';
-import { formatMoney, formatMoneyCompact } from '../../lib/money';
+import { formatMoneyCompact, formatWholeMoney } from '../../lib/money';
 import { chartPalette } from '../../theme';
 import type { Goal, SavingsProjection } from './savings';
 
@@ -51,7 +51,7 @@ export function SavingsTimeline({ goals, projection }: { goals: Goal[]; projecti
             />
             <Tooltip
               labelFormatter={(month) => formatMonthFromNow(Number(month))}
-              formatter={(value) => formatMoney(Number(value))}
+              formatter={(value) => formatWholeMoney(Number(value))}
               contentStyle={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10 }}
               labelStyle={{ color: theme.palette.text.secondary }}
             />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import { errorMessage } from '../../api/client';
-import { formatMoney, parseMoneyInput } from '../../lib/money';
+import { formatMoney, moneyInputText, parseMoneyInput } from '../../lib/money';
 import { useCheckIn, type BalanceUpdate, type NetWorthData } from './networth';
 import type { DashboardData } from './useDashboard';
 
@@ -41,7 +41,7 @@ export function CheckInDialog({ open, data, onClose, onSaved }: { open: boolean;
   useEffect(() => {
     if (!open) return;
     checkIn.reset();
-    setValues(Object.fromEntries(sections(data).flatMap((section) => section.rows.map((row) => [row.key, String(row.balance)]))));
+    setValues(Object.fromEntries(sections(data).flatMap((section) => section.rows.map((row) => [row.key, moneyInputText(row.balance)]))));
   }, [open]);
 
   const parsed = (row: Row) => parseMoneyInput(values[row.key] ?? '');

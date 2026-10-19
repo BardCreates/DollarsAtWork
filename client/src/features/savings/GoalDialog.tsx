@@ -6,7 +6,7 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
-import { parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { moneyInputText, parseMoneyInput, parsePercentInput } from '../../lib/money';
 import { repeatChoices, useAddGoal, useSaveGoal, type Goal, type GoalFields } from './savings';
 
 const isAmount = (text: string) => parseMoneyInput(text) !== null;
@@ -62,8 +62,8 @@ export function GoalDialog({ open, goal, starter, showShare, onClose }: GoalDial
     const from = goal ?? starter;
     reset({
       name: from?.name ?? '',
-      targetAmount: numberText(from?.targetAmount ?? 0),
-      currentBalance: numberText(from?.currentBalance ?? 0),
+      targetAmount: moneyInputText(from?.targetAmount ?? 0, { emptyForZero: true }),
+      currentBalance: moneyInputText(from?.currentBalance ?? 0, { emptyForZero: true }),
       targetDate: from?.targetDate ?? '',
       apy: numberText(from?.apy ?? 0),
       sharePercent: numberText(from?.sharePercent ?? 0),

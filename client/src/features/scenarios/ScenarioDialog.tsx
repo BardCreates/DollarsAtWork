@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField, Typography } from '@mui/material';
 import { ApiError, errorMessage } from '../../api/client';
-import { formatMoney, parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { formatMoney, moneyInputText, parseMoneyInput, parsePercentInput } from '../../lib/money';
 import { changesBetween, isEmptyChanges, resolveScenario, type ScenarioInputs } from '../../lib/scenarios';
 import { strategyInfo, type DebtStrategy } from '../debt/debts';
 import type { DashboardData } from '../dashboard/useDashboard';
@@ -31,8 +31,8 @@ interface Draft {
 function toDraft(name: string, inputs: ScenarioInputs): Draft {
   return {
     name,
-    income: String(inputs.monthlyIncome),
-    amounts: Object.fromEntries(Object.entries(inputs.categoryAmounts).map(([id, amount]) => [id, String(amount)])),
+    income: moneyInputText(inputs.monthlyIncome),
+    amounts: Object.fromEntries(Object.entries(inputs.categoryAmounts).map(([id, amount]) => [id, moneyInputText(amount)])),
     raise: String(inputs.incomeGrowthRate),
     strategy: inputs.debtStrategy,
     debtDone: inputs.debtDoneDestination,

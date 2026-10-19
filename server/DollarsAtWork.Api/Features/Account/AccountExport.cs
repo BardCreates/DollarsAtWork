@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DollarsAtWork.Api.Common;
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Scenarios;
@@ -59,23 +60,23 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
         return new ExportData(
             now,
             new ExportAccount(user.Email!, user.CreatedAt, subscription.EffectiveStatus(now), subscription.TrialEndsAt),
-            new ExportPlan(plan.MonthlyIncome, plan.Currency, plan.DebtStrategy, plan.SavingsSplitMode, plan.DebtDoneDestination, plan.SavingsDoneDestination, plan.InflationRate, plan.IncomeGrowthRate, plan.RaiseToInvestments, plan.BirthYear, plan.RetirementAge, plan.RetirementSpendingMonthly, plan.RetirementIncomeMonthly),
+            new ExportPlan(Money(plan.MonthlyIncome), plan.Currency, plan.DebtStrategy, plan.SavingsSplitMode, plan.DebtDoneDestination, plan.SavingsDoneDestination, plan.InflationRate, plan.IncomeGrowthRate, plan.RaiseToInvestments, plan.BirthYear, plan.RetirementAge, Money(plan.RetirementSpendingMonthly), Money(plan.RetirementIncomeMonthly)),
             (await db.IncomeSources.AsNoTracking().Where(i => i.UserId == id).OrderBy(i => i.SortOrder).ToListAsync(ct))
-                .Select(i => new ExportIncomeSource(i.Name, i.Amount, i.Frequency, Math.Round(i.MonthlyAmount, 2))).ToList(),
+                .Select(i => new ExportIncomeSource(i.Name, Money(i.Amount), i.Frequency, Money(i.MonthlyAmount))).ToList(),
             await db.Categories.AsNoTracking().Where(c => c.UserId == id).OrderBy(c => c.SortOrder)
-                .Select(c => new ExportCategory(c.Name, c.Kind, c.Amount, c.SortOrder)).ToListAsync(ct),
+                .Select(c => new ExportCategory(c.Name, c.Kind, Money(c.Amount), c.SortOrder)).ToListAsync(ct),
             await db.SavingsGoals.AsNoTracking().Where(g => g.UserId == id).OrderBy(g => g.Priority)
-                .Select(g => new ExportGoal(g.Name, g.TargetAmount, g.CurrentBalance, g.TargetDate, g.Apy, g.Priority, g.SharePercent, g.RepeatMonths)).ToListAsync(ct),
+                .Select(g => new ExportGoal(g.Name, Money(g.TargetAmount), Money(g.CurrentBalance), g.TargetDate, g.Apy, g.Priority, g.SharePercent, g.RepeatMonths)).ToListAsync(ct),
             await db.Debts.AsNoTracking().Where(d => d.UserId == id).OrderBy(d => d.SortOrder)
-                .Select(d => new ExportDebt(d.Name, d.Type, d.Balance, d.Apr, d.MinPayment, d.MinimumOnly, d.PromoApr, YearMonth(d.PromoEndsMonth), d.SortOrder)).ToListAsync(ct),
+                .Select(d => new ExportDebt(d.Name, d.Type, Money(d.Balance), d.Apr, Money(d.MinPayment), d.MinimumOnly, d.PromoApr, YearMonth(d.PromoEndsMonth), d.SortOrder)).ToListAsync(ct),
             await db.InvestmentAccounts.AsNoTracking().Where(a => a.UserId == id).OrderBy(a => a.SortOrder)
-                .Select(a => new ExportInvestmentAccount(a.Name, a.Type, a.Balance, a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, a.MatchSalaryYearly, a.PayrollMonthly)).ToListAsync(ct),
+                .Select(a => new ExportInvestmentAccount(a.Name, a.Type, Money(a.Balance), a.ExpectedReturn, a.SharePercent, a.MatchPercent, a.MatchLimitPercent, Money(a.MatchSalaryYearly), Money(a.PayrollMonthly))).ToListAsync(ct),
             await db.OtherItems.AsNoTracking().Where(i => i.UserId == id).OrderBy(i => i.SortOrder)
-                .Select(i => new ExportOtherItem(i.Name, i.Kind, i.Type, i.Value, i.YearlyChangePercent)).ToListAsync(ct),
+                .Select(i => new ExportOtherItem(i.Name, i.Kind, i.Type, Money(i.Value), i.YearlyChangePercent)).ToListAsync(ct),
             await db.Windfalls.AsNoTracking().Where(w => w.UserId == id).OrderBy(w => w.Month)
-                .Select(w => new ExportWindfall(w.Name, w.Amount, YearMonth(w.Month)!, w.Destination)).ToListAsync(ct),
+                .Select(w => new ExportWindfall(w.Name, Money(w.Amount), YearMonth(w.Month)!, w.Destination)).ToListAsync(ct),
             await db.NetWorthSnapshots.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.Date)
-                .Select(s => new ExportSnapshot(s.Date, s.Assets, s.Liabilities, s.NetWorth, s.Savings, s.Investments, s.Debts)).ToListAsync(ct),
+                .Select(s => new ExportSnapshot(s.Date, Money(s.Assets), Money(s.Liabilities), Money(s.NetWorth), Money(s.Savings), Money(s.Investments), Money(s.Debts))).ToListAsync(ct),
             (await db.Scenarios.AsNoTracking().Where(s => s.UserId == id).OrderBy(s => s.SortOrder)
                 .Select(s => new { s.Name, s.OverridesJson }).ToListAsync(ct))
                 .Select(s => new ExportScenario(s.Name, ScenarioJson.Read(s.OverridesJson))).ToList());
@@ -88,6 +89,12 @@ public class AccountExport(AppDbContext db, TimeProvider clock)
         foreach (var row in rows)
             writer.WriteLine(string.Join(',', row.Select(Cell)));
     }
+
+    /// <summary>Money to the cent, as the app shows it (the database keeps four decimals). Used in the final projection of
+    /// the export queries, like <see cref="YearMonth"/>.</summary>
+    private static decimal Money(decimal value) => Validation.Cents(value);
+
+    private static decimal? Money(decimal? value) => Validation.Cents(value);
 
     /// <summary>A month field ("2027-06"): stored as its first day, but it means the whole month. Used in the final
     /// projection of the export queries (EF runs it on the loaded values).</summary>
