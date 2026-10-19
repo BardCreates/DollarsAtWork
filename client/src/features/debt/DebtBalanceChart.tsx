@@ -1,7 +1,7 @@
 import { Box, useTheme } from '@mui/material';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { formatMonthFromNow } from '../../lib/dates';
-import { formatMoney, formatMoneyCompact } from '../../lib/money';
+import { formatMoneyCompact, formatWholeMoney } from '../../lib/money';
 import type { ProjectionResult } from '../../lib/projection';
 import { chartPalette } from '../../theme';
 import type { Debt } from './debts';
@@ -45,7 +45,7 @@ export function DebtBalanceChart({ debts, planned }: { debts: Debt[]; planned: P
           />
           <Tooltip
             labelFormatter={(month) => formatMonthFromNow(Number(month))}
-            formatter={(value) => formatMoney(Number(value))}
+            formatter={(value) => formatWholeMoney(Number(value))}
             contentStyle={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10 }}
             labelStyle={{ color: theme.palette.text.secondary }}
           />

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { muiField } from '../../components/formHelpers';
 import { ApiError, errorMessage } from '../../api/client';
-import { formatMoney, parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { formatMoney, moneyInputText, parseMoneyInput, parsePercentInput } from '../../lib/money';
 import { yearMonthFromNow } from '../../lib/dates';
 import { monthlyInterest } from '../../lib/projection';
 import { useGuardedClose } from '../../components/useGuardedClose';
@@ -50,9 +50,9 @@ export function DebtDialog({ open, debt, onClose }: { open: boolean; debt?: Debt
         ? {
             name: debt.name,
             type: debt.type,
-            balance: String(debt.balance),
+            balance: moneyInputText(debt.balance),
             apr: String(debt.apr),
-            minPayment: String(debt.minPayment),
+            minPayment: moneyInputText(debt.minPayment),
             minimumOnly: debt.minimumOnly,
             hasPromo: debt.promoEndsMonth !== null,
             promoApr: String(debt.promoApr ?? 0),

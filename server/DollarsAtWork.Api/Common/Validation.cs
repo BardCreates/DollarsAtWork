@@ -26,13 +26,21 @@ public class Validation
         return trimmed ?? "";
     }
 
-    /// <summary>Dollars from $0 to $999,999,999.99.</summary>
+    /// <summary>Dollars from $0 to $999,999,999.99, rounded to cents: the database keeps four decimals, but money
+    /// is never stored with more than two, so an edit box never shows 1234.5678.</summary>
     public decimal Amount(string field, decimal? value, string what)
     {
         if (value is not { } amount || amount < 0 || amount > MaxAmount)
             Add(field, $"Enter {what} between $0 and $999,999,999.");
-        return value ?? 0m;
+        return Cents(value ?? 0m);
     }
+
+    /// <summary>Money rounded to cents, halves away from zero (12.345 -> 12.35). Every money field is written through
+    /// this, directly or via <see cref="Amount"/>, and the export rounds with it too.</summary>
+    public static decimal Cents(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
+
+    /// <inheritdoc cref="Cents(decimal)"/>
+    public static decimal? Cents(decimal? value) => value is { } amount ? Cents(amount) : null;
 
     /// <summary>A percent between two bounds, such as an APR.</summary>
     public decimal Percent(string field, decimal? value, string what, decimal max = 100m)

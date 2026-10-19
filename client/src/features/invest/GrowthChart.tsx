@@ -1,6 +1,6 @@
 import { Box, useTheme } from '@mui/material';
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { formatMoney, formatMoneyCompact } from '../../lib/money';
+import { formatMoneyCompact, formatWholeMoney } from '../../lib/money';
 import { brand } from '../../theme';
 import type { YearPoint } from './investments';
 
@@ -34,7 +34,7 @@ export function GrowthChart({ years }: { years: YearPoint[] }) {
           />
           <Tooltip
             labelFormatter={(year) => `${thisYear + Number(year)} (in ${year} ${Number(year) === 1 ? 'year' : 'years'})`}
-            formatter={(value) => formatMoney(Number(value))}
+            formatter={(value) => formatWholeMoney(Number(value))}
             contentStyle={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10 }}
             labelStyle={{ color: theme.palette.text.secondary }}
           />

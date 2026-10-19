@@ -1,6 +1,6 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { formatMoney, formatPercent } from '../../lib/money';
+import { formatMoney, formatPercent, formatWholeMoney } from '../../lib/money';
 import { brand } from '../../theme';
 import { planTotals, type Plan } from './plan';
 
@@ -36,7 +36,7 @@ export function AllocationDonut({ plan }: { plan: Plan }) {
             />
             {!isEmpty && (
               <Tooltip
-                formatter={(value) => formatMoney(Number(value))}
+                formatter={(value) => formatWholeMoney(Number(value))}
                 contentStyle={{
                   background: theme.palette.background.paper,
                   border: `1px solid ${theme.palette.divider}`,

@@ -6,7 +6,7 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import { muiField } from '../../components/formHelpers';
 import { useGuardedClose } from '../../components/useGuardedClose';
 import { ApiError, errorMessage } from '../../api/client';
-import { parseMoneyInput, parsePercentInput } from '../../lib/money';
+import { moneyInputText, parseMoneyInput, parsePercentInput } from '../../lib/money';
 import { accountTypeLabels, DEFAULT_EXPECTED_RETURN, useAddAccount, useSaveAccount, type Account, type AccountFields, type AccountType } from './investments';
 
 const accountTypes = Object.keys(accountTypeLabels) as [AccountType, ...AccountType[]];
@@ -68,12 +68,12 @@ export function AccountDialog({ open, account, onClose }: { open: boolean; accou
         ? {
             name: account.name,
             type: account.type,
-            balance: account.balance === 0 ? '' : String(account.balance),
+            balance: moneyInputText(account.balance, { emptyForZero: true }),
             expectedReturn: String(account.expectedReturn),
             matchPercent: account.matchPercent === null ? '' : String(account.matchPercent),
             matchLimitPercent: account.matchLimitPercent === null ? '' : String(account.matchLimitPercent),
-            matchSalaryYearly: account.matchSalaryYearly === null ? '' : String(account.matchSalaryYearly),
-            payrollMonthly: account.payrollMonthly === 0 ? '' : String(account.payrollMonthly),
+            matchSalaryYearly: account.matchSalaryYearly === null ? '' : moneyInputText(account.matchSalaryYearly),
+            payrollMonthly: moneyInputText(account.payrollMonthly, { emptyForZero: true }),
           }
         : blank,
     );

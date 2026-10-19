@@ -18,6 +18,21 @@ export function formatMoney(value: number, options?: { cents?: boolean }): strin
   return (showCents ? withCents : wholeDollars).format(shown === 0 ? 0 : rounded);
 }
 
+/** $1,234 rounded to the dollar, as the cards and chart tooltips show it. Never "-$0". */
+export function formatWholeMoney(value: number): string {
+  return formatMoney(Math.round(value));
+}
+
+/**
+ * The text an edit box starts with for a saved amount: cents-rounded ("1234.57", never "1234.5678" from the
+ * four decimals the database keeps), with no ".00" on whole dollars, and blank for $0 when emptyForZero.
+ */
+export function moneyInputText(value: number, options?: { emptyForZero?: boolean }): string {
+  const rounded = roundCents(value);
+  if (rounded === 0) return options?.emptyForZero ? '' : '0';
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+}
+
 /** Share of a total as "12.5%", or a dash when there is no total to divide by. */
 export function formatPercent(part: number, total: number): string {
   if (total <= 0) return '—';

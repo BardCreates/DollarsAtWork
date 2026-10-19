@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { TextField, type TextFieldProps } from '@mui/material';
-import { formatMoney, moneyInputProblem, parseMoneyInput } from '../lib/money';
+import { formatMoney, moneyInputProblem, moneyInputText, parseMoneyInput } from '../lib/money';
 
 interface MoneyFieldProps {
   value: number;
@@ -80,7 +80,7 @@ export function MoneyField({ value, onCommit, onDraft, percentOf, label, ariaLab
         if (draft !== null) return;
         selectAll.current = true;
         keepSelection.current = true;
-        setDraft(value === 0 ? '' : String(value));
+        setDraft(moneyInputText(value, { emptyForZero: true }));
       }}
       onMouseUp={(event) => {
         // The click that focused the box would otherwise drop the selection again.
