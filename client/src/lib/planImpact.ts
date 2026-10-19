@@ -1,4 +1,3 @@
-import { compoundGrowth } from './calculators';
 import { DEFAULT_EXPECTED_RETURN, type ProjectionResult } from './projection';
 
 /**
@@ -52,12 +51,4 @@ export function planExpectedReturn(accounts: { expectedReturn: number; sharePerc
   const totalShare = shares.reduce((sum, share) => sum + share, 0);
   if (totalShare === 0) return accounts.reduce((sum, account) => sum + account.expectedReturn, 0) / accounts.length;
   return accounts.reduce((sum, account, i) => sum + account.expectedReturn * shares[i], 0) / totalShare;
-}
-
-/** What a monthly amount would grow to if it were invested instead, at a yearly return, after some years. */
-export function habitCost(monthly: number, annualReturn: number, years: number = IMPACT_YEARS, inflationRate = 0): number {
-  if (monthly <= 0) return 0;
-  const rows = compoundGrowth({ initial: 0, monthly, annualRate: annualReturn, years });
-  // In today's dollars (like the dashboard) when an inflation rate is given.
-  return rows[rows.length - 1].value / Math.pow(1 + Math.max(0, inflationRate) / 100, years);
 }

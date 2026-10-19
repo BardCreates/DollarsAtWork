@@ -1,21 +1,12 @@
 import { useMemo } from 'react';
-import { comparePlans, planExpectedReturn, type PlanImpact } from '../../lib/planImpact';
+import { comparePlans, type PlanImpact } from '../../lib/planImpact';
 import { project } from '../../lib/projection';
 import { buildProjectionInput, useDashboardData } from '../dashboard/useDashboard';
 import type { Plan } from './plan';
 
 export type PlanImpactState =
   | { status: 'loading' | 'unavailable' }
-  | {
-      status: 'ready';
-      impact: PlanImpact;
-      /** The yearly return "if invested" figures use: the plan's own, from its investment accounts. */
-      expectedReturn: number;
-      /** The plan's yearly inflation assumption, for showing amounts in today's dollars. */
-      inflationRate: number;
-      /** False when it is the default, because no investment accounts have been added. */
-      hasAccounts: boolean;
-    };
+  | { status: 'ready'; impact: PlanImpact };
 
 /** True when two versions of the plan would project differently: income or any category amount differs. */
 export function plansDiffer(a: Plan, b: Plan): boolean {
@@ -40,9 +31,6 @@ export function usePlanImpact(baseline: Plan, live: Plan): PlanImpactState {
     return {
       status: 'ready',
       impact: comparePlans(run(baseline), run(live)),
-      expectedReturn: planExpectedReturn(data.investments.accounts),
-      inflationRate: data.netWorth.settings.inflationRate,
-      hasAccounts: data.investments.accounts.length > 0,
     };
   }, [data, isPending, baseline, live]);
 }

@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { comparePlans, habitCost, planExpectedReturn } from './planImpact';
+import { comparePlans, planExpectedReturn } from './planImpact';
 import { project, type ProjectionInput } from './projection';
 
 /** Expected numbers are worked out by hand in the comments, not copied from the code's output. */
-
-/** 12.682503% a year is exactly 1% a month (1.01^12 = 1.12682503). */
-const ONE_PERCENT_A_MONTH = 12.682503013196972;
 
 /** $1,000 owed at 12% APR (1% a month); freed debt money goes into an account that doesn't grow. */
 function loanPlan(debtMonthly: number, overrides: Partial<ProjectionInput> = {}): ProjectionInput {
@@ -94,30 +91,5 @@ describe("the plan's expected return", () => {
 
   it('with no accounts, uses the default 7%', () => {
     expect(planExpectedReturn([])).toBe(7);
-  });
-});
-
-describe('cost of a habit', () => {
-  it('with no growth, it is just the money itself', () => {
-    expect(habitCost(250, 0, 10)).toBeCloseTo(30_000, 6); // 250 × 120 months
-    // In today's dollars at 3% inflation over 10 years: 30,000 ÷ 1.03^10 (1.343916379) = 22,322.8178.
-    expect(habitCost(250, 0, 10, 3)).toBeCloseTo(22_322.8178, 3);
-  });
-
-  it('at 1% a month for a year, matches the annuity sum', () => {
-    // 100 × (1.01¹² − 1) ÷ 0.01 = 100 × 12.682503 = 1,268.2503
-    expect(habitCost(100, ONE_PERCENT_A_MONTH, 1)).toBeCloseTo(1_268.2503, 3);
-  });
-
-  it('$250 a month at 7% for 10 years is about $42,800', () => {
-    // Monthly rate m = 1.07^(1/12) − 1 = 0.0056541449; 1.07¹⁰ = 1.967151357.
-    // 250 × (1.967151357 − 1) ÷ 0.0056541449 = 241.78784 ÷ 0.0056541449 = 42,763.0
-    expect(Math.abs(habitCost(250, 7, 10) - 42_763)).toBeLessThan(1);
-  });
-
-  it('looks 10 years ahead by default, and nothing costs nothing', () => {
-    expect(habitCost(250, 7)).toBe(habitCost(250, 7, 10));
-    expect(habitCost(0, 7)).toBe(0);
-    expect(habitCost(-50, 7)).toBe(0);
   });
 });
