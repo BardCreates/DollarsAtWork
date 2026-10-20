@@ -189,7 +189,7 @@ The **Timeline** tab charts every goal and lists the month each one is reached.`
     title: 'Paying off debt',
     section: 'Savings, debt and investing',
     summary: 'Add your debts and see your debt-free date with snowball, avalanche or your own order.',
-    keywords: 'debt free date snowball avalanche custom apr minimum payment interest schedule credit card loan mortgage student auto medical payoff promo promotional 0% balance transfer deferred',
+    keywords: 'debt free date snowball avalanche custom apr minimum payment payments each debt how much to pay interest schedule credit card loan mortgage student auto medical payoff promo promotional 0% balance transfer deferred',
     body: `The [Debt](/debt) page uses your Debt amount from Plan to pay everything off. The banner at the top shows that amount; type a new one there and it saves to your plan's Debt category (the banner warns if your categories then add up to more than your income).
 
 ## Adding a debt
@@ -217,7 +217,7 @@ Every month, each debt gets its minimum. Whatever is left of your Debt amount go
 - **Interest you'll pay**: total interest from now until then.
 - **Saved vs minimums only**: how much interest (and time) your plan saves compared with paying only the minimums.
 
-The **Schedule** tab shows every month's payment, interest, what went toward the balance and what's still owed.`,
+The **Schedule** tab starts with what to pay each debt next month: the minimum, or the minimum plus your extra money for the debt your plan is focused on, and a last payment when one gets paid off. Below it, **By debt** lists every month's payment to each debt (green is where the extra goes), and **Totals** shows each month's payment, interest, what went toward the balance and what's still owed.`,
   },
   {
     slug: 'assets',
