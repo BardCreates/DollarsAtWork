@@ -248,6 +248,11 @@ and decisions already made. Don't re-ask decided questions.
   invested" (it showed under rent and groceries too); habitCost is gone. The cost of a habit lives only in the /tools
   calculator; the help article "move-a-dollar" and the blog "habit" call to action point there.
 
+- Payments per debt (Oct 20, Hannah's ask): the Debt page's Schedule tab opens with "Payments for <next month>", what to
+  send each debt (features/debt/paymentPlan.ts paymentsForMonth: minimum, minimum + extra, last payment, below the minimum,
+  read from the projection's debtPayments so it matches the payoff dates; tested), then a By debt / Totals switch: By debt
+  is one column per debt each month (green where the extra goes), Totals is the old table. The help debt article says so.
+
 ## What we compete on
 
 The edge is connecting this month's plan to future net worth: the live "move a dollar" panel, what-if
