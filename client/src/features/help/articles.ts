@@ -131,10 +131,10 @@ It's a common guide, not a rule, and your situation may call for a different ord
   },
   {
     slug: 'move-a-dollar',
-    title: 'Move a dollar and the cost of a habit',
+    title: 'Move a dollar',
     section: 'Your plan',
     summary: 'See what each change to your plan does to your debt-free date and your net worth, as you type.',
-    keywords: 'impact panel compare from here if invested habit 10 years net worth sooner later',
+    keywords: 'impact panel compare from here habit 10 years net worth sooner later',
     body: `Beside your categories on [Plan](/plan), the **Move a dollar** panel shows two numbers: your **debt-free date** and your **net worth in 10 years**.
 
 Change any amount and watch them move, before you even leave the box. Under each number you'll see how far it moved: months sooner or later, and dollars more or less.
@@ -145,7 +145,7 @@ The panel compares your plan with how it looked when you opened the page. Press 
 If you free up money but don't give it to Debt, Savings or Investments, the panel reminds you: money left in Remaining isn't projected.
 
 ## Cost of a habit
-Each of your own categories (not the built-in three) shows a line like "≈ $43,000 in 10 years if invested". That's what the monthly amount could grow to over 10 years if it were invested instead, in today's dollars (after inflation), like the panel beside it. It uses your investment accounts' expected return, or 7% a year if you haven't added any. It's an estimate, not advice.
+Curious what a habit like takeout or a subscription could grow to if you invested it instead? Try the [cost of a habit calculator](/tools?tool=habit).
 
 On phones the panel sits at the top of the page, so it stays in view while you scroll.`,
   },

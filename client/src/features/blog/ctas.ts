@@ -55,7 +55,7 @@ export const POST_CTAS: Record<CtaKind, PostCta> = {
   },
   habit: {
     headline: 'What are your habits worth?',
-    body: 'Add your everyday categories and see what each one could grow to in 10 years if it went to work for you instead.',
+    body: 'Split your pay into categories, then move a few dollars from a habit and watch your debt-free date and 10-year net worth change.',
     button: 'Build my free plan',
     secondary: { label: 'Try the cost of a habit calculator', to: '/tools?tool=habit' },
     inApp: { label: 'Open your Plan', to: '/plan' },

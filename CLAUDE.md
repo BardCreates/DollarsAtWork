@@ -242,6 +242,9 @@ and decisions already made. Don't re-ask decided questions.
   Validation.Cents where a field is checked another way: income, categories, retirement amounts, scenario amounts) and in
   the export. Edit boxes start from money.ts moneyInputText (cents-rounded, never 1234.5678 from the four stored decimals);
   chart tooltips use formatWholeMoney (whole dollars, like the cards).
+- No "if invested" line on Plan (Oct 19, R17, Hannah's call): custom categories no longer show "≈ $X in 10 years if
+  invested" (it showed under rent and groceries too); habitCost is gone. The cost of a habit lives only in the /tools
+  calculator; the help article "move-a-dollar" and the blog "habit" call to action point there.
 
 ## What we compete on
 
@@ -303,7 +306,7 @@ client/src/
   lib/scenarios.ts        resolveScenario / changesBetween (a scenario is the plan + its changes), summarizeProjection
   lib/timeline.ts         buildTimeline: the dated roadmap read from a projection; isNear / isDone / nextUp
   lib/rollover.ts         debtRollovers / goalRollovers: who receives a finished debt's or goal's money, read from a projection
-  lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), habitCost, planExpectedReturn
+  lib/planImpact.ts       comparePlans (two projections -> months sooner, net worth change), planExpectedReturn
   lib/dates.ts            months-from-now as text (formatMonthFromNow, formatDuration)
   lib/projection/         the projection engine: project(input) -> month-by-month result; rates are percents (7 = 7%)
   public/sw.js            the service worker: offline page only; tested in lib/serviceWorker.test.ts. Never cache /api.

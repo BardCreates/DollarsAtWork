@@ -9,7 +9,6 @@ import { PlanHint } from '../hints/PageHints';
 import { errorMessage } from '../../api/client';
 import { useMe } from '../../auth/auth';
 import { formatMoney, formatPercent } from '../../lib/money';
-import { IMPACT_YEARS } from '../../lib/planImpact';
 import { AddCategoryForm } from './AddCategoryForm';
 import { AllocationDonut } from './AllocationDonut';
 import { CategoryRow } from './CategoryRow';
@@ -213,10 +212,6 @@ function PlanEditor({ plan }: { plan: Plan }) {
             <Typography variant="h6">Categories</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Type an amount in dollars or as a percent of income. Drag to reorder. Changes save as you go.
-              {impact.status === 'ready' &&
-                ` "If invested" shows what a monthly amount could grow to in ${IMPACT_YEARS} years at ${Number(impact.expectedReturn.toFixed(1))}% a year${
-                  impact.hasAccounts ? ", your plan's expected return" : ''
-                }. It's an estimate, not advice.`}
             </Typography>
 
             <DragDropContext onDragEnd={onDragEnd}>
@@ -231,8 +226,6 @@ function PlanEditor({ plan }: { plan: Plan }) {
                         income={livePlan.monthlyIncome}
                         readOnly={readOnly}
                         liveAmount={livePlan.categories[index].amount}
-                        investedReturn={impact.status === 'ready' ? impact.expectedReturn : null}
-                        inflationRate={impact.status === 'ready' ? impact.inflationRate : 0}
                         onDraftAmount={setDraft(category.id)}
                         onChange={(changes) => updateCategory.mutate({ id: category.id, changes }, { onError })}
                         onDelete={() => removeCategory(category, index)}
