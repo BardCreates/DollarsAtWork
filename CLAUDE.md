@@ -95,6 +95,8 @@ and decisions already made. Don't re-ask decided questions.
   30% for 12 months, 30-day trial for the audience), how it works, what we ask, example numbers, a short FAQ and an
   "Ask for my link" box. Requests reuse POST /api/waitlist with source "affiliates" and a new optional `note`
   ("<name> — <where they share>", WaitlistEntry.Note, max 200, migration AddWaitlistNote); Hannah sends links by hand.
+  Each affiliates request is also emailed to the support inbox (WaitlistEndpoints.AffiliateRequestEmail; a failed send is
+  logged, never shown), and an address already on the list takes the new source and note instead of being dropped.
   Referral: lib/signUp.ts rememberReferral() runs once at start-up (main.tsx); an incoming ?from=<tag> on any page is
   kept in memory and mirrored in sessionStorage (the tag only, named in the Privacy Policy), and signUpPath() and the
   sign-up page prefer it over the page name, so a creator's tag survives browsing to pricing or the demo first.
