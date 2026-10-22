@@ -6,6 +6,7 @@ using DollarsAtWork.Api.Domain;
 using DollarsAtWork.Api.Features.Hints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 
 namespace DollarsAtWork.Api.Features.Auth;
@@ -53,22 +54,40 @@ public static class AuthEndpoints
         };
 
         // User, plan, built-in categories and trial are created together or not at all.
-        await using (var tx = await db.Database.BeginTransactionAsync(ct))
-        {
-            var created = await users.CreateAsync(user, request.Password ?? "");
-            if (!created.Succeeded)
-                return Results.ValidationProblem(ToErrors(created));
+        // The retrying execution strategy (Program.cs) replays the whole block on a dropped
+        // connection; a failed attempt rolled back, so each attempt starts from a clean tracker.
+        // If the connection drops during the commit itself, verifySucceeded checks whether the
+        // account was saved anyway, so a retry never reports the new address as taken.
+        var strategy = db.Database.CreateExecutionStrategy();
+        var problem = await strategy.ExecuteAsync<object?, IResult?>(
+            state: null,
+            operation: async (_, _, token) =>
+            {
+                db.ChangeTracker.Clear();
+                await using var tx = await db.Database.BeginTransactionAsync(token);
 
-            var trialStarted = await setup.AddDefaultsAsync(user.Id, email, ct);
+                var created = await users.CreateAsync(user, request.Password ?? "");
+                if (!created.Succeeded)
+                    return Results.ValidationProblem(ToErrors(created));
 
-            // Anonymous counts for the owner's Numbers page: the event isn't linked to the account.
-            UsageEvents.Record(db, clock, UsageEvents.Signup, user.SignupSource);
-            if (trialStarted)
-                UsageEvents.Record(db, clock, UsageEvents.TrialStarted, user.SignupSource);
+                var trialStarted = await setup.AddDefaultsAsync(user.Id, email, token);
 
-            await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
-        }
+                // Anonymous counts for the owner's Numbers page: the event isn't linked to the account.
+                UsageEvents.Record(db, clock, UsageEvents.Signup, user.SignupSource);
+                if (trialStarted)
+                    UsageEvents.Record(db, clock, UsageEvents.TrialStarted, user.SignupSource);
+
+                await db.SaveChangesAsync(token);
+                await tx.CommitAsync(token);
+                return null;
+            },
+            verifySucceeded: async (_, _, token) =>
+                new ExecutionResult<IResult?>(
+                    await db.Users.AsNoTracking().AnyAsync(u => u.Id == user.Id, token), null),
+            cancellationToken: ct);
+
+        if (problem is not null)
+            return problem;
 
         await emails.SendConfirmationAsync(user, ct);
         await signIn.SignInAsync(user, isPersistent: true);

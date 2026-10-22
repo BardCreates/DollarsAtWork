@@ -248,6 +248,10 @@ and decisions already made. Don't re-ask decided questions.
   invested" (it showed under rent and groceries too); habitCost is gone. The cost of a habit lives only in the /tools
   calculator; the help article "move-a-dollar" and the blog "habit" call to action point there.
 
+- Database retry (Oct 22, advisor item, Hannah's yes): UseSqlServer has EnableRetryOnFailure (5 tries, up to 10 s apart),
+  so a dropped Azure SQL connection is retried instead of answering 500. Any code that opens its own transaction must run
+  it inside db.Database.CreateExecutionStrategy().ExecuteAsync (see AuthEndpoints.Register); a plain BeginTransaction throws.
+
 - Payments per debt (Oct 20, Hannah's ask): the Debt page's Schedule tab opens with "Payments for <next month>", what to
   send each debt (features/debt/paymentPlan.ts paymentsForMonth: minimum, minimum + extra, last payment, below the minimum,
   read from the projection's debtPayments so it matches the payoff dates; tested), then a By debt / Totals switch: By debt
