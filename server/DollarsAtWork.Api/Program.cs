@@ -38,7 +38,12 @@ if (builder.Configuration["Sentry:Dsn"] is { Length: > 0 } sentryDsn)
 
 // ---------- Data ----------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Default"),
+        // Azure SQL drops connections now and then (failover, a paused database waking up).
+        // Retry those briefly instead of showing the visitor an error page. Code that opens
+        // its own transaction must run it through db.Database.CreateExecutionStrategy().
+        sql => sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
 
 // ---------- Accounts (ASP.NET Core Identity, cookie sign-in) ----------
 builder.Services
