@@ -26,4 +26,17 @@ describe('sitemap', () => {
     expect(xml).toContain(`<url><loc>${SITE_URL}/blog/a-post</loc><lastmod>2026-10-15</lastmod></url>`);
     expect(xml).not.toContain('/sign-in');
   });
+
+  it('lists each help article and dates the blog index by its newest post', () => {
+    const xml = buildSitemap(
+      [
+        { slug: 'older', date: '2026-10-01' },
+        { slug: 'newer', date: '2026-10-20' },
+      ],
+      ['debt'],
+    );
+    expect(xml).toContain(`<url><loc>${SITE_URL}/help/debt</loc></url>`);
+    expect(xml).toContain(`<url><loc>${SITE_URL}/blog</loc><lastmod>2026-10-20</lastmod></url>`);
+    expect(xml.indexOf('/blog/newer')).toBeLessThan(xml.indexOf('/blog/older'));
+  });
 });

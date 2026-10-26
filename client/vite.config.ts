@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { buildSitemap, publishedPosts } from './src/lib/sitemap';
+import { HELP_ARTICLES } from './src/features/help/articles';
 
 /**
  * Writes sitemap.xml into the build from the blog's Markdown files, so a newly published post is listed the
@@ -9,7 +10,7 @@ import { buildSitemap, publishedPosts } from './src/lib/sitemap';
 function sitemap(): Plugin {
   return {
     name: 'daw-sitemap',
-    apply: 'build',
+    apply: (_config, env) => env.command === 'build' && !env.isSsrBuild, // not the pre-render build (src/prerender)
     async generateBundle() {
       const fs = await import(/* @vite-ignore */ 'node:' + 'fs');
       const dir = 'src/content/blog';
@@ -17,7 +18,7 @@ function sitemap(): Plugin {
       for (const name of fs.readdirSync(dir) as string[]) {
         if (name.endsWith('.md')) files[name] = fs.readFileSync(`${dir}/${name}`, 'utf8') as string;
       }
-      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap(publishedPosts(files)) });
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap(publishedPosts(files), HELP_ARTICLES.map((a) => a.slug)) });
     },
   };
 }
