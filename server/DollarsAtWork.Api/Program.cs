@@ -190,6 +190,23 @@ app.Use(async (context, next) =>
 });
 
 // In production the built React app lives in wwwroot and is served from the same address as the API.
+// Public pages (home, pricing, tools, blog posts, help...) are pre-rendered at build time into wwwroot/<path>/index.html
+// (client/src/prerender), so search engines and link previews read each page's own title and text. Serve that file at
+// the page's clean address (/blog/some-post); every other address falls back to the plain app shell, app.html.
+var webRoot = app.Environment.WebRootFileProvider;
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    if ((HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+        && path is { Length: > 1 }
+        && !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase)
+        && !Path.HasExtension(path))
+    {
+        var page = path.TrimEnd('/') + "/index.html";
+        if (webRoot.GetFileInfo(page).Exists) context.Request.Path = page;
+    }
+    await next();
+});
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -215,7 +232,7 @@ api.MapUsageEndpoints();
 api.MapEmailEndpoints();
 api.MapFallback(() => Results.NotFound()); // unknown /api routes never fall through to the React app
 
-app.MapFallbackToFile("index.html");
+app.MapFallbackToFile("app.html"); // the plain shell; index.html is the pre-rendered home page
 
 app.Run();
 

@@ -5,7 +5,10 @@
 
 export const SITE_URL = 'https://dollarsatwork.app';
 
-/** Every page open to visitors that is worth finding in search. App pages and sign-in screens are left out. */
+/**
+ * Every fixed page open to visitors that is worth finding in search. App pages and sign-in screens are left out.
+ * Each is also pre-rendered at build time (src/prerender), so add a new public page here.
+ */
 export const PUBLIC_PATHS = ['/', '/pricing', '/tools', '/demo', '/blog', '/help', '/security', '/affiliates', '/terms', '/privacy'] as const;
 
 const POST_FILE = /(\d{4}-\d{2}-\d{2})-([a-z0-9-]+)\.md$/;
@@ -25,15 +28,20 @@ export function publishedPosts(files: Record<string, string>): { slug: string; d
   });
 }
 
-/** The sitemap: the public pages, then one entry per published post with its date. */
-export function buildSitemap(posts: { slug: string; date: string }[]): string {
+/**
+ * The sitemap: the public pages, each help article, then one entry per published post with its date.
+ * The blog index changes whenever a post goes up, so it carries the newest post's date.
+ */
+export function buildSitemap(posts: { slug: string; date: string }[], helpSlugs: string[] = []): string {
   const entry = (path: string, lastmod?: string) =>
     `  <url><loc>${SITE_URL}${path}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;
   const sorted = [...posts].sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
+  const newest = sorted[0]?.date;
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...PUBLIC_PATHS.map((path) => entry(path)),
+    ...PUBLIC_PATHS.map((path) => entry(path, path === '/blog' ? newest : undefined)),
+    ...helpSlugs.map((slug) => entry(`/help/${slug}`)),
     ...sorted.map((post) => entry(`/blog/${post.slug}`, post.date)),
     '</urlset>',
     '',

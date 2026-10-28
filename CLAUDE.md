@@ -257,6 +257,16 @@ and decisions already made. Don't re-ask decided questions.
   read from the projection's debtPayments so it matches the payoff dates; tested), then a By debt / Totals switch: By debt
   is one column per debt each month (green where the extra goes), Totals is the old table. The help debt article says so.
 
+- Pre-rendered public pages (Oct 26, R21a): `npm run build` also runs `vite build --ssr src/prerender/entry.tsx` and
+  scripts/prerender.mjs, which render every public page (lib/sitemap PUBLIC_PATHS, each help article, each published post)
+  as a signed-out visitor sees it into wwwroot/<path>/index.html, with its own title and description (read from the page's
+  usePageMeta through PageMetaSinkContext), canonical URL, Open Graph/Twitter tags, BreadcrumbList JSON-LD and Article
+  JSON-LD on posts (prerender/head.ts renderDocument). The plain shell is copied to wwwroot/app.html. Program.cs serves
+  <path>/index.html at the clean address and falls back to app.html. main.tsx uses createRoot, so the browser replaces
+  the pre-rendered HTML with the live page. A new public page: add it to PUBLIC_PATHS and give it usePageMeta; a page that
+  reads window or document while rendering (not in an effect) breaks the build. sitemap.xml lists help articles and dates
+  /blog by its newest post.
+
 ## What we compete on
 
 The edge is connecting this month's plan to future net worth: the live "move a dollar" panel, what-if
@@ -348,6 +358,8 @@ client/src/
   pages/                  auth screens, Profile, NotFound, public/ (pricing, terms, privacy, security, PublicLayout + FooterLinks,
                           siteInfo.ts = the owner's company name / contact email still to fill in);
                           everything else lives in client/src/features/<feature>/
+  prerender/              build-time rendering of public pages: entry.tsx (renderPage, prerenderAll), head.ts, routes.ts
+client/scripts/prerender.mjs  writes the pre-rendered pages into wwwroot after the build
 docs/PLAN.md              product spec
 ```
 
