@@ -1,8 +1,9 @@
 # Publishes blog posts without a human click.
 #
 # The blog scheduled task opens a pull request from a branch named blog/<date>-<slug> that adds one post file.
-# When CI finishes green on such a pull request, this workflow squash-merges it, and the deploy workflow puts the
-# post live. It only ever merges a pull request that (1) comes from a blog/ branch and (2) touches nothing outside
+# When CI finishes green on such a pull request, this workflow squash-merges it and then starts the deploy workflow
+# to put the post live. (A merge made with GITHUB_TOKEN doesn't trigger the deploy's push event on its own; a
+# workflow_dispatch does.) It only ever merges a pull request that (1) comes from a blog/ branch and (2) touches nothing outside
 # client/src/content/blog/, so it can never publish a code change on its own.
 
 name: Publish blog post
@@ -13,6 +14,7 @@ on:
     types: [completed]
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -40,3 +42,5 @@ jobs:
           gh api -X PUT "repos/$REPO/pulls/$number/merge" -f merge_method=squash -f sha="$SHA"
           gh api -X DELETE "repos/$REPO/git/refs/heads/$BRANCH" || true
           echo "Merged #$number"
+          gh workflow run deploy.yml --repo "$REPO" --ref main
+          echo "Started Deploy to Azure"
