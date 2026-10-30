@@ -1,5 +1,7 @@
 using DollarsAtWork.Api.Data;
 using DollarsAtWork.Api.Domain;
+using DollarsAtWork.Api.Features.Billing;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -8,9 +10,12 @@ namespace DollarsAtWork.Api.Common;
 /// <summary>
 /// Sends the three trial emails: 7 days left (day 23), 2 days left (day 28) and trial ended.
 /// Each account gets each email at most once; an account that was missed gets only the latest one.
+/// The two reminders name the plans with Stripe's own prices and the real number of founding spots left.
 /// </summary>
-public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions<AppOptions> options, TimeProvider clock, ILogger<TrialEmailService> logger)
+public class TrialEmailService(AppDbContext db, IAppEmailSender sender, BillingService billing, IOptions<AppOptions> options, TimeProvider clock, ILogger<TrialEmailService> logger)
 {
+    private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
+
     public static TrialEmailStage StageFor(DateTimeOffset trialEndsAt, DateTimeOffset now)
     {
         if (now >= trialEndsAt) return TrialEmailStage.Ended;
@@ -35,13 +40,21 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
             select new { subscription, user.Email }).ToListAsync(ct);
 
         var sent = 0;
+        PricesResponse? prices = null;
+        var pricesLoaded = false;
         foreach (var row in due)
         {
             var stage = StageFor(row.subscription.TrialEndsAt, now);
             if (stage <= row.subscription.TrialEmailStage || row.Email is null)
                 continue;
 
-            var message = Compose(stage, row.subscription.TrialEndsAt, options.Value.PublicUrl);
+            // Asked once per run, and only when a reminder is going out.
+            if (!pricesLoaded && stage != TrialEmailStage.Ended)
+            {
+                prices = await LoadPricesAsync(ct);
+                pricesLoaded = true;
+            }
+            var message = Compose(stage, row.subscription.TrialEndsAt, options.Value.PublicUrl, prices);
             await sender.SendAsync(row.Email, message, ct);
             row.subscription.TrialEmailStage = stage;
             row.subscription.UpdatedAt = now;
@@ -56,7 +69,52 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
         return sent;
     }
 
-    public static EmailMessage Compose(TrialEmailStage stage, DateTimeOffset trialEndsAt, string appUrl)
+    /// <summary>Stripe's prices and founding spots, or null when billing isn't set up or Stripe can't be reached (the reminder then goes out without them).</summary>
+    private async Task<PricesResponse?> LoadPricesAsync(CancellationToken ct)
+    {
+        if (!billing.IsConfigured)
+            return null;
+        try
+        {
+            return await billing.GetPricesAsync(ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Couldn't load prices for the trial reminders; sending them without prices");
+            return null;
+        }
+    }
+
+    /// <summary>"$59", or "$6.99" when there are cents.</summary>
+    private static string Money(decimal value) =>
+        value == Math.Round(value, 0) ? value.ToString("$#,##0", Invariant) : value.ToString("$#,##0.00", Invariant);
+
+    /// <summary>
+    /// The plans to choose from, best value first: Founding (only while spots are left, with the real count from Stripe),
+    /// Annual (with its saving over twelve monthly payments) and Monthly. Empty when the prices aren't known or aren't in
+    /// US dollars, so a reminder never shows a wrong price.
+    /// </summary>
+    public static IReadOnlyList<EmailLayout.Row> PlanRows(PricesResponse? prices)
+    {
+        if (prices is not { Enabled: true, Monthly: { } monthly, Annual: { } annual }
+            || monthly.Currency != "USD" || annual.Currency != "USD")
+            return [];
+
+        var rows = new List<EmailLayout.Row>();
+        if (prices.Founding is { Open: true, Price.Currency: "USD" } founding && founding.Limit - founding.Taken > 0)
+        {
+            var left = founding.Limit - founding.Taken;
+            var spots = left == 1 ? "Last spot left today" : $"{left} of {founding.Limit} spots left today";
+            rows.Add(new("Founding member", $"{Money(founding.Price.Amount)}/year", $"Renews at this price while you stay subscribed. {spots}"));
+        }
+        var saving = monthly.Amount * 12 - annual.Amount;
+        rows.Add(new("Annual", $"{Money(annual.Amount)}/year",
+            saving > 0 ? $"Save {Money(saving)} a year over monthly" : null, saving > 0 ? EmailLayout.Tone.Good : EmailLayout.Tone.Plain));
+        rows.Add(new("Monthly", $"{Money(monthly.Amount)}/month", "Cancel any time"));
+        return rows;
+    }
+
+    public static EmailMessage Compose(TrialEmailStage stage, DateTimeOffset trialEndsAt, string appUrl, PricesResponse? prices = null)
     {
         var baseUrl = appUrl.TrimEnd('/');
         var link = $"{baseUrl}/profile";
@@ -64,6 +122,7 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
         var ends = EmailDates.Moment(trialEndsAt);
         var layout = new EmailLayout(baseUrl)
             .FooterNote("You're getting this because your Dollars at Work free trial is ending.");
+        var plans = PlanRows(prices);
         return stage switch
         {
             TrialEmailStage.SevenDaysLeft => layout
@@ -71,6 +130,7 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
                 .Heading("One week left in your free trial")
                 .Paragraph($"Your free trial ends on {ends}. We hope your plan is already showing you where your money can go.")
                 .Paragraph("Subscribe before then and everything keeps working: your plan, your money timeline, what-if scenarios and monthly check-ins.")
+                .Rows("Your options", plans)
                 .Button("Choose a plan", link)
                 .Small("Not ready yet? That's okay. Your numbers stay safe either way.")
                 .Build("7 days left in your Dollars at Work trial"),
@@ -79,6 +139,7 @@ public class TrialEmailService(AppDbContext db, IAppEmailSender sender, IOptions
                 .Heading("Your trial ends in 2 days")
                 .Paragraph($"Your plan switches to view-only on {ends}. You'll still see every number, but you won't be able to change them.")
                 .Paragraph("Subscribe now and nothing changes. Keep moving dollars, checking in and trying what-ifs.")
+                .Rows("Your options", plans)
                 .Button("Keep my plan going", link)
                 .Build("2 days left in your Dollars at Work trial"),
             _ => layout
