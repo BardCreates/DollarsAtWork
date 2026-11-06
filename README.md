@@ -3,8 +3,37 @@
 A monthly money plan that puts every dollar to work: split your income into categories, and the built-in
 Savings, Debt and Investments categories drive their own modules and a long-range net-worth projection.
 
-The full plan lives in the **DollarsAtWork Rebuild Plan** doc. This repo is the from-scratch rebuild; the old
-`budget-web` / `budget-api` projects are reference only.
+**Live:** [dollarsatwork.app](https://dollarsatwork.app) · try it without an account: [sample plan](https://dollarsatwork.app/demo) · [calculators](https://dollarsatwork.app/tools)
+
+> **About this repository.** Dollars at Work is designed, built, deployed and maintained by
+> [Hannah Nicholls](https://www.linkedin.com/in/hannah-nicholls-6126b3150) using agentic AI-assisted development
+> (Claude Code; `CLAUDE.md` holds the rules and conventions the agent works under, and `docs/PLAN.md` the product spec).
+> The source is published so it can be reviewed; it is **not open source**. See [LICENSE](LICENSE).
+
+**Stack:** ASP.NET Core (.NET 10) Minimal APIs · EF Core + SQL Server / Azure SQL · ASP.NET Identity (cookie auth) ·
+React 19 + TypeScript + Vite · Material UI · TanStack Query · React Hook Form + Zod · Recharts · Stripe · Resend ·
+Sentry · Azure App Service, deployed by GitHub Actions on every push to `main`.
+
+**Engineering highlights**
+
+- **A pure TypeScript projection engine** (`client/src/lib/projection`) simulates every debt, savings goal and
+  investment account month by month for up to 40 years: snowball/avalanche payoff (including promotional APRs),
+  goal rollovers, sinking funds, employer match capped by salary, windfalls, raises and inflation. Every rule has a
+  Vitest test whose expected numbers are worked out by hand, never pasted from the engine's output.
+- **279 unit tests** across the engine, calculators, blog/help content and UI logic (`npm test` in `client/`).
+- **Security by default:** the user id comes only from an HttpOnly, SameSite=Strict auth cookie; every query is
+  scoped to it; per-IP rate limiting; account lockout; security headers; email addresses masked in logs; no tokens or
+  user data in browser storage.
+- **Billing that can't drift:** subscription status changes only by copying Stripe's state, from signature-verified
+  webhooks (with duplicate protection) or a server-side sync; a background worker re-checks lapsing subscriptions so a
+  missed webhook can't lock out a paying user.
+- **Production hygiene:** money is `decimal` and rounded to cents on write; EF Core migrations with retry-on-failure for
+  Azure SQL; the API refuses to start in production if a required setting is missing; data export (JSON/CSV) and
+  account deletion; scheduled retention cleanup.
+- **Public pages pre-rendered at build time** for search (per-page meta, Open Graph, JSON-LD, generated sitemap), then
+  hydrated by the live app.
+
+The sections below are the build log, phase by phase.
 
 ## What's in Phase 1
 
