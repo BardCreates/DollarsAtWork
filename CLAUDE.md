@@ -257,6 +257,11 @@ and decisions already made. Don't re-ask decided questions.
   read from the projection's debtPayments so it matches the payoff dates; tested), then a By debt / Totals switch: By debt
   is one column per debt each month (green where the extra goes), Totals is the old table. The help debt article says so.
 
+- Prices in the trial reminders (Oct 30, R21): the day-23 and day-28 emails list "Your options" (TrialEmailService.PlanRows):
+  Founding with the real spots left from Stripe (only while open), Annual with its saving over monthly, and Monthly. Prices come
+  from BillingService.GetPricesAsync, asked once per hourly run; if Stripe isn't set up, can't be reached or isn't in USD, the
+  reminder goes out without the list. The trial-ended email is unchanged.
+
 - Pre-rendered public pages (Oct 26, R21a): `npm run build` also runs `vite build --ssr src/prerender/entry.tsx` and
   scripts/prerender.mjs, which render every public page (lib/sitemap PUBLIC_PATHS, each help article, each published post)
   as a signed-out visitor sees it into wwwroot/<path>/index.html, with its own title and description (read from the page's
