@@ -1,13 +1,13 @@
-
-
-Uploading DollarsAtWork_crf26.mp4…
-
 # Dollars at Work
 
 A monthly money plan that puts every dollar to work: split your income into categories, and the built-in
 Savings, Debt and Investments categories drive their own modules and a long-range net-worth projection.
 
 **Live:** [dollarsatwork.app](https://dollarsatwork.app) · try it without an account: [sample plan](https://dollarsatwork.app/demo) · [calculators](https://dollarsatwork.app/tools)
+
+**Walkthrough** (1:44, narrated, sample data):
+
+https://github.com/user-attachments/assets/73cd8724-1367-4035-b304-dc1465e1a11e
 
 > **About this repository.** Dollars at Work is designed, built, deployed and maintained by
 > [Hannah Nicholls](https://www.linkedin.com/in/hannah-nicholls-6126b3150) using agentic AI-assisted development
